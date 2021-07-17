@@ -97,10 +97,13 @@ func buildCLI() *cli.App {
 				if c.String(logFormatFlag) == "pretty" {
 					lcfg := zap.NewDevelopmentConfig()
 					lcfg.EncoderConfig.EncodeLevel = zapcore.CapitalColorLevelEncoder
-					l, _ := lcfg.Build(
+					l, err := lcfg.Build(
 						zap.WithCaller(false),
 						zap.AddStacktrace(zapcore.ErrorLevel),
 					)
+					if err != nil {
+						return err
+					}
 					logger := tlog.NewZapLogger(l)
 					opts = append(opts, server.WithLogger(logger))
 				}

@@ -19,10 +19,14 @@ const (
 )
 
 type Config struct {
-	Ephemeral        bool
-	DatabaseFilePath string
-	FrontendPort     int
-	Logger           log.Logger
+	Ephemeral                       bool
+	DatabaseFilePath                string
+	FrontendPort                    int
+	DynamicPorts                    bool
+	Namespaces                      []string
+	DefaultNamespaceRetentionPeriod time.Duration
+	Logger                          log.Logger
+	portProvider                    *portProvider
 }
 
 func NewDefaultConfig() (*Config, error) {
@@ -32,18 +36,29 @@ func NewDefaultConfig() (*Config, error) {
 	}
 
 	return &Config{
-		Ephemeral:        false,
-		DatabaseFilePath: filepath.Join(userConfigDir, "temporalite/db/default.db"),
-		FrontendPort:     7233,
+		Ephemeral:                       false,
+		DatabaseFilePath:                filepath.Join(userConfigDir, "temporalite/db/default.db"),
+		FrontendPort:                    7233,
+		DynamicPorts:                    false,
+		Namespaces:                      nil,
+		DefaultNamespaceRetentionPeriod: 24 * time.Hour,
 		Logger: log.NewZapLogger(log.BuildZapLogger(log.Config{
 			Stdout:     true,
 			Level:      "debug",
 			OutputFile: "",
 		})),
+		portProvider: &portProvider{},
 	}, nil
 }
 
 func Convert(cfg *Config) *config.Config {
+	defer func() {
+		if err := cfg.portProvider.close(); err != nil {
+			panic(err)
+		}
+		// time.Sleep(5 * time.Second)
+	}()
+
 	sqliteConfig := config.SQL{
 		PluginName:        sqlite.PluginName,
 		ConnectAttributes: make(map[string]string),
@@ -56,6 +71,18 @@ func Convert(cfg *Config) *config.Config {
 		sqliteConfig.DatabaseName = cfg.DatabaseFilePath
 	}
 
+	var (
+		metricsPort = cfg.FrontendPort + 200
+		pprofPort   = cfg.FrontendPort + 201
+	)
+	if cfg.DynamicPorts {
+		if cfg.FrontendPort == 0 {
+			cfg.FrontendPort = cfg.portProvider.mustGetFreePort()
+		}
+		metricsPort = cfg.portProvider.mustGetFreePort()
+		pprofPort = cfg.portProvider.mustGetFreePort()
+	}
+
 	return &config.Config{
 		Global: config.Global{
 			Membership: config.Membership{
@@ -64,11 +91,11 @@ func Convert(cfg *Config) *config.Config {
 			},
 			Metrics: &metrics.Config{
 				Prometheus: &metrics.PrometheusConfig{
-					ListenAddress: fmt.Sprintf("%s:%d", broadcastAddress, cfg.FrontendPort+200),
+					ListenAddress: fmt.Sprintf("%s:%d", broadcastAddress, metricsPort),
 					HandlerPath:   "/metrics",
 				},
 			},
-			PProf: config.PProf{Port: cfg.FrontendPort + 201},
+			PProf: config.PProf{Port: pprofPort},
 		},
 		Persistence: config.Persistence{
 			DefaultStore:     persistenceStoreName,
@@ -95,10 +122,10 @@ func Convert(cfg *Config) *config.Config {
 			Policy: "noop",
 		},
 		Services: map[string]config.Service{
-			"frontend": cfg.getService(0),
-			"history":  cfg.getService(1),
-			"matching": cfg.getService(2),
-			"worker":   cfg.getService(3),
+			"frontend": cfg.mustGetService(0),
+			"history":  cfg.mustGetService(1),
+			"matching": cfg.mustGetService(2),
+			"worker":   cfg.mustGetService(3),
 		},
 		Archival: config.Archival{
 			History: config.HistoryArchival{
@@ -128,11 +155,21 @@ func Convert(cfg *Config) *config.Config {
 	}
 }
 
-func (o *Config) getService(frontendPortOffset int) config.Service {
+func (o *Config) mustGetService(frontendPortOffset int) config.Service {
+	var (
+		grpcPort       = o.FrontendPort + frontendPortOffset
+		membershipPort = o.FrontendPort + 100 + frontendPortOffset
+	)
+	if o.DynamicPorts {
+		if frontendPortOffset != 0 {
+			grpcPort = o.portProvider.mustGetFreePort()
+		}
+		membershipPort = o.portProvider.mustGetFreePort()
+	}
 	return config.Service{
 		RPC: config.RPC{
-			GRPCPort:        o.FrontendPort + frontendPortOffset,
-			MembershipPort:  o.FrontendPort + 100 + frontendPortOffset,
+			GRPCPort:        grpcPort,
+			MembershipPort:  membershipPort,
 			BindOnLocalHost: true,
 			BindOnIP:        "",
 		},

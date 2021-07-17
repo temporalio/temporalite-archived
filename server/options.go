@@ -35,6 +35,20 @@ func WithFrontendPort(port int) Option {
 	})
 }
 
+// WithDynamicPorts starts Temporal on any available ports.
+func WithDynamicPorts() Option {
+	return newApplyFuncContainer(func(cfg *liteconfig.Config) {
+		cfg.DynamicPorts = true
+	})
+}
+
+// WithNamespaces registers each namespace on Temporal start.
+func WithNamespaces(namespaces ...string) Option {
+	return newApplyFuncContainer(func(cfg *liteconfig.Config) {
+		cfg.Namespaces = append(cfg.Namespaces, namespaces...)
+	})
+}
+
 type applyFuncContainer struct {
 	applyInternal func(*liteconfig.Config)
 }
