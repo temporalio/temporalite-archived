@@ -2,31 +2,16 @@ package temporaltest_test
 
 import (
 	"context"
-	"fmt"
 	"testing"
 	"time"
 
+	"github.com/DataDog/temporalite/internal/examples/helloworld"
 	"github.com/DataDog/temporalite/server"
 	"github.com/DataDog/temporalite/server/temporaltest"
+
 	"go.temporal.io/sdk/client"
 	"go.temporal.io/sdk/worker"
-	"go.temporal.io/sdk/workflow"
 )
-
-func Greet(ctx workflow.Context, subject string) (string, error) {
-	var greeting string
-	if err := workflow.ExecuteActivity(workflow.WithActivityOptions(ctx, workflow.ActivityOptions{
-		ScheduleToCloseTimeout: time.Second,
-	}), PickGreeting).Get(ctx, &greeting); err != nil {
-		return "", err
-	}
-
-	return fmt.Sprintf("%s %s", greeting, subject), nil
-}
-
-func PickGreeting(ctx context.Context) (string, error) {
-	return "Hello", nil
-}
 
 func TestNewServer(t *testing.T) {
 	// Create test Temporal server
@@ -44,15 +29,14 @@ func TestNewServer(t *testing.T) {
 	defer c.Close()
 
 	w := worker.New(c, "example", worker.Options{})
-	w.RegisterWorkflow(Greet)
-	w.RegisterActivity(PickGreeting)
+	helloworld.RegisterWorkflowsAndActivities(w)
 
 	if err := w.Start(); err != nil {
 		t.Fatal(err)
 	}
 	defer w.Stop()
 
-	wfr, err := c.ExecuteWorkflow(ctx, client.StartWorkflowOptions{TaskQueue: "example"}, Greet, "world")
+	wfr, err := c.ExecuteWorkflow(ctx, client.StartWorkflowOptions{TaskQueue: "example"}, helloworld.Greet, "world")
 	if err != nil {
 		t.Fatal(err)
 	}
