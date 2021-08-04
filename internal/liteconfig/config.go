@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/DataDog/temporalite/internal/common/persistence/sql/sqlplugin/sqlite"
@@ -69,6 +70,10 @@ func Convert(cfg *Config) *config.Config {
 	} else {
 		sqliteConfig.ConnectAttributes["mode"] = "rwc"
 		sqliteConfig.DatabaseName = cfg.DatabaseFilePath
+	}
+
+	if len(cfg.Namespaces) > 0 {
+		sqliteConfig.ConnectAttributes["preCreateNamespaces"] = strings.Join(cfg.Namespaces, ",")
 	}
 
 	var (

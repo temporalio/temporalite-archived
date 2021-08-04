@@ -25,6 +25,7 @@
 package sqlite
 
 import (
+	"context"
 	gosql "database/sql"
 	_ "embed"
 	"errors"
@@ -34,13 +35,18 @@ import (
 	"strings"
 
 	"github.com/iancoleman/strcase"
-	"github.com/DataDog/temporalite/internal/common/persistence/sql/sqlplugin/tools"
 	"github.com/jmoiron/sqlx"
+	"go.temporal.io/api/enums/v1"
+	"go.temporal.io/server/api/persistence/v1"
 	"go.temporal.io/server/common/config"
+	"go.temporal.io/server/common/persistence/serialization"
 	"go.temporal.io/server/common/persistence/sql"
 	"go.temporal.io/server/common/persistence/sql/sqlplugin"
+	"go.temporal.io/server/common/primitives"
 	"go.temporal.io/server/common/resolver"
 	"go.temporal.io/server/tools/common/schema"
+
+	"github.com/DataDog/temporalite/internal/common/persistence/sql/sqlplugin/tools"
 )
 
 const (
@@ -78,6 +84,14 @@ func (p *plugin) CreateDB(
 			return nil, err
 		}
 		p.mainDB = newDB(dbKind, cfg.DatabaseName, conn, nil)
+
+		// Ensure namespaces exist
+		namespaces := strings.Split(cfg.ConnectAttributes["preCreateNamespaces"], ",")
+		for _, ns := range namespaces {
+			if err := createNamespaceIfNotExists(p.mainDB, ns); err != nil {
+				return nil, fmt.Errorf("error ensuring namespace exists: %w", err)
+			}
+		}
 	}
 	return p.mainDB, nil
 }
@@ -167,4 +181,42 @@ func (p *plugin) createDBConnection(dbKind sqlplugin.DbKind, cfg *config.SQL, _ 
 	}
 
 	return db, nil
+}
+
+func createNamespaceIfNotExists(mainDB *db, namespace string) error {
+	// Return early if namespace already exists
+	rows, err := mainDB.SelectFromNamespace(context.Background(), sqlplugin.NamespaceFilter{
+		Name: &namespace,
+	})
+	if err == nil && len(rows) > 0 {
+		return nil
+	}
+
+	nsID := primitives.NewUUID()
+
+	d, err := serialization.NamespaceDetailToBlob(&persistence.NamespaceDetail{
+		Info: &persistence.NamespaceInfo{
+			Id:    nsID.String(),
+			State: enums.NAMESPACE_STATE_REGISTERED,
+			Name:  namespace,
+		},
+		Config:            &persistence.NamespaceConfig{},
+		ReplicationConfig: &persistence.NamespaceReplicationConfig{},
+	})
+	if err != nil {
+		return err
+	}
+
+	if _, err := mainDB.InsertIntoNamespace(context.Background(), &sqlplugin.NamespaceRow{
+		ID:                  nsID,
+		Name:                namespace,
+		Data:                d.GetData(),
+		DataEncoding:        d.GetEncodingType().String(),
+		IsGlobal:            false,
+		NotificationVersion: 0,
+	}); err != nil {
+		return err
+	}
+
+	return nil
 }

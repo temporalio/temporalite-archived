@@ -2,14 +2,12 @@ package server
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"sync"
 	"time"
 
 	"github.com/DataDog/temporalite/internal/liteconfig"
 	enumspb "go.temporal.io/api/enums/v1"
-	"go.temporal.io/api/serviceerror"
 	"go.temporal.io/api/workflowservice/v1"
 	"go.temporal.io/sdk/client"
 	"go.temporal.io/server/common/authorization"
@@ -73,7 +71,7 @@ func New(opts ...Option) (*Server, error) {
 func (s *Server) Start() error {
 	if len(s.config.Namespaces) > 0 {
 		go func() {
-			ctx, cancel := context.WithTimeout(context.Background(), time.Second*60)
+			ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 			defer cancel()
 			nsClient, err := s.newNamespaceClient(ctx)
 			if err != nil {
@@ -81,20 +79,9 @@ func (s *Server) Start() error {
 			}
 			defer nsClient.Close()
 
-			// Create namespaces
-			var errNamespaceExists *serviceerror.NamespaceAlreadyExists
-			for _, ns := range s.config.Namespaces {
-				if err := nsClient.Register(ctx, &workflowservice.RegisterNamespaceRequest{
-					Namespace:                        ns,
-					WorkflowExecutionRetentionPeriod: &s.config.DefaultNamespaceRetentionPeriod,
-				}); err != nil && !errors.As(err, &errNamespaceExists) {
-					panic(err)
-				}
-			}
-
 			// Wait for each namespace to be ready
 			for _, ns := range s.config.Namespaces {
-				c, err := s.newClient(context.Background(), client.Options{Namespace: ns})
+				c, err := s.newClient(ctx, client.Options{Namespace: ns})
 				if err != nil {
 					panic(err)
 				}
@@ -105,11 +92,11 @@ func (s *Server) Start() error {
 					backoff     = 20 * time.Millisecond
 				)
 				for i := 0; i < maxAttempts; i++ {
-					_, err = c.ListOpenWorkflow(context.Background(), &workflowservice.ListOpenWorkflowExecutionsRequest{
+					_, err = c.ListOpenWorkflow(ctx, &workflowservice.ListOpenWorkflowExecutionsRequest{
 						Namespace: ns,
 					})
 					if err == nil {
-						if _, err := c.DescribeTaskQueue(context.Background(), "_404", enumspb.TASK_QUEUE_TYPE_UNSPECIFIED); err == nil {
+						if _, err := c.DescribeTaskQueue(ctx, "_404", enumspb.TASK_QUEUE_TYPE_UNSPECIFIED); err == nil {
 							fmt.Println(err)
 							break
 						}
