@@ -94,7 +94,7 @@ func (s *Server) Start() error {
 
 			// Wait for each namespace to be ready
 			for _, ns := range s.config.Namespaces {
-				c, err := s.newClient(context.Background(), ns)
+				c, err := s.newClient(context.Background(), client.Options{Namespace: ns})
 				if err != nil {
 					panic(err)
 				}
@@ -136,20 +136,33 @@ func (s *Server) Stop() {
 	s.internal.Stop()
 }
 
+// NewClient initializes a client ready to communicate with the Temporal
+// server in the target namespace.
 func (s *Server) NewClient(ctx context.Context, namespace string) (client.Client, error) {
-	s.setupWaitGroup.Wait()
-	return s.newClient(ctx, namespace)
+	return s.newClientBlocking(ctx, client.Options{Namespace: namespace})
 }
 
-func (s *Server) newClient(ctx context.Context, namespace string) (client.Client, error) {
-	return client.NewClient(client.Options{
-		Namespace: namespace,
-		HostPort:  s.frontendHostPort,
-		ConnectionOptions: client.ConnectionOptions{
-			DisableHealthCheck: false,
-			HealthCheckTimeout: timeoutFromContext(ctx, time.Minute),
-		},
-	})
+// NewClientWithOptions is the same as NewClient but allows further customization.
+//
+// To set the client's namespace, use the corresponding field in client.Options.
+//
+// Note that the HostPort and ConnectionOptions fields of client.Options will always be overridden.
+func (s *Server) NewClientWithOptions(ctx context.Context, options client.Options) (client.Client, error) {
+	return s.newClientBlocking(ctx, options)
+}
+
+func (s *Server) newClientBlocking(ctx context.Context, options client.Options) (client.Client, error) {
+	s.setupWaitGroup.Wait()
+	return s.newClient(ctx, options)
+}
+
+func (s *Server) newClient(ctx context.Context, options client.Options) (client.Client, error) {
+	options.HostPort = s.frontendHostPort
+	options.ConnectionOptions = client.ConnectionOptions{
+		DisableHealthCheck: false,
+		HealthCheckTimeout: timeoutFromContext(ctx, time.Minute),
+	}
+	return client.NewClient(options)
 }
 
 func (s *Server) newNamespaceClient(ctx context.Context) (client.NamespaceClient, error) {
