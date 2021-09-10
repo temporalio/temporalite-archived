@@ -1,5 +1,7 @@
 // The MIT License
 //
+// Copyright (c) 2021 Datadog, Inc.
+//
 // Copyright (c) 2020 Temporal Technologies Inc.  All rights reserved.
 //
 // Copyright (c) 2020 Uber Technologies, Inc.
