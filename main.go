@@ -9,14 +9,15 @@ import (
 	"log"
 	"os"
 
-	_ "github.com/DataDog/temporalite/internal/common/persistence/sql/sqlplugin/sqlite" // needed to load sqlite plugin
-	"github.com/DataDog/temporalite/internal/liteconfig"
-	"github.com/DataDog/temporalite/server"
 	"github.com/urfave/cli/v2"
 	"go.temporal.io/server/common/headers"
 	tlog "go.temporal.io/server/common/log"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
+
+	_ "github.com/DataDog/temporalite/internal/common/persistence/sql/sqlplugin/sqlite" // needed to load sqlite plugin
+	"github.com/DataDog/temporalite/internal/liteconfig"
+	"github.com/DataDog/temporalite/server"
 )
 
 var (

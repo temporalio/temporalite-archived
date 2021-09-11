@@ -10,7 +10,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/DataDog/temporalite/internal/liteconfig"
 	enumspb "go.temporal.io/api/enums/v1"
 	"go.temporal.io/api/workflowservice/v1"
 	"go.temporal.io/sdk/client"
@@ -19,6 +18,8 @@ import (
 	"go.temporal.io/server/common/dynamicconfig"
 	"go.temporal.io/server/temporal"
 	"google.golang.org/grpc"
+
+	"github.com/DataDog/temporalite/internal/liteconfig"
 )
 
 type Server struct {
