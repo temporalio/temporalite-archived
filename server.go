@@ -2,7 +2,7 @@
 //
 // This product includes software developed at Datadog (https://www.datadoghq.com/). Copyright 2021 Datadog, Inc.
 
-package server
+package temporalite
 
 import (
 	"context"
@@ -22,6 +22,7 @@ import (
 	"github.com/DataDog/temporalite/internal/liteconfig"
 )
 
+// Server wraps a temporal.Server.
 type Server struct {
 	internal         *temporal.Server
 	frontendHostPort string
@@ -29,11 +30,12 @@ type Server struct {
 	setupWaitGroup   sync.WaitGroup
 }
 
-type Option interface {
+type ServerOption interface {
 	apply(*liteconfig.Config)
 }
 
-func New(opts ...Option) (*Server, error) {
+// NewServer returns a new instance of Server.
+func NewServer(opts ...ServerOption) (*Server, error) {
 	c, err := liteconfig.NewDefaultConfig()
 	if err != nil {
 		return nil, err
@@ -73,6 +75,7 @@ func New(opts ...Option) (*Server, error) {
 	return s, nil
 }
 
+// Start temporal server.
 func (s *Server) Start() error {
 	if len(s.config.Namespaces) > 0 {
 		go func() {
@@ -124,6 +127,7 @@ func (s *Server) Start() error {
 	return s.internal.Start()
 }
 
+// Stop the server.
 func (s *Server) Stop() {
 	s.internal.Stop()
 }

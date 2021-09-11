@@ -15,9 +15,9 @@ import (
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 
+	"github.com/DataDog/temporalite"
 	_ "github.com/DataDog/temporalite/internal/common/persistence/sql/sqlplugin/sqlite" // needed to load sqlite plugin
 	"github.com/DataDog/temporalite/internal/liteconfig"
-	"github.com/DataDog/temporalite/server"
 )
 
 var (
@@ -92,12 +92,12 @@ func buildCLI() *cli.App {
 				return nil
 			},
 			Action: func(c *cli.Context) error {
-				opts := []server.Option{
-					server.WithFrontendPort(c.Int(portFlag)),
-					server.WithDatabaseFilePath(c.String(dbPathFlag)),
+				opts := []temporalite.ServerOption{
+					temporalite.WithFrontendPort(c.Int(portFlag)),
+					temporalite.WithDatabaseFilePath(c.String(dbPathFlag)),
 				}
 				if c.Bool(ephemeralFlag) {
-					opts = append(opts, server.WithPersistenceDisabled())
+					opts = append(opts, temporalite.WithPersistenceDisabled())
 				}
 				if c.String(logFormatFlag) == "pretty" {
 					lcfg := zap.NewDevelopmentConfig()
@@ -110,10 +110,10 @@ func buildCLI() *cli.App {
 						return err
 					}
 					logger := tlog.NewZapLogger(l)
-					opts = append(opts, server.WithLogger(logger))
+					opts = append(opts, temporalite.WithLogger(logger))
 				}
 
-				s, err := server.New(opts...)
+				s, err := temporalite.NewServer(opts...)
 				if err != nil {
 					return err
 				}

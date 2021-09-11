@@ -43,7 +43,7 @@ func NewDefaultConfig() (*Config, error) {
 	return &Config{
 		Ephemeral:                       false,
 		DatabaseFilePath:                filepath.Join(userConfigDir, "temporalite/db/default.db"),
-		FrontendPort:                    7233,
+		FrontendPort:                    0,
 		DynamicPorts:                    false,
 		Namespaces:                      nil,
 		DefaultNamespaceRetentionPeriod: 24 * time.Hour,
@@ -61,7 +61,6 @@ func Convert(cfg *Config) *config.Config {
 		if err := cfg.portProvider.close(); err != nil {
 			panic(err)
 		}
-		// time.Sleep(5 * time.Second)
 	}()
 
 	sqliteConfig := config.SQL{
@@ -80,16 +79,17 @@ func Convert(cfg *Config) *config.Config {
 		sqliteConfig.ConnectAttributes["preCreateNamespaces"] = strings.Join(cfg.Namespaces, ",")
 	}
 
-	var (
-		metricsPort = cfg.FrontendPort + 200
-		pprofPort   = cfg.FrontendPort + 201
-	)
+	var metricsPort, pprofPort int
 	if cfg.DynamicPorts {
 		if cfg.FrontendPort == 0 {
 			cfg.FrontendPort = cfg.portProvider.mustGetFreePort()
 		}
 		metricsPort = cfg.portProvider.mustGetFreePort()
 		pprofPort = cfg.portProvider.mustGetFreePort()
+	} else {
+		cfg.FrontendPort = 7233
+		metricsPort = cfg.FrontendPort + 200
+		pprofPort = cfg.FrontendPort + 201
 	}
 
 	return &config.Config{

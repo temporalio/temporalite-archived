@@ -13,7 +13,7 @@ import (
 	"go.temporal.io/sdk/worker"
 
 	"github.com/DataDog/temporalite/internal/examples/helloworld"
-	"github.com/DataDog/temporalite/server/temporaltest"
+	"github.com/DataDog/temporalite/temporaltest"
 )
 
 func TestNewServer(t *testing.T) {
@@ -45,5 +45,40 @@ func TestNewServer(t *testing.T) {
 
 	if resp != "Hello world" {
 		t.Fatalf("unexpected result: %q", resp)
+	}
+}
+
+func BenchmarkRunWorkflow(b *testing.B) {
+	ts := temporaltest.NewServer()
+	c := ts.Client()
+	defer ts.Stop()
+
+	w := worker.New(c, "example", worker.Options{})
+	helloworld.RegisterWorkflowsAndActivities(w)
+
+	if err := w.Start(); err != nil {
+		panic(err)
+	}
+	defer w.Stop()
+
+	for i := 0; i < b.N; i++ {
+		func(b *testing.B) {
+			ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+			defer cancel()
+
+			wfr, err := c.ExecuteWorkflow(ctx, client.StartWorkflowOptions{TaskQueue: "example"}, helloworld.Greet, "world")
+			if err != nil {
+				b.Fatal(err)
+			}
+
+			var resp string
+			if err := wfr.Get(ctx, &resp); err != nil {
+				b.Fatal(err)
+			}
+
+			if resp != "Hello world" {
+				b.Fatalf("unexpected result: %q", resp)
+			}
+		}(b)
 	}
 }

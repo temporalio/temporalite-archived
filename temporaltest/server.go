@@ -14,11 +14,13 @@ import (
 	"go.temporal.io/server/common/log"
 	"go.uber.org/zap"
 
-	"github.com/DataDog/temporalite/server"
+	"github.com/DataDog/temporalite"
 )
 
+// A TestServer is a Temporal server listening on a system-chosen port on the
+// local loopback interface, for use in end-to-end tests.
 type TestServer struct {
-	server               *server.Server
+	server               *temporalite.Server
 	defaultTestNamespace string
 	defaultClient        client.Client
 	clients              []client.Client
@@ -63,16 +65,17 @@ func (ts *TestServer) Stop() {
 	ts.server.Stop()
 }
 
+// NewServer starts and returns a new TestServer. The caller should call Stop
+// when finished, to shut it down.
 func NewServer() *TestServer {
 	rand.Seed(time.Now().UnixNano())
 	testNamespace := fmt.Sprintf("temporaltest-%d", rand.Intn(999999))
 
-	s, err := server.New(
-		server.WithNamespaces(testNamespace),
-		server.WithPersistenceDisabled(),
-		server.WithFrontendPort(0),
-		server.WithDynamicPorts(),
-		server.WithLogger(log.NewZapLogger(zap.NewNop())),
+	s, err := temporalite.NewServer(
+		temporalite.WithNamespaces(testNamespace),
+		temporalite.WithPersistenceDisabled(),
+		temporalite.WithDynamicPorts(),
+		temporalite.WithLogger(log.NewZapLogger(zap.NewNop())),
 	)
 	if err != nil {
 		panic(fmt.Errorf("error creating server: %w", err))

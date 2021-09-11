@@ -23,7 +23,7 @@ Features that align with this goal:
 Build from source using [go install](https://golang.org/ref/mod#go-install):
 
 ```bash
-go install github.com/DataDog/temporalite@latest
+go install github.com/DataDog/temporalite/cmd/temporalite@latest
 ```
 
 Start Temporal server:

@@ -2,23 +2,23 @@
 //
 // This product includes software developed at Datadog (https://www.datadoghq.com/). Copyright 2021 Datadog, Inc.
 
-package server
+package temporalite
 
 import (
-	"github.com/DataDog/temporalite/internal/liteconfig"
-
 	"go.temporal.io/server/common/log"
+
+	"github.com/DataDog/temporalite/internal/liteconfig"
 )
 
 // WithLogger overrides the default logger.
-func WithLogger(logger log.Logger) Option {
+func WithLogger(logger log.Logger) ServerOption {
 	return newApplyFuncContainer(func(cfg *liteconfig.Config) {
 		cfg.Logger = logger
 	})
 }
 
 // WithDatabaseFilePath persists state to the file at the specified path.
-func WithDatabaseFilePath(filepath string) Option {
+func WithDatabaseFilePath(filepath string) ServerOption {
 	return newApplyFuncContainer(func(cfg *liteconfig.Config) {
 		cfg.Ephemeral = false
 		cfg.DatabaseFilePath = filepath
@@ -26,28 +26,29 @@ func WithDatabaseFilePath(filepath string) Option {
 }
 
 // WithPersistenceDisabled disables file persistence and uses the in-memory storage driver. State will be reset on each process restart.
-func WithPersistenceDisabled() Option {
+func WithPersistenceDisabled() ServerOption {
 	return newApplyFuncContainer(func(cfg *liteconfig.Config) {
 		cfg.Ephemeral = true
 	})
 }
 
 // WithFrontendPort sets the listening port for the temporal-frontend GRPC service.
-func WithFrontendPort(port int) Option {
+// When unspecified, the default port number of 7233 is used.
+func WithFrontendPort(port int) ServerOption {
 	return newApplyFuncContainer(func(cfg *liteconfig.Config) {
 		cfg.FrontendPort = port
 	})
 }
 
-// WithDynamicPorts starts Temporal on any available ports.
-func WithDynamicPorts() Option {
+// WithDynamicPorts starts Temporal on system-chosen ports.
+func WithDynamicPorts() ServerOption {
 	return newApplyFuncContainer(func(cfg *liteconfig.Config) {
 		cfg.DynamicPorts = true
 	})
 }
 
 // WithNamespaces registers each namespace on Temporal start.
-func WithNamespaces(namespaces ...string) Option {
+func WithNamespaces(namespaces ...string) ServerOption {
 	return newApplyFuncContainer(func(cfg *liteconfig.Config) {
 		cfg.Namespaces = append(cfg.Namespaces, namespaces...)
 	})
