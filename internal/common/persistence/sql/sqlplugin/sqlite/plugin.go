@@ -196,7 +196,7 @@ func createNamespaceIfNotExists(mainDB *db, namespace string) error {
 
 	nsID := primitives.NewUUID()
 
-	d, err := serialization.NamespaceDetailToBlob(&persistence.NamespaceDetail{
+	d, err := serialization.NewSerializer().NamespaceDetailToBlob(&persistence.NamespaceDetail{
 		Info: &persistence.NamespaceInfo{
 			Id:    nsID.String(),
 			State: enums.NAMESPACE_STATE_REGISTERED,
@@ -204,7 +204,7 @@ func createNamespaceIfNotExists(mainDB *db, namespace string) error {
 		},
 		Config:            &persistence.NamespaceConfig{},
 		ReplicationConfig: &persistence.NamespaceReplicationConfig{},
-	})
+	}, enums.ENCODING_TYPE_PROTO3)
 	if err != nil {
 		return err
 	}
