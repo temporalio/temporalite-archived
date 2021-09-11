@@ -16,13 +16,55 @@ import (
 	"github.com/DataDog/temporalite/temporaltest"
 )
 
-func TestNewServer(t *testing.T) {
+// to be used in example code
+var t *testing.T
+
+func ExampleNewServer_testWorker() {
 	// Create test Temporal server and client
+	ts := temporaltest.NewServer()
+	c := ts.Client()
+	// Stop server and close clients when tests complete
+	defer ts.Stop()
+
+	// Register a new worker on the `hello_world` task queue
+	w := worker.New(c, "hello_world", worker.Options{})
+	helloworld.RegisterWorkflowsAndActivities(w)
+	// Start worker
+	if err := w.Start(); err != nil {
+		t.Fatal(err)
+	}
+	// Stop worker when tests complete
+	defer w.Stop()
+
+	// Start test workflow
+	wfr, err := c.ExecuteWorkflow(
+		context.Background(),
+		client.StartWorkflowOptions{TaskQueue: "hello_world"},
+		helloworld.Greet,
+		"world",
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Get workflow result
+	var result string
+	if err := wfr.Get(context.Background(), &result); err != nil {
+		t.Fatal(err)
+	}
+
+	// Fail if result has unexpected value
+	if result != "Hello world" {
+		t.Fatalf("unexpected result: %q", result)
+	}
+}
+
+func TestNewServer(t *testing.T) {
 	ts := temporaltest.NewServer()
 	c := ts.Client()
 	defer ts.Stop()
 
-	w := worker.New(c, "example", worker.Options{})
+	w := worker.New(c, "hello_world", worker.Options{})
 	helloworld.RegisterWorkflowsAndActivities(w)
 
 	if err := w.Start(); err != nil {
@@ -33,18 +75,23 @@ func TestNewServer(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	wfr, err := c.ExecuteWorkflow(ctx, client.StartWorkflowOptions{TaskQueue: "example"}, helloworld.Greet, "world")
+	wfr, err := c.ExecuteWorkflow(
+		ctx,
+		client.StartWorkflowOptions{TaskQueue: "hello_world"},
+		helloworld.Greet,
+		"world",
+	)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	var resp string
-	if err := wfr.Get(ctx, &resp); err != nil {
+	var result string
+	if err := wfr.Get(ctx, &result); err != nil {
 		t.Fatal(err)
 	}
 
-	if resp != "Hello world" {
-		t.Fatalf("unexpected result: %q", resp)
+	if result != "Hello world" {
+		t.Fatalf("unexpected result: %q", result)
 	}
 }
 
@@ -53,7 +100,7 @@ func BenchmarkRunWorkflow(b *testing.B) {
 	c := ts.Client()
 	defer ts.Stop()
 
-	w := worker.New(c, "example", worker.Options{})
+	w := worker.New(c, "hello_world", worker.Options{})
 	helloworld.RegisterWorkflowsAndActivities(w)
 
 	if err := w.Start(); err != nil {
@@ -66,18 +113,18 @@ func BenchmarkRunWorkflow(b *testing.B) {
 			ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 			defer cancel()
 
-			wfr, err := c.ExecuteWorkflow(ctx, client.StartWorkflowOptions{TaskQueue: "example"}, helloworld.Greet, "world")
+			wfr, err := c.ExecuteWorkflow(
+				ctx,
+				client.StartWorkflowOptions{TaskQueue: "hello_world"},
+				helloworld.Greet,
+				"world",
+			)
 			if err != nil {
 				b.Fatal(err)
 			}
 
-			var resp string
-			if err := wfr.Get(ctx, &resp); err != nil {
+			if err := wfr.Get(ctx, nil); err != nil {
 				b.Fatal(err)
-			}
-
-			if resp != "Hello world" {
-				b.Fatalf("unexpected result: %q", resp)
 			}
 		}(b)
 	}
