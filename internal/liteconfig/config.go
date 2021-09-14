@@ -21,6 +21,7 @@ import (
 const (
 	broadcastAddress     = "127.0.0.1"
 	persistenceStoreName = "sqlite-default"
+	DefaultFrontendPort  = 7233
 )
 
 type Config struct {
@@ -87,7 +88,7 @@ func Convert(cfg *Config) *config.Config {
 		metricsPort = cfg.portProvider.mustGetFreePort()
 		pprofPort = cfg.portProvider.mustGetFreePort()
 	} else {
-		cfg.FrontendPort = 7233
+		cfg.FrontendPort = DefaultFrontendPort
 		metricsPort = cfg.FrontendPort + 200
 		pprofPort = cfg.FrontendPort + 201
 	}

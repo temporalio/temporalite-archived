@@ -68,7 +68,7 @@ func buildCLI() *cli.App {
 					Name:    portFlag,
 					Aliases: []string{"p"},
 					Usage:   "port for the temporal-frontend GRPC service",
-					Value:   defaultCfg.FrontendPort,
+					Value:   liteconfig.DefaultFrontendPort,
 				},
 				&cli.StringFlag{
 					Name:    logFormatFlag,
