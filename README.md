@@ -1,5 +1,9 @@
 # Temporalite
 
+[![Go Reference](https://pkg.go.dev/badge/github.com/DataDog/temporalite.svg)](https://pkg.go.dev/github.com/DataDog/temporalite)
+[![ci](https://github.com/DataDog/temporalite/actions/workflows/ci.yml/badge.svg)](https://github.com/DataDog/temporalite/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/DataDog/temporalite/branch/main/graph/badge.svg)](https://codecov.io/gh/DataDog/temporalite)
+
 > ⚠️ This project is experimental and not suitable for production use. ⚠️
 
 Temporalite is a distribution of [Temporal](https://github.com/temporalio/temporal) that runs as a single process with zero runtime dependencies.
