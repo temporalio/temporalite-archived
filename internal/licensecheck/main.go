@@ -2,7 +2,10 @@ package main
 
 import (
 	"context"
+	_ "embed"
 	"encoding/csv"
+	"encoding/json"
+	"io"
 	"io/ioutil"
 	"log"
 	"os"
@@ -18,6 +21,15 @@ func main() {
 		log.Fatal(err)
 	}
 }
+
+type Component struct {
+	Origin    string `json:"origin"`
+	License   string `json:"license"`
+	Copyright string `json:"copyright"`
+}
+
+//go:embed overrides.json
+var componentOverrides []byte
 
 func execute() error {
 	classifier, err := licenses.NewClassifier(0.9)
@@ -36,32 +48,25 @@ func execute() error {
 		return err
 	}
 
-	// Sort libs so csv diff is neater
-	sort.SliceStable(libs, func(i, j int) bool {
-		return strings.Compare(libs[i].Name(), libs[j].Name()) < 0
-	})
-
-	w := csv.NewWriter(f)
-	defer w.Flush()
-
-	if err := w.Write([]string{"Component", "Origin", "License", "Copyright"}); err != nil {
+	components := map[string]Component{}
+	var overrides map[string]Component
+	if err := json.Unmarshal(componentOverrides, &overrides); err != nil {
 		return err
 	}
 
 	for _, lib := range libs {
-		var (
-			origin, licenseName, copyright string
-		)
+		var component Component
+		var licenseUrl string
 		if lib.LicensePath != "" {
 			// Find a URL for the license file, based on the URL of a remote for the Git repository.
 			repo, err := licenses.FindGitRepo(lib.LicensePath)
 			if err != nil {
 				// Can't find Git repo (possibly a Go Module?) - derive URL from lib name instead.
 				if lURL, err := lib.FileURL(lib.LicensePath); err == nil {
-					origin = lURL.String()
+					licenseUrl = lURL.String()
 				}
 				if b, err := ioutil.ReadFile(lib.LicensePath); err == nil {
-					copyright = licenseclassifier.CopyrightHolder(string(b))
+					component.Copyright = licenseclassifier.CopyrightHolder(string(b))
 				}
 			} else {
 				for _, remote := range []string{"origin", "upstream"} {
@@ -69,17 +74,44 @@ func execute() error {
 					if err != nil {
 						continue
 					}
-					origin = url.String()
+					licenseUrl = url.String()
 					break
 				}
 			}
 			if ln, _, err := classifier.Identify(lib.LicensePath); err == nil {
-				licenseName = ln
+				component.License = ln
 			}
 		}
-		// Parse the project URL
-		originUrlParts := strings.Split(origin, "/blob/")
-		if err := w.Write([]string{lib.Name(), originUrlParts[0], licenseName, copyright}); err != nil {
+		component.Origin = strings.Split(licenseUrl, "/blob/")[0]
+
+		components[lib.Name()] = component
+	}
+
+	for k, v := range overrides {
+		components[k] = v
+	}
+
+	return writeComponents(f, components)
+}
+
+func writeComponents(w io.Writer, components map[string]Component) error {
+	c := csv.NewWriter(w)
+	defer c.Flush()
+
+	if err := c.Write([]string{"Component", "Origin", "License", "Copyright"}); err != nil {
+		return err
+	}
+
+	// Sort component names
+	var keys []string
+	for k, _ := range components {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+
+	for _, k := range keys {
+		component := components[k]
+		if err := c.Write([]string{k, component.Origin, component.License, component.Copyright}); err != nil {
 			return err
 		}
 	}

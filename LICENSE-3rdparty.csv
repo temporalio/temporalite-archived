@@ -9,7 +9,7 @@ github.com/aws/aws-sdk-go/internal/sync/singleflight,https://github.com/aws/aws-
 github.com/benbjohnson/clock,https://github.com/benbjohnson/clock,MIT,Ben Johnson
 github.com/beorn7/perks/quantile,https://github.com/beorn7/perks,MIT,Blake Mizerany
 github.com/blang/semver/v4,https://github.com/blang/semver,MIT,Benedikt Lang <github at benediktlang.de>
-github.com/cactus/go-statsd-client/statsd,,,
+github.com/cactus/go-statsd-client/statsd,https://github.com/cactus/go-statsd-client,MIT,Eli Janssen
 github.com/cespare/xxhash/v2,https://github.com/cespare/xxhash,MIT,Caleb Spare
 github.com/cpuguy83/go-md2man/v2/md2man,https://github.com/cpuguy83/go-md2man,MIT,Brian Goff
 github.com/davecgh/go-spew/spew,https://github.com/davecgh/go-spew,ISC,Dave Collins <dave@davec.name>
