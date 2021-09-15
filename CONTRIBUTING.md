@@ -30,7 +30,7 @@ Run all tests:
 go test -race ./...
 ```
 
-## Run Temporal Server locally
+## Run Temporalite locally
 Run the server in ephemeral mode:
 ```bash
 go run ./cmd/temporalite start --ephemeral
@@ -49,4 +49,11 @@ This project is Open Source Software, and requires a header at the beginning of
 all source files. To verify that all files contain the header execute:
 ```bash
 go run ./internal/copyright
+```
+
+## Third party code
+The license, origin, and copyright of all third party code is tracked in `LICENSE-3rdparty.csv`.
+To verify that this file is up to date execute:
+```bash
+go run ./internal/licensecheck
 ```
