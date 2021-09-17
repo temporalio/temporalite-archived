@@ -29,6 +29,7 @@ const (
 	dbPathFlag    = "filename"
 	portFlag      = "port"
 	logFormatFlag = "log-format"
+	namespaceFlag = "namespace"
 )
 
 func init() {
@@ -76,6 +77,13 @@ func buildCLI() *cli.App {
 					EnvVars: nil,
 					Value:   "json",
 				},
+				&cli.StringSliceFlag{
+					Name:    namespaceFlag,
+					Aliases: []string{"n"},
+					Usage:   `specify namespaces that should be pre-created`,
+					EnvVars: nil,
+					Value:   nil,
+				},
 			},
 			Before: func(c *cli.Context) error {
 				if c.Args().Len() > 0 {
@@ -95,6 +103,7 @@ func buildCLI() *cli.App {
 				opts := []temporalite.ServerOption{
 					temporalite.WithFrontendPort(c.Int(portFlag)),
 					temporalite.WithDatabaseFilePath(c.String(dbPathFlag)),
+					temporalite.WithNamespaces(c.StringSlice(namespaceFlag)...),
 				}
 				if c.Bool(ephemeralFlag) {
 					opts = append(opts, temporalite.WithPersistenceDisabled())

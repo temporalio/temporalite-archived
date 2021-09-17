@@ -88,10 +88,12 @@ func (p *plugin) CreateDB(
 		p.mainDB = newDB(dbKind, cfg.DatabaseName, conn, nil)
 
 		// Ensure namespaces exist
-		namespaces := strings.Split(cfg.ConnectAttributes["preCreateNamespaces"], ",")
-		for _, ns := range namespaces {
-			if err := createNamespaceIfNotExists(p.mainDB, ns); err != nil {
-				return nil, fmt.Errorf("error ensuring namespace exists: %w", err)
+		if nsConfig := cfg.ConnectAttributes["preCreateNamespaces"]; nsConfig != "" {
+			namespaces := strings.Split(cfg.ConnectAttributes["preCreateNamespaces"], ",")
+			for _, ns := range namespaces {
+				if err := createNamespaceIfNotExists(p.mainDB, ns); err != nil {
+					return nil, fmt.Errorf("error ensuring namespace exists: %w", err)
+				}
 			}
 		}
 	}
