@@ -53,6 +53,15 @@ Use the help flag to see all available options:
 temporalite start -h
 ```
 
+### Namespace Registration
+
+Namespaces can be pre-registered at startup so they're available to use right away:
+```bash
+temporalite start --namespace foo --namespace bar
+```
+
+Registering namespaces the old-fashioned way via `tctl --namespace foo namespace register` works too!
+
 ### Persistence Modes
 
 #### File on Disk
