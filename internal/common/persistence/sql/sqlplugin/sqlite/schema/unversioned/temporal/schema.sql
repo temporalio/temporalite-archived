@@ -242,7 +242,7 @@ CREATE TABLE queue (
 
 CREATE TABLE queue_metadata (
 	queue_type	INT NOT NULL,
-	data	MEDIUMBLOB NOT NULL,
+	data	MEDIUMBLOB, -- TODO(jlegrone): add back NOT NULL constraint
 	data_encoding  VARCHAR(16) NOT NULL,
 	PRIMARY KEY(queue_type)
 );
