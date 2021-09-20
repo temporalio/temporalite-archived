@@ -2,7 +2,7 @@ Component,Origin,License,Copyright
 cloud.google.com/go,,Apache-2.0,
 cloud.google.com/go/storage,,Apache-2.0,
 github.com/DataDog/sketches-go/ddsketch,https://github.com/DataDog/sketches-go,Apache-2.0,"DataDog, Inc."
-github.com/DataDog/temporalite,,MIT,
+github.com/DataDog/temporalite,https://github.com/DataDog/temporalite,MIT,"Datadog, Inc."
 github.com/apache/thrift/lib/go/thrift,https://github.com/apache/thrift,Apache-2.0,
 github.com/aws/aws-sdk-go,https://github.com/aws/aws-sdk-go,Apache-2.0,
 github.com/aws/aws-sdk-go/internal/sync/singleflight,https://github.com/aws/aws-sdk-go,BSD-3-Clause,The Go Authors
@@ -15,32 +15,41 @@ github.com/cpuguy83/go-md2man/v2/md2man,https://github.com/cpuguy83/go-md2man,MI
 github.com/davecgh/go-spew/spew,https://github.com/davecgh/go-spew,ISC,Dave Collins <dave@davec.name>
 github.com/dgrijalva/jwt-go/v4,https://github.com/dgrijalva/jwt-go,MIT,Dave Grijalva
 github.com/dgryski/go-farm,https://github.com/dgryski/go-farm,MIT,Damian Gryski
+github.com/emirpasic/gods,https://github.com/emirpasic/gods,BSD-2-Clause,Emir Pasic
 github.com/facebookgo/clock,https://github.com/facebookgo/clock,MIT,Ben Johnson
 github.com/gocql/gocql,https://github.com/gocql/gocql,BSD-3-Clause,The Gocql authors
 github.com/gogo/googleapis/google/rpc,https://github.com/gogo/googleapis,Apache-2.0,Google Inc
 github.com/gogo/protobuf,https://github.com/gogo/protobuf,BSD-3-Clause,The GoGo Authors
 github.com/gogo/status,https://github.com/gogo/status,Apache-2.0,
+github.com/golang/glog,https://github.com/golang/glog,Apache-2.0,
 github.com/golang/groupcache/lru,https://github.com/golang/groupcache,Apache-2.0,
 github.com/golang/mock/gomock,https://github.com/golang/mock,Apache-2.0,
 github.com/golang/protobuf,https://github.com/golang/protobuf,BSD-3-Clause,The Go Authors
 github.com/golang/snappy,https://github.com/golang/snappy,BSD-3-Clause,The Snappy-Go Authors
+github.com/google/go-licenses/licenses,https://github.com/google/go-licenses,Apache-2.0,
+github.com/google/licenseclassifier,https://github.com/google/licenseclassifier,Apache-2.0,
+github.com/google/licenseclassifier/stringclassifier,https://github.com/google/licenseclassifier,Apache-2.0,
 github.com/google/uuid,https://github.com/google/uuid,BSD-3-Clause,Google Inc.
 github.com/googleapis/gax-go/v2,https://github.com/googleapis/gax-go,BSD-3-Clause,Google Inc.
 github.com/grpc-ecosystem/go-grpc-middleware,https://github.com/grpc-ecosystem/go-grpc-middleware,Apache-2.0,
 github.com/hailocab/go-hostpool,https://github.com/hailocab/go-hostpool,MIT,Bitly
 github.com/iancoleman/strcase,https://github.com/iancoleman/strcase,MIT,Ian Coleman
+github.com/jbenet/go-context/io,https://github.com/jbenet/go-context,MIT,Juan Batiz-Benet
 github.com/jmespath/go-jmespath,https://github.com/jmespath/go-jmespath,Apache-2.0,James Saryerwinnie
 github.com/jmoiron/sqlx,https://github.com/jmoiron/sqlx,MIT,Jason Moiron
 github.com/jonboulle/clockwork,https://github.com/jonboulle/clockwork,Apache-2.0,
 github.com/josharian/intern,https://github.com/josharian/intern,MIT,Josh Bleecher Snyder
+github.com/kevinburke/ssh_config,https://github.com/kevinburke/ssh_config,MIT,Kevin Burke
 github.com/m3db/prometheus_client_golang/prometheus,https://github.com/m3db/prometheus_client_golang,Apache-2.0,
 github.com/m3db/prometheus_client_model/go,https://github.com/m3db/prometheus_client_model,Apache-2.0,
 github.com/m3db/prometheus_common,https://github.com/m3db/prometheus_common,Apache-2.0,
 github.com/m3db/prometheus_common/internal/bitbucket.org/ww/goautoneg,https://github.com/m3db/prometheus_common,BSD-3-Clause,Open Knowledge Foundation Ltd
 github.com/m3db/prometheus_procfs,https://github.com/m3db/prometheus_procfs,Apache-2.0,
 github.com/mailru/easyjson,https://github.com/mailru/easyjson,MIT,Mail.Ru Group
+github.com/mattn/go-isatty,https://github.com/mattn/go-isatty,MIT,
 github.com/mattn/go-sqlite3,https://github.com/mattn/go-sqlite3,MIT,Yasuhiro Matsumoto
 github.com/matttproud/golang_protobuf_extensions/pbutil,https://github.com/matttproud/golang_protobuf_extensions,Apache-2.0,
+github.com/mitchellh/go-homedir,https://github.com/mitchellh/go-homedir,MIT,Mitchell Hashimoto
 github.com/olivere/elastic,https://github.com/olivere/elastic,MIT,Oliver Eilhard
 github.com/olivere/elastic/uritemplates,https://github.com/olivere/elastic,MIT,Joshua Tacoma
 github.com/olivere/elastic/v7,https://github.com/olivere/elastic,MIT,Oliver Eilhard
@@ -55,16 +64,22 @@ github.com/prometheus/common,https://github.com/prometheus/common,Apache-2.0,
 github.com/prometheus/common/internal/bitbucket.org/ww/goautoneg,https://github.com/prometheus/common,BSD-3-Clause,Open Knowledge Foundation Ltd
 github.com/prometheus/procfs,https://github.com/prometheus/procfs,Apache-2.0,
 github.com/rcrowley/go-metrics,https://github.com/rcrowley/go-metrics,BSD-2-Clause-FreeBSD,Richard Crowley
+github.com/remyoudompheng/bigfft,https://github.com/remyoudompheng/bigfft,BSD-3-Clause,The Go Authors
 github.com/robfig/cron,https://github.com/robfig/cron,MIT,Rob Figueiredo
 github.com/russross/blackfriday/v2,https://github.com/russross/blackfriday,BSD-2-Clause,Russ Ross
+github.com/sergi/go-diff/diffmatchpatch,https://github.com/sergi/go-diff,MIT,The go-diff Authors
 github.com/sirupsen/logrus,https://github.com/sirupsen/logrus,MIT,Simon Eskildsen
+github.com/src-d/gcfg,https://github.com/src-d/gcfg,BSD-3-Clause,Péter Surányi. Portions Copyright (c) 2009 The Go
 github.com/stretchr/objx,https://github.com/stretchr/objx,MIT,"Stretchr, Inc."
 github.com/stretchr/testify,https://github.com/stretchr/testify,MIT,"Mat Ryer, Tyler Bunnell and contributors"
 github.com/temporalio/ringpop-go,https://github.com/temporalio/ringpop-go,MIT,"Uber Technologies, Inc."
+github.com/twmb/murmur3,https://github.com/twmb/murmur3,BSD-3-Clause,Sébastien Paolacci
 github.com/uber-common/bark,https://github.com/uber-common/bark,MIT,"Uber Technologies, Inc."
 github.com/uber-go/tally,https://github.com/uber-go/tally,MIT,"Permission is hereby granted, free of charge, to any person obtaining a copy"
 github.com/uber/tchannel-go,https://github.com/uber/tchannel-go,MIT,"Uber Technologies, Inc."
 github.com/urfave/cli,https://github.com/urfave/cli,MIT,Jeremy Saenz & Contributors
+github.com/urfave/cli/v2,https://github.com/urfave/cli,MIT,Jeremy Saenz & Contributors
+github.com/xanzy/ssh-agent,https://github.com/xanzy/ssh-agent,Apache-2.0,
 github.com/xwb1989/sqlparser,https://github.com/xwb1989/sqlparser,Apache-2.0,
 go.opencensus.io,,Apache-2.0,
 go.opentelemetry.io/otel,,Apache-2.0,
@@ -78,11 +93,14 @@ go.uber.org/atomic,,MIT,"Uber Technologies, Inc."
 go.uber.org/multierr,,MIT,"Uber Technologies, Inc."
 go.uber.org/zap,,MIT,"Uber Technologies, Inc."
 golang.org/x/crypto,,BSD-3-Clause,The Go Authors
+golang.org/x/mod/semver,,BSD-3-Clause,The Go Authors
 golang.org/x/net,,BSD-3-Clause,The Go Authors
 golang.org/x/oauth2,,BSD-3-Clause,The Go Authors
 golang.org/x/sys,,BSD-3-Clause,The Go Authors
 golang.org/x/text,,BSD-3-Clause,The Go Authors
 golang.org/x/time/rate,,BSD-3-Clause,The Go Authors
+golang.org/x/tools,,BSD-3-Clause,The Go Authors
+golang.org/x/xerrors,,BSD-3-Clause,The Go Authors
 google.golang.org/api,,BSD-3-Clause,Google Inc.
 google.golang.org/api/internal/third_party/uritemplates,,BSD-3-Clause,Joshua Tacoma
 google.golang.org/genproto/googleapis,,Apache-2.0,
@@ -91,6 +109,14 @@ google.golang.org/protobuf,,BSD-3-Clause,The Go Authors
 gopkg.in/inf.v0,,BSD-3-Clause,Péter Surányi. Portions Copyright (c) 2009 The Go
 gopkg.in/square/go-jose.v2,,Apache-2.0,
 gopkg.in/square/go-jose.v2/json,,BSD-3-Clause,The Go Authors
+gopkg.in/src-d/go-billy.v4,,Apache-2.0,Sourced Technologies S.L
+gopkg.in/src-d/go-git.v4,,Apache-2.0,"Sourced Technologies, S.L"
 gopkg.in/validator.v2,,Apache-2.0,
+gopkg.in/warnings.v0,,BSD-2-Clause,Péter Surányi
 gopkg.in/yaml.v2,,Apache-2.0,
 gopkg.in/yaml.v3,,MIT,Kirill Simonov
+modernc.org/libc,,BSD-3-Clause,The Go Authors
+modernc.org/libc/honnef.co/go/netdb,,MIT,Dominik Honnef
+modernc.org/mathutil,,,
+modernc.org/memory,,BSD-3-Clause,Evan Shaw <edsrzf@gmail.com>
+modernc.org/sqlite,,BSD-3-Clause,The Sqlite Authors

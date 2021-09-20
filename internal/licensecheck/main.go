@@ -1,3 +1,7 @@
+// Unless explicitly stated otherwise all files in this repository are licensed under the MIT License.
+//
+// This product includes software developed at Datadog (https://www.datadoghq.com/). Copyright 2021 Datadog, Inc.
+
 package main
 
 import (
@@ -6,7 +10,6 @@ import (
 	"encoding/csv"
 	"encoding/json"
 	"io"
-	"io/ioutil"
 	"log"
 	"os"
 	"sort"
@@ -43,7 +46,7 @@ func execute() error {
 	}
 	defer f.Close()
 
-	libs, err := licenses.Libraries(context.Background(), classifier, ".")
+	libs, err := licenses.Libraries(context.Background(), classifier, "./...")
 	if err != nil {
 		return err
 	}
@@ -58,31 +61,22 @@ func execute() error {
 		var component Component
 		var licenseUrl string
 		if lib.LicensePath != "" {
-			// Find a URL for the license file, based on the URL of a remote for the Git repository.
-			repo, err := licenses.FindGitRepo(lib.LicensePath)
-			if err != nil {
-				// Can't find Git repo (possibly a Go Module?) - derive URL from lib name instead.
-				if lURL, err := lib.FileURL(lib.LicensePath); err == nil {
-					licenseUrl = lURL.String()
-				}
-				if b, err := ioutil.ReadFile(lib.LicensePath); err == nil {
-					component.Copyright = licenseclassifier.CopyrightHolder(string(b))
-				}
-			} else {
-				for _, remote := range []string{"origin", "upstream"} {
-					url, err := repo.FileURL(lib.LicensePath, remote)
-					if err != nil {
-						continue
-					}
-					licenseUrl = url.String()
-					break
-				}
+			// Parse copyright
+			if b, err := os.ReadFile(lib.LicensePath); err == nil {
+				component.Copyright = licenseclassifier.CopyrightHolder(string(b))
 			}
+			// Parse license type
 			if ln, _, err := classifier.Identify(lib.LicensePath); err == nil {
 				component.License = ln
 			}
+			// Parse license URL
+			if lURL, err := lib.FileURL(lib.LicensePath); err == nil {
+				licenseUrl = lURL.String()
+			}
 		}
-		component.Origin = strings.Split(licenseUrl, "/blob/")[0]
+		if licenseUrl != "" {
+			component.Origin = strings.Split(licenseUrl, "/blob/")[0]
+		}
 
 		components[lib.Name()] = component
 	}
