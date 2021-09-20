@@ -6,14 +6,14 @@ package temporaltest_test
 
 import (
 	"context"
+	"fmt"
 	"testing"
 	"time"
 
-	"go.temporal.io/sdk/client"
-	"go.temporal.io/sdk/worker"
-
 	"github.com/DataDog/temporalite/internal/examples/helloworld"
 	"github.com/DataDog/temporalite/temporaltest"
+	"go.temporal.io/sdk/client"
+	"go.temporal.io/sdk/worker"
 )
 
 // to be used in example code
@@ -21,20 +21,17 @@ var t *testing.T
 
 func ExampleNewServer_testWorker() {
 	// Create test Temporal server and client
-	ts := temporaltest.NewServer()
-	c := ts.Client()
+	ts := temporaltest.NewServer(temporaltest.WithT(t))
 	// Stop server and close clients when tests complete
 	defer ts.Stop()
 
 	// Register a new worker on the `hello_world` task queue
-	w := worker.New(c, "hello_world", worker.Options{})
-	helloworld.RegisterWorkflowsAndActivities(w)
-	// Start worker
-	if err := w.Start(); err != nil {
-		t.Fatal(err)
-	}
-	// Stop worker when tests complete
-	defer w.Stop()
+	ts.Worker("hello_world", func(registry worker.Registry) {
+		helloworld.RegisterWorkflowsAndActivities(registry)
+	})
+
+	// Create a test client
+	c := ts.Client()
 
 	// Start test workflow
 	wfr, err := c.ExecuteWorkflow(
@@ -53,29 +50,23 @@ func ExampleNewServer_testWorker() {
 		t.Fatal(err)
 	}
 
-	// Fail if result has unexpected value
-	if result != "Hello world" {
-		t.Fatalf("unexpected result: %q", result)
-	}
+	// Print result
+	fmt.Println(result)
+	// Output: Hello world
 }
 
 func TestNewServer(t *testing.T) {
-	ts := temporaltest.NewServer()
-	c := ts.Client()
+	ts := temporaltest.NewServer(temporaltest.WithT(t))
 	defer ts.Stop()
 
-	w := worker.New(c, "hello_world", worker.Options{})
-	helloworld.RegisterWorkflowsAndActivities(w)
-
-	if err := w.Start(); err != nil {
-		t.Fatal(err)
-	}
-	defer w.Stop()
+	ts.Worker("hello_world", func(registry worker.Registry) {
+		helloworld.RegisterWorkflowsAndActivities(registry)
+	})
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	wfr, err := c.ExecuteWorkflow(
+	wfr, err := ts.Client().ExecuteWorkflow(
 		ctx,
 		client.StartWorkflowOptions{TaskQueue: "hello_world"},
 		helloworld.Greet,
@@ -97,20 +88,16 @@ func TestNewServer(t *testing.T) {
 
 func BenchmarkRunWorkflow(b *testing.B) {
 	ts := temporaltest.NewServer()
-	c := ts.Client()
 	defer ts.Stop()
 
-	w := worker.New(c, "hello_world", worker.Options{})
-	helloworld.RegisterWorkflowsAndActivities(w)
-
-	if err := w.Start(); err != nil {
-		panic(err)
-	}
-	defer w.Stop()
+	ts.Worker("hello_world", func(registry worker.Registry) {
+		helloworld.RegisterWorkflowsAndActivities(registry)
+	})
+	c := ts.Client()
 
 	for i := 0; i < b.N; i++ {
 		func(b *testing.B) {
-			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 			defer cancel()
 
 			wfr, err := c.ExecuteWorkflow(

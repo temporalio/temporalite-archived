@@ -41,6 +41,7 @@ import (
 	"go.temporal.io/api/enums/v1"
 	"go.temporal.io/server/api/persistence/v1"
 	"go.temporal.io/server/common/config"
+	"go.temporal.io/server/common/log"
 	"go.temporal.io/server/common/persistence/serialization"
 	"go.temporal.io/server/common/persistence/sql"
 	"go.temporal.io/server/common/persistence/sql/sqlplugin"
@@ -65,12 +66,20 @@ var (
 
 type plugin struct {
 	mainDB *db
+	logger log.Logger
 }
 
 var _ sqlplugin.Plugin = (*plugin)(nil)
 
-func RegisterPlugin(pluginName string) {
-	sql.RegisterPlugin(pluginName, &plugin{})
+// Register registers the SQLite plugin with default configuration.
+func Register() {
+	logger := log.NewCLILogger()
+	RegisterPluginWithLogger(PluginName, logger)
+}
+
+// RegisterPluginWithLogger registers the SQLite plugin with a custom logger and name.
+func RegisterPluginWithLogger(pluginName string, logger log.Logger) {
+	sql.RegisterPlugin(pluginName, &plugin{logger: logger})
 }
 
 // CreateDB initialize the db object
@@ -175,6 +184,7 @@ func (p *plugin) createDBConnection(dbKind sqlplugin.DbKind, cfg *config.SQL, _ 
 			InitialVersion:    "1.0",
 			Overwrite:         false,
 			DisableVersioning: false,
+			Logger:            p.logger,
 		}, conn)
 	}(cfg.DatabaseName); err != nil {
 		// Ignore error from running migrations twice against the same db.

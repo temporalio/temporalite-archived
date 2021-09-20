@@ -67,7 +67,7 @@ func Convert(cfg *Config) *config.Config {
 	if cfg.Ephemeral {
 		pluginName = fmt.Sprintf("%s_%d", pluginName, rand.Uint32())
 	}
-	sqlite.RegisterPlugin(pluginName)
+	sqlite.RegisterPluginWithLogger(pluginName, cfg.Logger)
 
 	sqliteConfig := config.SQL{
 		PluginName:        pluginName,
