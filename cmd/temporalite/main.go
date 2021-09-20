@@ -16,7 +16,6 @@ import (
 	"go.uber.org/zap/zapcore"
 
 	"github.com/DataDog/temporalite"
-	_ "github.com/DataDog/temporalite/internal/common/persistence/sql/sqlplugin/sqlite" // needed to load sqlite plugin
 	"github.com/DataDog/temporalite/internal/liteconfig"
 )
 

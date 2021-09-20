@@ -32,7 +32,6 @@ import (
 
 	"github.com/DataDog/temporalite/internal/common/persistence/sql/sqlplugin/sqlite/schema"
 	"github.com/jmoiron/sqlx"
-	"github.com/mattn/go-sqlite3"
 
 	"go.temporal.io/server/common/persistence/sql/sqlplugin"
 )
@@ -51,15 +50,6 @@ type db struct {
 var _ sqlplugin.AdminDB = (*db)(nil)
 var _ sqlplugin.DB = (*db)(nil)
 var _ sqlplugin.Tx = (*db)(nil)
-
-// ErrDupEntry MySQL Error 1062 indicates a duplicate primary key i.e. the row already exists,
-// so we don't do the insert and return a ConditionalUpdate error.
-const ErrDupEntry = 1062
-
-func (mdb *db) IsDupEntryError(err error) bool {
-	sqlErr, ok := err.(sqlite3.Error)
-	return ok && sqlErr.Code == sqlite3.ErrConstraint
-}
 
 // newDB returns an instance of DB, which is a logical
 // connection to the underlying sqlite database

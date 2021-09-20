@@ -13,5 +13,5 @@ require (
 	go.temporal.io/sdk v1.10.0
 	go.temporal.io/server v1.12.0
 	go.uber.org/zap v1.19.1
-	google.golang.org/grpc v1.40.0
+	modernc.org/sqlite v1.13.0
 )
