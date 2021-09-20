@@ -72,7 +72,7 @@ func TestNewServer(t *testing.T) {
 	}
 	defer w.Stop()
 
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
 	wfr, err := c.ExecuteWorkflow(
@@ -110,7 +110,7 @@ func BenchmarkRunWorkflow(b *testing.B) {
 
 	for i := 0; i < b.N; i++ {
 		func(b *testing.B) {
-			ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 			defer cancel()
 
 			wfr, err := c.ExecuteWorkflow(
