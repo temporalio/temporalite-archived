@@ -64,14 +64,13 @@ var (
 )
 
 type plugin struct {
-	adminDB *db
-	mainDB  *db
+	mainDB *db
 }
 
 var _ sqlplugin.Plugin = (*plugin)(nil)
 
-func init() {
-	sql.RegisterPlugin(PluginName, &plugin{})
+func RegisterPlugin(pluginName string) {
+	sql.RegisterPlugin(pluginName, &plugin{})
 }
 
 // CreateDB initialize the db object
@@ -106,14 +105,10 @@ func (p *plugin) CreateAdminDB(
 	cfg *config.SQL,
 	r resolver.ServiceResolver,
 ) (sqlplugin.AdminDB, error) {
-	if p.adminDB == nil {
-		conn, err := p.createDBConnection(dbKind, cfg, r)
-		if err != nil {
-			return nil, err
-		}
-		p.adminDB = newDB(dbKind, cfg.DatabaseName, conn, nil)
+	if _, err := p.CreateDB(sqlplugin.DbKindMain, cfg, r); err != nil {
+		return nil, err
 	}
-	return p.adminDB, nil
+	return p.mainDB, nil
 }
 
 // CreateDBConnection creates a returns a reference to a logical connection to the
@@ -121,12 +116,24 @@ func (p *plugin) CreateAdminDB(
 // SQL database and the object can be used to perform CRUD operations on
 // the tables in the database
 func (p *plugin) createDBConnection(dbKind sqlplugin.DbKind, cfg *config.SQL, _ resolver.ServiceResolver) (*sqlx.DB, error) {
-	sdb, err := gosql.Open("sqlite3", fmt.Sprintf("file:%s?mode=%s&cache=shared", cfg.DatabaseName, cfg.ConnectAttributes["mode"]))
+	if cfg.ConnectAttributes["mode"] == "rwc" {
+		// Create db parent directory if it does not yet exist
+		if _, err := os.Stat(filepath.Dir(cfg.DatabaseName)); errors.Is(err, os.ErrNotExist) {
+			if err := os.MkdirAll(filepath.Dir(cfg.DatabaseName), os.ModePerm); err != nil {
+				panic(err)
+			}
+		}
+	}
+
+	sdb, err := gosql.Open(
+		goSqlDriverName,
+		fmt.Sprintf("file:%s?mode=%s", cfg.DatabaseName, cfg.ConnectAttributes["mode"]),
+	)
 	if err != nil {
 		return nil, err
 	}
 
-	db := sqlx.NewDb(sdb, "sqlite3")
+	db := sqlx.NewDb(sdb, PluginName)
 	// The following options are set based on advice from https://github.com/mattn/go-sqlite3#faq
 	//
 	// Dealing with the error `database is locked`
@@ -143,20 +150,12 @@ func (p *plugin) createDBConnection(dbKind sqlplugin.DbKind, cfg *config.SQL, _ 
 
 	// Apply migrations when in-memory mode is enabled
 	if err := func(name string) error {
-		// Create db parent directory if it does not yet exist
-		if cfg.ConnectAttributes["mode"] == "rwc" {
-			if _, err := os.Stat(filepath.Dir(name)); errors.Is(err, os.ErrNotExist) {
-				if err := os.MkdirAll(filepath.Dir(name), os.ModePerm); err != nil {
-					panic(err)
-				}
-			}
-		}
-
 		// Create tmp schema file
 		schemaFile, err := os.CreateTemp("", "schema.sql")
 		if err != nil {
 			return fmt.Errorf("error creating temp schema file: %w", err)
 		}
+		defer os.Remove(schemaFile.Name())
 
 		if _, err := schemaFile.Write(temporalSchema); err != nil {
 			return fmt.Errorf("error writing schema file: %w", err)
@@ -179,7 +178,7 @@ func (p *plugin) createDBConnection(dbKind sqlplugin.DbKind, cfg *config.SQL, _ 
 		}, conn)
 	}(cfg.DatabaseName); err != nil {
 		// Ignore error from running migrations twice against the same db.
-		if !strings.HasSuffix(err.Error(), "table schema_version already exists") {
+		if !strings.Contains(err.Error(), "table schema_version already exists") {
 			return nil, fmt.Errorf("could not set up db %q: %w", cfg.DatabaseName, err)
 		}
 	}

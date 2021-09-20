@@ -6,6 +6,7 @@ package liteconfig
 
 import (
 	"fmt"
+	"math/rand"
 	"os"
 	"path/filepath"
 	"strings"
@@ -25,14 +26,13 @@ const (
 )
 
 type Config struct {
-	Ephemeral                       bool
-	DatabaseFilePath                string
-	FrontendPort                    int
-	DynamicPorts                    bool
-	Namespaces                      []string
-	DefaultNamespaceRetentionPeriod time.Duration
-	Logger                          log.Logger
-	portProvider                    *portProvider
+	Ephemeral        bool
+	DatabaseFilePath string
+	FrontendPort     int
+	DynamicPorts     bool
+	Namespaces       []string
+	Logger           log.Logger
+	portProvider     *portProvider
 }
 
 func NewDefaultConfig() (*Config, error) {
@@ -42,12 +42,11 @@ func NewDefaultConfig() (*Config, error) {
 	}
 
 	return &Config{
-		Ephemeral:                       false,
-		DatabaseFilePath:                filepath.Join(userConfigDir, "temporalite/db/default.db"),
-		FrontendPort:                    0,
-		DynamicPorts:                    false,
-		Namespaces:                      nil,
-		DefaultNamespaceRetentionPeriod: 24 * time.Hour,
+		Ephemeral:        false,
+		DatabaseFilePath: filepath.Join(userConfigDir, "temporalite/db/default.db"),
+		FrontendPort:     0,
+		DynamicPorts:     false,
+		Namespaces:       nil,
 		Logger: log.NewZapLogger(log.BuildZapLogger(log.Config{
 			Stdout:     true,
 			Level:      "debug",
@@ -64,8 +63,14 @@ func Convert(cfg *Config) *config.Config {
 		}
 	}()
 
+	pluginName := sqlite.PluginName
+	if cfg.Ephemeral {
+		pluginName = fmt.Sprintf("%s_%d", pluginName, rand.Uint32())
+	}
+	sqlite.RegisterPlugin(pluginName)
+
 	sqliteConfig := config.SQL{
-		PluginName:        sqlite.PluginName,
+		PluginName:        pluginName,
 		ConnectAttributes: make(map[string]string),
 	}
 	if cfg.Ephemeral {
