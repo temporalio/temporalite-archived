@@ -8,11 +8,12 @@ import (
 	"context"
 	"fmt"
 	"math/rand"
+	"testing"
 	"time"
 
 	"go.temporal.io/sdk/client"
+	"go.temporal.io/sdk/worker"
 	"go.temporal.io/server/common/log"
-	"go.uber.org/zap"
 
 	"github.com/DataDog/temporalite"
 )
@@ -24,6 +25,30 @@ type TestServer struct {
 	defaultTestNamespace string
 	defaultClient        client.Client
 	clients              []client.Client
+	workers              []worker.Worker
+	t                    *testing.T
+}
+
+func (ts *TestServer) fatal(err error) {
+	if ts.t == nil {
+		panic(err)
+	}
+	ts.t.Fatal(err)
+}
+
+// Worker registers and starts a Temporal worker on the specified task queue.
+func (ts *TestServer) Worker(taskQueue string, registerFunc func(registry worker.Registry)) worker.Worker {
+	w := worker.New(ts.Client(), taskQueue, worker.Options{
+		WorkflowPanicPolicy: worker.FailWorkflow,
+	})
+	registerFunc(w)
+	ts.workers = append(ts.workers, w)
+
+	if err := w.Start(); err != nil {
+		ts.fatal(err)
+	}
+
+	return w
 }
 
 // Client returns a Temporal client configured for making requests to the server.
@@ -43,13 +68,16 @@ func (ts *TestServer) NewClientWithOptions(opts client.Options) client.Client {
 	if opts.Namespace == "" {
 		opts.Namespace = ts.defaultTestNamespace
 	}
+	if opts.Logger == nil {
+		opts.Logger = &testLogger{ts.t}
+	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
 	c, err := ts.server.NewClientWithOptions(ctx, opts)
 	if err != nil {
-		panic(fmt.Errorf("error creating client: %w", err))
+		ts.fatal(fmt.Errorf("error creating client: %w", err))
 	}
 
 	ts.clients = append(ts.clients, c)
@@ -59,6 +87,9 @@ func (ts *TestServer) NewClientWithOptions(opts client.Options) client.Client {
 
 // Stop closes test clients and shuts down the server.
 func (ts *TestServer) Stop() {
+	for _, w := range ts.workers {
+		w.Stop()
+	}
 	for _, c := range ts.clients {
 		c.Close()
 	}
@@ -67,28 +98,35 @@ func (ts *TestServer) Stop() {
 
 // NewServer starts and returns a new TestServer. The caller should call Stop
 // when finished, to shut it down.
-func NewServer() *TestServer {
+func NewServer(opts ...TestServerOption) *TestServer {
 	rand.Seed(time.Now().UnixNano())
 	testNamespace := fmt.Sprintf("temporaltest-%d", rand.Intn(999999))
 
+	ts := TestServer{
+		defaultTestNamespace: testNamespace,
+	}
+
+	// Apply options
+	for _, opt := range opts {
+		opt.apply(&ts)
+	}
+
 	s, err := temporalite.NewServer(
-		temporalite.WithNamespaces(testNamespace),
+		temporalite.WithNamespaces(ts.defaultTestNamespace),
 		temporalite.WithPersistenceDisabled(),
 		temporalite.WithDynamicPorts(),
-		temporalite.WithLogger(log.NewZapLogger(zap.NewNop())),
+		temporalite.WithLogger(log.NewNoopLogger()),
 	)
 	if err != nil {
-		panic(fmt.Errorf("error creating server: %w", err))
+		ts.fatal(fmt.Errorf("error creating server: %w", err))
 	}
+	ts.server = s
 
 	go func() {
 		if err := s.Start(); err != nil {
-			panic(fmt.Errorf("error starting server: %w", err))
+			ts.fatal(fmt.Errorf("error starting server: %w", err))
 		}
 	}()
 
-	return &TestServer{
-		server:               s,
-		defaultTestNamespace: testNamespace,
-	}
+	return &ts
 }
