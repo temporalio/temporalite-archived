@@ -14,6 +14,7 @@ import (
 	"go.temporal.io/server/common/authorization"
 	"go.temporal.io/server/common/config"
 	"go.temporal.io/server/common/dynamicconfig"
+	"go.temporal.io/server/schema/sqlite"
 	"go.temporal.io/server/temporal"
 )
 
@@ -38,6 +39,21 @@ func NewServer(opts ...ServerOption) (*Server, error) {
 		opt.apply(c)
 	}
 	cfg := liteconfig.Convert(c)
+	sqlConfig := cfg.Persistence.DataStores[liteconfig.PersistenceStoreName].SQL
+
+	// Apply migrations
+	if err := sqlite.SetupSchema(sqlConfig); err != nil {
+		return nil, fmt.Errorf("error setting up schema: %w", err)
+	}
+
+	// Pre-create namespaces
+	var namespaces []*sqlite.NamespaceConfig
+	for _, ns := range c.Namespaces {
+		namespaces = append(namespaces, sqlite.NewNamespaceConfig(cfg.ClusterMetadata.CurrentClusterName, ns, false))
+	}
+	if err := sqlite.CreateNamespaces(sqlConfig, namespaces...); err != nil {
+		return nil, fmt.Errorf("error creating namespaces: %w", err)
+	}
 
 	authorizer, err := authorization.GetAuthorizerFromConfig(&cfg.Global.Authorization)
 	if err != nil {

@@ -26,6 +26,7 @@ github.com/golang/groupcache/lru,https://github.com/golang/groupcache,Apache-2.0
 github.com/golang/mock/gomock,https://github.com/golang/mock,Apache-2.0,
 github.com/golang/protobuf,https://github.com/golang/protobuf,BSD-3-Clause,The Go Authors
 github.com/golang/snappy,https://github.com/golang/snappy,BSD-3-Clause,The Snappy-Go Authors
+github.com/google/go-cmp/cmp,https://github.com/google/go-cmp,BSD-3-Clause,The Go Authors
 github.com/google/go-licenses/licenses,https://github.com/google/go-licenses,Apache-2.0,
 github.com/google/licenseclassifier,https://github.com/google/licenseclassifier,Apache-2.0,
 github.com/google/licenseclassifier/stringclassifier,https://github.com/google/licenseclassifier,Apache-2.0,
@@ -46,7 +47,6 @@ github.com/m3db/prometheus_common,https://github.com/m3db/prometheus_common,Apac
 github.com/m3db/prometheus_common/internal/bitbucket.org/ww/goautoneg,https://github.com/m3db/prometheus_common,BSD-3-Clause,Open Knowledge Foundation Ltd
 github.com/m3db/prometheus_procfs,https://github.com/m3db/prometheus_procfs,Apache-2.0,
 github.com/mailru/easyjson,https://github.com/mailru/easyjson,MIT,Mail.Ru Group
-github.com/mattn/go-isatty,https://github.com/mattn/go-isatty,MIT,
 github.com/mattn/go-sqlite3,https://github.com/mattn/go-sqlite3,MIT,Yasuhiro Matsumoto
 github.com/matttproud/golang_protobuf_extensions/pbutil,https://github.com/matttproud/golang_protobuf_extensions,Apache-2.0,
 github.com/mitchellh/go-homedir,https://github.com/mitchellh/go-homedir,MIT,Mitchell Hashimoto
@@ -64,7 +64,6 @@ github.com/prometheus/common,https://github.com/prometheus/common,Apache-2.0,
 github.com/prometheus/common/internal/bitbucket.org/ww/goautoneg,https://github.com/prometheus/common,BSD-3-Clause,Open Knowledge Foundation Ltd
 github.com/prometheus/procfs,https://github.com/prometheus/procfs,Apache-2.0,
 github.com/rcrowley/go-metrics,https://github.com/rcrowley/go-metrics,BSD-2-Clause-FreeBSD,Richard Crowley
-github.com/remyoudompheng/bigfft,https://github.com/remyoudompheng/bigfft,BSD-3-Clause,The Go Authors
 github.com/robfig/cron,https://github.com/robfig/cron,MIT,Rob Figueiredo
 github.com/russross/blackfriday/v2,https://github.com/russross/blackfriday,BSD-2-Clause,Russ Ross
 github.com/sergi/go-diff/diffmatchpatch,https://github.com/sergi/go-diff,MIT,The go-diff Authors
@@ -77,7 +76,6 @@ github.com/twmb/murmur3,https://github.com/twmb/murmur3,BSD-3-Clause,Sébastien 
 github.com/uber-common/bark,https://github.com/uber-common/bark,MIT,"Uber Technologies, Inc."
 github.com/uber-go/tally,https://github.com/uber-go/tally,MIT,"Permission is hereby granted, free of charge, to any person obtaining a copy"
 github.com/uber/tchannel-go,https://github.com/uber/tchannel-go,MIT,"Uber Technologies, Inc."
-github.com/urfave/cli,https://github.com/urfave/cli,MIT,Jeremy Saenz & Contributors
 github.com/urfave/cli/v2,https://github.com/urfave/cli,MIT,Jeremy Saenz & Contributors
 github.com/xanzy/ssh-agent,https://github.com/xanzy/ssh-agent,Apache-2.0,
 github.com/xwb1989/sqlparser,https://github.com/xwb1989/sqlparser,Apache-2.0,
@@ -90,6 +88,8 @@ go.temporal.io/sdk,,MIT,Temporal Technologies Inc.
 go.temporal.io/server,,MIT,Temporal Technologies Inc.
 go.temporal.io/version/check,,MIT,Temporal Technologies Inc.
 go.uber.org/atomic,,MIT,"Uber Technologies, Inc."
+go.uber.org/dig,,MIT,"Uber Technologies, Inc."
+go.uber.org/fx,,MIT,"Uber Technologies, Inc."
 go.uber.org/multierr,,MIT,"Uber Technologies, Inc."
 go.uber.org/zap,,MIT,"Uber Technologies, Inc."
 golang.org/x/crypto,,BSD-3-Clause,The Go Authors
@@ -115,8 +115,3 @@ gopkg.in/validator.v2,,Apache-2.0,
 gopkg.in/warnings.v0,,BSD-2-Clause,Péter Surányi
 gopkg.in/yaml.v2,,Apache-2.0,
 gopkg.in/yaml.v3,,MIT,Kirill Simonov
-modernc.org/libc,,BSD-3-Clause,The Go Authors
-modernc.org/libc/honnef.co/go/netdb,,MIT,Dominik Honnef
-modernc.org/mathutil,,,
-modernc.org/memory,,BSD-3-Clause,Evan Shaw <edsrzf@gmail.com>
-modernc.org/sqlite,,BSD-3-Clause,The Sqlite Authors
