@@ -6,14 +6,17 @@ package main
 
 import (
 	"fmt"
-	"log"
+	goLog "log"
 	"os"
 
 	"github.com/urfave/cli/v2"
 	"go.temporal.io/server/common/headers"
-	tlog "go.temporal.io/server/common/log"
+	"go.temporal.io/server/common/log"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
+
+	// Load sqlite storage driver
+	_ "go.temporal.io/server/common/persistence/sql/sqlplugin/sqlite"
 
 	"github.com/DataDog/temporalite"
 	"github.com/DataDog/temporalite/internal/liteconfig"
@@ -37,7 +40,7 @@ func init() {
 
 func main() {
 	if err := buildCLI().Run(os.Args); err != nil {
-		log.Fatal(err)
+		goLog.Fatal(err)
 	}
 }
 
@@ -117,7 +120,7 @@ func buildCLI() *cli.App {
 					if err != nil {
 						return err
 					}
-					logger := tlog.NewZapLogger(l)
+					logger := log.NewZapLogger(l)
 					opts = append(opts, temporalite.WithLogger(logger))
 				}
 

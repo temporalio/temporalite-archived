@@ -26,7 +26,10 @@ jobs:
     strategy:
       matrix:
         include:
-          - cgo: "0"
+          # cgo is currently required by the upstream SQLite driver.
+          # This case should be un-commented if and when cgo is
+          # supported again.
+          # - cgo: "0"
           - cgo: "1"
     steps:
       - uses: actions/checkout@v2

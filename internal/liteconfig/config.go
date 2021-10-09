@@ -9,19 +9,17 @@ import (
 	"math/rand"
 	"os"
 	"path/filepath"
-	"strings"
 	"time"
-
-	"github.com/DataDog/temporalite/internal/common/persistence/sql/sqlplugin/sqlite"
 
 	"go.temporal.io/server/common/config"
 	"go.temporal.io/server/common/log"
 	"go.temporal.io/server/common/metrics"
+	"go.temporal.io/server/common/persistence/sql/sqlplugin/sqlite"
 )
 
 const (
 	broadcastAddress     = "127.0.0.1"
-	persistenceStoreName = "sqlite-default"
+	PersistenceStoreName = "sqlite-default"
 	DefaultFrontendPort  = 7233
 )
 
@@ -63,26 +61,17 @@ func Convert(cfg *Config) *config.Config {
 		}
 	}()
 
-	pluginName := sqlite.PluginName
-	if cfg.Ephemeral {
-		pluginName = fmt.Sprintf("%s_%d", pluginName, rand.Uint32())
-	}
-	sqlite.RegisterPluginWithLogger(pluginName, cfg.Logger)
-
 	sqliteConfig := config.SQL{
-		PluginName:        pluginName,
+		PluginName:        sqlite.PluginName,
 		ConnectAttributes: make(map[string]string),
+		DatabaseName:      cfg.DatabaseFilePath,
 	}
 	if cfg.Ephemeral {
 		sqliteConfig.ConnectAttributes["mode"] = "memory"
-		sqliteConfig.DatabaseName = "temporal.db"
+		sqliteConfig.ConnectAttributes["cache"] = "shared"
+		sqliteConfig.DatabaseName = fmt.Sprintf("%d", rand.Intn(9999999))
 	} else {
 		sqliteConfig.ConnectAttributes["mode"] = "rwc"
-		sqliteConfig.DatabaseName = cfg.DatabaseFilePath
-	}
-
-	if len(cfg.Namespaces) > 0 {
-		sqliteConfig.ConnectAttributes["preCreateNamespaces"] = strings.Join(cfg.Namespaces, ",")
 	}
 
 	var metricsPort, pprofPort int
@@ -113,11 +102,11 @@ func Convert(cfg *Config) *config.Config {
 			PProf: config.PProf{Port: pprofPort},
 		},
 		Persistence: config.Persistence{
-			DefaultStore:     persistenceStoreName,
-			VisibilityStore:  persistenceStoreName,
+			DefaultStore:     PersistenceStoreName,
+			VisibilityStore:  PersistenceStoreName,
 			NumHistoryShards: 1,
 			DataStores: map[string]config.DataStore{
-				persistenceStoreName: {SQL: &sqliteConfig},
+				PersistenceStoreName: {SQL: &sqliteConfig},
 			},
 		},
 		ClusterMetadata: &config.ClusterMetadata{
