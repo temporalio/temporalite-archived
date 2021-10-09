@@ -7,6 +7,7 @@ package temporalite
 import (
 	"context"
 	"fmt"
+	"os"
 	"time"
 
 	"github.com/DataDog/temporalite/internal/liteconfig"
@@ -41,9 +42,15 @@ func NewServer(opts ...ServerOption) (*Server, error) {
 	cfg := liteconfig.Convert(c)
 	sqlConfig := cfg.Persistence.DataStores[liteconfig.PersistenceStoreName].SQL
 
-	// Apply migrations
-	if err := sqlite.SetupSchema(sqlConfig); err != nil {
-		return nil, fmt.Errorf("error setting up schema: %w", err)
+	// Apply migrations if file does not already exist
+	if c.Ephemeral {
+		if err := sqlite.SetupSchema(sqlConfig); err != nil {
+			return nil, fmt.Errorf("error setting up schema: %w", err)
+		}
+	} else if _, err := os.Stat(c.DatabaseFilePath); os.IsNotExist(err) {
+		if err := sqlite.SetupSchema(sqlConfig); err != nil {
+			return nil, fmt.Errorf("error setting up schema: %w", err)
+		}
 	}
 
 	// Pre-create namespaces
