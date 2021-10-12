@@ -15,6 +15,7 @@ import (
 	"go.temporal.io/server/common/log"
 	"go.temporal.io/server/common/metrics"
 	"go.temporal.io/server/common/persistence/sql/sqlplugin/sqlite"
+	"go.temporal.io/server/temporal"
 )
 
 const (
@@ -30,6 +31,7 @@ type Config struct {
 	DynamicPorts     bool
 	Namespaces       []string
 	Logger           log.Logger
+	UpstreamOptions  []temporal.ServerOption
 	portProvider     *portProvider
 }
 

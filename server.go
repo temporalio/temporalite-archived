@@ -72,18 +72,23 @@ func NewServer(opts ...ServerOption) (*Server, error) {
 		return nil, fmt.Errorf("unable to instantiate claim mapper: %w", err)
 	}
 
+	serverOpts := []temporal.ServerOption{
+		temporal.WithConfig(cfg),
+		temporal.ForServices(temporal.Services),
+		temporal.WithLogger(c.Logger),
+		temporal.WithAuthorizer(authorizer),
+		temporal.WithClaimMapper(func(cfg *config.Config) authorization.ClaimMapper {
+			return claimMapper
+		}),
+		temporal.WithDynamicConfigClient(dynamicconfig.NewNoopClient()),
+	}
+
+	if len(c.UpstreamOptions) > 0 {
+		serverOpts = append(serverOpts, c.UpstreamOptions...)
+	}
+
 	s := &Server{
-		internal: temporal.NewServer(
-			temporal.WithConfig(cfg),
-			temporal.ForServices(temporal.Services),
-			temporal.WithLogger(c.Logger),
-			temporal.InterruptOn(temporal.InterruptCh()),
-			temporal.WithAuthorizer(authorizer),
-			temporal.WithClaimMapper(func(cfg *config.Config) authorization.ClaimMapper {
-				return claimMapper
-			}),
-			temporal.WithDynamicConfigClient(dynamicconfig.NewNoopClient()),
-		),
+		internal:         temporal.NewServer(serverOpts...),
 		frontendHostPort: cfg.PublicClient.HostPort,
 		config:           c,
 	}

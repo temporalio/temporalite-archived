@@ -6,6 +6,7 @@ package temporalite
 
 import (
 	"go.temporal.io/server/common/log"
+	"go.temporal.io/server/temporal"
 
 	"github.com/DataDog/temporalite/internal/liteconfig"
 )
@@ -51,6 +52,13 @@ func WithDynamicPorts() ServerOption {
 func WithNamespaces(namespaces ...string) ServerOption {
 	return newApplyFuncContainer(func(cfg *liteconfig.Config) {
 		cfg.Namespaces = append(cfg.Namespaces, namespaces...)
+	})
+}
+
+// WithUpstreamOptions registers Temporal server options.
+func WithUpstreamOptions(options ...temporal.ServerOption) ServerOption {
+	return newApplyFuncContainer(func(cfg *liteconfig.Config) {
+		cfg.UpstreamOptions = options
 	})
 }
 
