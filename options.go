@@ -58,7 +58,7 @@ func WithNamespaces(namespaces ...string) ServerOption {
 // WithUpstreamOptions registers Temporal server options.
 func WithUpstreamOptions(options ...temporal.ServerOption) ServerOption {
 	return newApplyFuncContainer(func(cfg *liteconfig.Config) {
-		cfg.UpstreamOptions = options
+		cfg.UpstreamOptions = append(cfg.UpstreamOptions, options...)
 	})
 }
 
