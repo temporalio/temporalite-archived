@@ -12,6 +12,7 @@ import (
 	"github.com/urfave/cli/v2"
 	"go.temporal.io/server/common/headers"
 	"go.temporal.io/server/common/log"
+	"go.temporal.io/server/temporal"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 
@@ -106,6 +107,9 @@ func buildCLI() *cli.App {
 					temporalite.WithFrontendPort(c.Int(portFlag)),
 					temporalite.WithDatabaseFilePath(c.String(dbPathFlag)),
 					temporalite.WithNamespaces(c.StringSlice(namespaceFlag)...),
+					temporalite.WithUpstreamOptions(
+						temporal.InterruptOn(temporal.InterruptCh()),
+					),
 				}
 				if c.Bool(ephemeralFlag) {
 					opts = append(opts, temporalite.WithPersistenceDisabled())
