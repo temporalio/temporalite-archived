@@ -14,7 +14,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v2
         with:
-          go-version: 1.16
+          go-version: 1.17
       - name: Test
         run: go test -v -race -coverpkg=./... -covermode=atomic -coverprofile=coverage.out ./...
       - name: Coverage
@@ -36,7 +36,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v2
         with:
-          go-version: 1.16
+          go-version: 1.17
       - name: Test
         env:
           CGO_ENABLED: ${{ matrix.cgo }}

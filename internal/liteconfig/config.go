@@ -11,6 +11,7 @@ import (
 	"path/filepath"
 	"time"
 
+	"go.temporal.io/server/common/cluster"
 	"go.temporal.io/server/common/config"
 	"go.temporal.io/server/common/log"
 	"go.temporal.io/server/common/metrics"
@@ -111,12 +112,12 @@ func Convert(cfg *Config) *config.Config {
 				PersistenceStoreName: {SQL: &sqliteConfig},
 			},
 		},
-		ClusterMetadata: &config.ClusterMetadata{
+		ClusterMetadata: &cluster.Config{
 			EnableGlobalNamespace:    false,
 			FailoverVersionIncrement: 10,
 			MasterClusterName:        "active",
 			CurrentClusterName:       "active",
-			ClusterInformation: map[string]config.ClusterInformation{
+			ClusterInformation: map[string]cluster.ClusterInformation{
 				"active": {
 					Enabled:                true,
 					InitialFailoverVersion: 1,

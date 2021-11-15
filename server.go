@@ -21,7 +21,7 @@ import (
 
 // Server wraps a temporal.Server.
 type Server struct {
-	internal         *temporal.Server
+	internal         temporal.Server
 	frontendHostPort string
 	config           *liteconfig.Config
 }
