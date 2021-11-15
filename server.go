@@ -127,6 +127,9 @@ func (s *Server) NewClientWithOptions(ctx context.Context, options client.Option
 }
 
 // FrontendHostPort returns the host:port for this server.
+//
+// When constructing a Temporalite client from within the same process,
+// NewClient or NewClientWithOptions should be used instead.
 func (s *Server) FrontendHostPort() string {
 	return s.frontendHostPort
 }
