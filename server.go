@@ -126,6 +126,14 @@ func (s *Server) NewClientWithOptions(ctx context.Context, options client.Option
 	return client.NewClient(options)
 }
 
+// FrontendHostPort returns the host:port for this server.
+//
+// When constructing a Temporalite client from within the same process,
+// NewClient or NewClientWithOptions should be used instead.
+func (s *Server) FrontendHostPort() string {
+	return s.frontendHostPort
+}
+
 func timeoutFromContext(ctx context.Context, defaultTimeout time.Duration) time.Duration {
 	if deadline, ok := ctx.Deadline(); ok {
 		return deadline.Sub(time.Now())
