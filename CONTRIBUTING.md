@@ -27,7 +27,7 @@ go build ./cmd/temporalite
 ## Run tests
 Run all tests:
 ```bash
-go test -race ./...
+go test ./...
 ```
 
 ## Run Temporalite locally
