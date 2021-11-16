@@ -85,7 +85,9 @@ func Convert(cfg *Config) *config.Config {
 		metricsPort = cfg.portProvider.mustGetFreePort()
 		pprofPort = cfg.portProvider.mustGetFreePort()
 	} else {
-		cfg.FrontendPort = DefaultFrontendPort
+		if cfg.FrontendPort == 0 {
+			cfg.FrontendPort = DefaultFrontendPort
+		}
 		metricsPort = cfg.FrontendPort + 200
 		pprofPort = cfg.FrontendPort + 201
 	}
