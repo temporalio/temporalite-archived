@@ -1,7 +1,6 @@
 Component,Origin,License,Copyright
 cloud.google.com/go,,Apache-2.0,
 cloud.google.com/go/storage,,Apache-2.0,
-github.com/DataDog/sketches-go/ddsketch,https://github.com/DataDog/sketches-go,Apache-2.0,"DataDog, Inc."
 github.com/DataDog/temporalite,https://github.com/DataDog/temporalite,MIT,"Datadog, Inc."
 github.com/apache/thrift/lib/go/thrift,https://github.com/apache/thrift,Apache-2.0,
 github.com/aws/aws-sdk-go,https://github.com/aws/aws-sdk-go,Apache-2.0,
@@ -41,11 +40,6 @@ github.com/jmoiron/sqlx,https://github.com/jmoiron/sqlx,MIT,Jason Moiron
 github.com/jonboulle/clockwork,https://github.com/jonboulle/clockwork,Apache-2.0,
 github.com/josharian/intern,https://github.com/josharian/intern,MIT,Josh Bleecher Snyder
 github.com/kevinburke/ssh_config,https://github.com/kevinburke/ssh_config,MIT,Kevin Burke
-github.com/m3db/prometheus_client_golang/prometheus,https://github.com/m3db/prometheus_client_golang,Apache-2.0,
-github.com/m3db/prometheus_client_model/go,https://github.com/m3db/prometheus_client_model,Apache-2.0,
-github.com/m3db/prometheus_common,https://github.com/m3db/prometheus_common,Apache-2.0,
-github.com/m3db/prometheus_common/internal/bitbucket.org/ww/goautoneg,https://github.com/m3db/prometheus_common,BSD-3-Clause,Open Knowledge Foundation Ltd
-github.com/m3db/prometheus_procfs,https://github.com/m3db/prometheus_procfs,Apache-2.0,
 github.com/mailru/easyjson,https://github.com/mailru/easyjson,MIT,Mail.Ru Group
 github.com/mattn/go-sqlite3,https://github.com/mattn/go-sqlite3,MIT,Yasuhiro Matsumoto
 github.com/matttproud/golang_protobuf_extensions/pbutil,https://github.com/matttproud/golang_protobuf_extensions,Apache-2.0,
@@ -74,15 +68,20 @@ github.com/stretchr/testify,https://github.com/stretchr/testify,MIT,"Mat Ryer, T
 github.com/temporalio/ringpop-go,https://github.com/temporalio/ringpop-go,MIT,"Uber Technologies, Inc."
 github.com/twmb/murmur3,https://github.com/twmb/murmur3,BSD-3-Clause,Sébastien Paolacci
 github.com/uber-common/bark,https://github.com/uber-common/bark,MIT,"Uber Technologies, Inc."
-github.com/uber-go/tally,https://github.com/uber-go/tally,MIT,"Permission is hereby granted, free of charge, to any person obtaining a copy"
+github.com/uber-go/tally/v4,https://github.com/uber-go/tally,MIT,"Permission is hereby granted, free of charge, to any person obtaining a copy"
 github.com/uber/tchannel-go,https://github.com/uber/tchannel-go,MIT,"Uber Technologies, Inc."
 github.com/urfave/cli/v2,https://github.com/urfave/cli,MIT,Jeremy Saenz & Contributors
 github.com/xanzy/ssh-agent,https://github.com/xanzy/ssh-agent,Apache-2.0,
 github.com/xwb1989/sqlparser,https://github.com/xwb1989/sqlparser,Apache-2.0,
 go.opencensus.io,,Apache-2.0,
 go.opentelemetry.io/otel,,Apache-2.0,
-go.opentelemetry.io/otel/exporters/metric/prometheus,,Apache-2.0,
+go.opentelemetry.io/otel/exporters/prometheus,,Apache-2.0,
+go.opentelemetry.io/otel/internal/metric,,Apache-2.0,
+go.opentelemetry.io/otel/metric,,Apache-2.0,
 go.opentelemetry.io/otel/sdk,,Apache-2.0,
+go.opentelemetry.io/otel/sdk/export/metric,,Apache-2.0,
+go.opentelemetry.io/otel/sdk/metric,,Apache-2.0,
+go.opentelemetry.io/otel/trace,,Apache-2.0,
 go.temporal.io/api,,MIT,Temporal Technologies Inc.
 go.temporal.io/sdk,,MIT,Temporal Technologies Inc.
 go.temporal.io/server,,MIT,Temporal Technologies Inc.

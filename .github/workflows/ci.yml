@@ -14,9 +14,12 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v2
         with:
-          go-version: 1.16
+          go-version: 1.17
+      - name: Race
+        run: go test -v -race ./...
+        continue-on-error: true
       - name: Test
-        run: go test -v -race -coverpkg=./... -covermode=atomic -coverprofile=coverage.out ./...
+        run: go test -v -coverpkg=./... -covermode=atomic -coverprofile=coverage.out ./...
       - name: Coverage
         uses: codecov/codecov-action@v2
         with:
@@ -36,7 +39,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v2
         with:
-          go-version: 1.16
+          go-version: 1.17
       - name: Test
         env:
           CGO_ENABLED: ${{ matrix.cgo }}
