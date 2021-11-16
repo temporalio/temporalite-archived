@@ -16,7 +16,7 @@ require (
 	cloud.google.com/go/storage v1.18.2 // indirect
 	github.com/apache/thrift v0.0.0-20161221203622-b2a4d4ae21c7 // indirect
 	github.com/aws/aws-sdk-go v1.41.10 // indirect
-	github.com/benbjohnson/clock v1.1.0 // indgo irect
+	github.com/benbjohnson/clock v1.2.0 // indirect; indgo irect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/blang/semver/v4 v4.0.0 // indirect
 	github.com/cactus/go-statsd-client v3.1.1+incompatible // indirect
