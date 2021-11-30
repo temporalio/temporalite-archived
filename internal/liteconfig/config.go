@@ -34,6 +34,7 @@ type Config struct {
 	Logger           log.Logger
 	UpstreamOptions  []temporal.ServerOption
 	portProvider     *portProvider
+	FrontendIP       string
 }
 
 func NewDefaultConfig() (*Config, error) {
@@ -54,6 +55,7 @@ func NewDefaultConfig() (*Config, error) {
 			OutputFile: "",
 		})),
 		portProvider: &portProvider{},
+		FrontendIP:   "",
 	}, nil
 }
 
@@ -165,22 +167,28 @@ func Convert(cfg *Config) *config.Config {
 }
 
 func (o *Config) mustGetService(frontendPortOffset int) config.Service {
-	var (
-		grpcPort       = o.FrontendPort + frontendPortOffset
-		membershipPort = o.FrontendPort + 100 + frontendPortOffset
-	)
-	if o.DynamicPorts {
-		if frontendPortOffset != 0 {
-			grpcPort = o.portProvider.mustGetFreePort()
-		}
-		membershipPort = o.portProvider.mustGetFreePort()
-	}
-	return config.Service{
+	svc := config.Service{
 		RPC: config.RPC{
-			GRPCPort:        grpcPort,
-			MembershipPort:  membershipPort,
+			GRPCPort:        o.FrontendPort + frontendPortOffset,
+			MembershipPort:  o.FrontendPort + 100 + frontendPortOffset,
 			BindOnLocalHost: true,
 			BindOnIP:        "",
 		},
 	}
+
+	// Assign any open port when configured to use dynamic ports
+	if o.DynamicPorts {
+		if frontendPortOffset != 0 {
+			svc.RPC.GRPCPort = o.portProvider.mustGetFreePort()
+		}
+		svc.RPC.MembershipPort = o.portProvider.mustGetFreePort()
+	}
+
+	// Optionally bind frontend to IPv4 address
+	if frontendPortOffset == 0 && o.FrontendIP != "" {
+		svc.RPC.BindOnLocalHost = false
+		svc.RPC.BindOnIP = o.FrontendIP
+	}
+
+	return svc
 }

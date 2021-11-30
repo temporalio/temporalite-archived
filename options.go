@@ -41,6 +41,16 @@ func WithFrontendPort(port int) ServerOption {
 	})
 }
 
+// WithFrontendIP binds the temporal-frontend GRPC service to a specific IP (eg. `0.0.0.0`)
+// Check net.ParseIP for supported syntax; only IPv4 is supported.
+//
+// When unspecified, the frontend service will bind to localhost.
+func WithFrontendIP(address string) ServerOption {
+	return newApplyFuncContainer(func(cfg *liteconfig.Config) {
+		cfg.FrontendIP = address
+	})
+}
+
 // WithDynamicPorts starts Temporal on system-chosen ports.
 func WithDynamicPorts() ServerOption {
 	return newApplyFuncContainer(func(cfg *liteconfig.Config) {
