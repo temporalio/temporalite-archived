@@ -28,11 +28,13 @@ var (
 )
 
 const (
-	ephemeralFlag = "ephemeral"
-	dbPathFlag    = "filename"
-	portFlag      = "port"
-	logFormatFlag = "log-format"
-	namespaceFlag = "namespace"
+	searchAttrType = "search-attributes-type"
+	searchAttrKey  = "search-attributes-key"
+	ephemeralFlag  = "ephemeral"
+	dbPathFlag     = "filename"
+	portFlag       = "port"
+	logFormatFlag  = "log-format"
+	namespaceFlag  = "namespace"
 )
 
 func init() {
@@ -57,6 +59,14 @@ func buildCLI() *cli.App {
 			Usage:     "Start Temporal server",
 			ArgsUsage: " ",
 			Flags: []cli.Flag{
+				&cli.StringSliceFlag{
+					Name:  searchAttrKey,
+					Usage: "Optional search attributes keys that will be registered at startup. If there are multiple keys, concatenate them and separate by |",
+				},
+				&cli.StringSliceFlag{
+					Name:  searchAttrType,
+					Usage: "Optional search attributes types that will be registered at startup. If there are multiple keys, concatenate them and separate by |",
+				},
 				&cli.BoolFlag{
 					Name:  ephemeralFlag,
 					Value: defaultCfg.Ephemeral,
