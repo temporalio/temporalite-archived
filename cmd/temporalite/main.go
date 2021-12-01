@@ -61,11 +61,11 @@ func buildCLI() *cli.App {
 			Flags: []cli.Flag{
 				&cli.StringSliceFlag{
 					Name:  searchAttrKey,
-					Usage: "Optional search attributes keys that will be registered at startup. If there are multiple keys, concatenate them and separate by |",
+					Usage: "Optional search attributes keys that will be registered at startup. If there are multiple keys, concatenate them and separate by ,",
 				},
 				&cli.StringSliceFlag{
 					Name:  searchAttrType,
-					Usage: "Optional search attributes types that will be registered at startup. If there are multiple keys, concatenate them and separate by |",
+					Usage: "Optional search attributes types that will be registered at startup. If there are multiple keys, concatenate them and separate by ,",
 				},
 				&cli.BoolFlag{
 					Name:  ephemeralFlag,
@@ -107,6 +107,9 @@ func buildCLI() *cli.App {
 				}
 				if !(c.IsSet(searchAttrType) && c.IsSet(searchAttrKey)) || (!c.IsSet(searchAttrType) && !c.IsSet(searchAttrKey)) {
 					return cli.Exit(fmt.Sprintf("ERROR: both %q and %q must be set at the same time, or omitted completely", searchAttrType, searchAttrKey), 1)
+				}
+				if c.IsSet(searchAttrType) && c.IsSet(searchAttrKey) && len(c.StringSlice(searchAttrType)) == len(c.StringSlice(searchAttrKey)) {
+					return cli.Exit(fmt.Sprintf("ERROR: number of search attributes (type/key) in %q and %q must be the same", searchAttrType, searchAttrKey), 1)
 				}
 				switch c.String(logFormatFlag) {
 				case "json", "pretty":
