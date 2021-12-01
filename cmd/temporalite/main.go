@@ -91,7 +91,7 @@ func buildCLI() *cli.App {
 				},
 				&cli.StringFlag{
 					Name:    ipFlag,
-					Usage:   `IPv4 address to bind the frontend service to (default is localhost)`,
+					Usage:   `IPv4 address to bind the frontend service to instead of localhost`,
 					EnvVars: nil,
 					Value:   "",
 				},
