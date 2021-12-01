@@ -7,6 +7,7 @@ package main
 import (
 	"fmt"
 	goLog "log"
+	"net"
 	"os"
 
 	"github.com/urfave/cli/v2"
@@ -31,6 +32,7 @@ const (
 	ephemeralFlag = "ephemeral"
 	dbPathFlag    = "filename"
 	portFlag      = "port"
+	ipFlag        = "ip"
 	logFormatFlag = "log-format"
 	namespaceFlag = "namespace"
 )
@@ -87,6 +89,12 @@ func buildCLI() *cli.App {
 					EnvVars: nil,
 					Value:   nil,
 				},
+				&cli.StringFlag{
+					Name:    ipFlag,
+					Usage:   `IPv4 address to bind the frontend service to instead of localhost`,
+					EnvVars: nil,
+					Value:   "",
+				},
 			},
 			Before: func(c *cli.Context) error {
 				if c.Args().Len() > 0 {
@@ -100,6 +108,12 @@ func buildCLI() *cli.App {
 				default:
 					return cli.Exit(fmt.Sprintf("bad value %q passed for flag %q", c.String(logFormatFlag), logFormatFlag), 1)
 				}
+
+				// Check that ip address is valid
+				if c.IsSet(ipFlag) && net.ParseIP(c.String(ipFlag)) == nil {
+					return cli.Exit(fmt.Sprintf("bad value %q passed for flag %q", c.String(ipFlag), ipFlag), 1)
+				}
+
 				return nil
 			},
 			Action: func(c *cli.Context) error {
@@ -126,6 +140,10 @@ func buildCLI() *cli.App {
 					}
 					logger := log.NewZapLogger(l)
 					opts = append(opts, temporalite.WithLogger(logger))
+				}
+
+				if c.IsSet(ipFlag) {
+					opts = append(opts, temporalite.WithFrontendIP(c.String(ipFlag)))
 				}
 
 				s, err := temporalite.NewServer(opts...)
