@@ -105,7 +105,7 @@ func buildCLI() *cli.App {
 				if c.IsSet(ephemeralFlag) && c.IsSet(dbPathFlag) {
 					return cli.Exit(fmt.Sprintf("ERROR: only one of %q or %q flags may be passed at a time", ephemeralFlag, dbPathFlag), 1)
 				}
-				if !(c.IsSet(searchAttrType) && c.IsSet(searchAttrKey)) || (!c.IsSet(searchAttrType) && !c.IsSet(searchAttrKey)) {
+				if (c.IsSet(searchAttrType) || c.IsSet(searchAttrKey)) && !(c.IsSet(searchAttrType) && c.IsSet(searchAttrKey)) {
 					return cli.Exit(fmt.Sprintf("ERROR: both %q and %q must be set at the same time, or omitted completely", searchAttrType, searchAttrKey), 1)
 				}
 				if c.IsSet(searchAttrType) && c.IsSet(searchAttrKey) && len(c.StringSlice(searchAttrType)) == len(c.StringSlice(searchAttrKey)) {
