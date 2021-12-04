@@ -73,7 +73,7 @@ require (
 	github.com/temporalio/ringpop-go v0.0.0-20211012191444-6f91b5915e95 // indirect
 	github.com/twmb/murmur3 v1.1.6 // indirect
 	github.com/uber-common/bark v1.3.0 // indirect
-	github.com/uber-go/tally/v4 v4.1.1 // indirect
+	github.com/uber-go/tally/v4 v4.1.0 // indirect
 	github.com/uber/tchannel-go v1.22.0 // indirect
 	github.com/xanzy/ssh-agent v0.2.1 // indirect
 	github.com/xwb1989/sqlparser v0.0.0-20180606152119-120387863bf2 // indirect
