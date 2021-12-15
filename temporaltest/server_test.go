@@ -10,10 +10,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/DataDog/temporalite/internal/examples/helloworld"
-	"github.com/DataDog/temporalite/temporaltest"
 	"go.temporal.io/sdk/client"
 	"go.temporal.io/sdk/worker"
+
+	"github.com/DataDog/temporalite/internal/examples/helloworld"
+	"github.com/DataDog/temporalite/temporaltest"
 )
 
 // to be used in example code
@@ -22,16 +23,12 @@ var t *testing.T
 func ExampleNewServer_testWorker() {
 	// Create test Temporal server and client
 	ts := temporaltest.NewServer(temporaltest.WithT(t))
-	// Stop server and close clients when tests complete
-	defer ts.Stop()
+	c := ts.Client()
 
 	// Register a new worker on the `hello_world` task queue
 	ts.Worker("hello_world", func(registry worker.Registry) {
 		helloworld.RegisterWorkflowsAndActivities(registry)
 	})
-
-	// Create a test client
-	c := ts.Client()
 
 	// Start test workflow
 	wfr, err := c.ExecuteWorkflow(
@@ -57,7 +54,6 @@ func ExampleNewServer_testWorker() {
 
 func TestNewServer(t *testing.T) {
 	ts := temporaltest.NewServer(temporaltest.WithT(t))
-	defer ts.Stop()
 
 	ts.Worker("hello_world", func(registry worker.Registry) {
 		helloworld.RegisterWorkflowsAndActivities(registry)

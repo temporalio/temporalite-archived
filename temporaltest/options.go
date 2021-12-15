@@ -11,6 +11,9 @@ type TestServerOption interface {
 }
 
 // WithT directs all worker and client logs to the test logger.
+//
+// If this option is specified, then server will automatically be stopped when the
+// test completes.
 func WithT(t *testing.T) TestServerOption {
 	return newApplyFuncContainer(func(server *TestServer) {
 		server.t = t

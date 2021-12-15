@@ -96,8 +96,10 @@ func (ts *TestServer) Stop() {
 	ts.server.Stop()
 }
 
-// NewServer starts and returns a new TestServer. The caller should call Stop
-// when finished, to shut it down.
+// NewServer starts and returns a new TestServer.
+//
+// If not specifying the WithT option, the caller should execute Stop when finished to close
+// the server and release resources.
 func NewServer(opts ...TestServerOption) *TestServer {
 	rand.Seed(time.Now().UnixNano())
 	testNamespace := fmt.Sprintf("temporaltest-%d", rand.Intn(999999))
@@ -109,6 +111,12 @@ func NewServer(opts ...TestServerOption) *TestServer {
 	// Apply options
 	for _, opt := range opts {
 		opt.apply(&ts)
+	}
+
+	if ts.t != nil {
+		ts.t.Cleanup(func() {
+			ts.Stop()
+		})
 	}
 
 	s, err := temporalite.NewServer(
