@@ -10,6 +10,8 @@ Temporalite is a distribution of [Temporal](https://github.com/temporalio/tempor
 
 Persistence to disk and an in-memory mode are both supported via SQLite.
 
+_Check out this video for a brief introduction and demo:_ [youtu.be/Hz7ZZzafBoE](https://youtu.be/Hz7ZZzafBoE?t=284) [16:13] -- demo starts at [11:28](https://youtu.be/Hz7ZZzafBoE?t=688)
+
 ## Why
 
 The primary goal of Temporalite is to make it simple and fast to run Temporal locally or in testing environments.
