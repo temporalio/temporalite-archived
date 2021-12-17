@@ -5,6 +5,7 @@
 package temporalite
 
 import (
+	"go.temporal.io/api/enums/v1"
 	"go.temporal.io/server/common/log"
 	"go.temporal.io/server/temporal"
 
@@ -30,6 +31,11 @@ func WithDatabaseFilePath(filepath string) ServerOption {
 func WithPersistenceDisabled() ServerOption {
 	return newApplyFuncContainer(func(cfg *liteconfig.Config) {
 		cfg.Ephemeral = true
+	})
+}
+func WithSearchAttributes(searchAttributes map[string]enums.IndexedValueType) ServerOption {
+	return newApplyFuncContainer(func(cfg *liteconfig.Config) {
+		cfg.SearchAttributes = searchAttributes
 	})
 }
 
