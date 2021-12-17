@@ -4,7 +4,11 @@
 
 package temporaltest
 
-import "testing"
+import (
+	"testing"
+
+	"go.temporal.io/api/enums/v1"
+)
 
 type TestServerOption interface {
 	apply(*TestServer)
@@ -17,6 +21,13 @@ type TestServerOption interface {
 func WithT(t *testing.T) TestServerOption {
 	return newApplyFuncContainer(func(server *TestServer) {
 		server.t = t
+	})
+}
+
+// WithSA will ensure that the test server is initialized with the passed search attributes
+func WithSA(searchAttributes map[string]enums.IndexedValueType) TestServerOption {
+	return newApplyFuncContainer(func(server *TestServer) {
+		server.searchAttributes = searchAttributes
 	})
 }
 
