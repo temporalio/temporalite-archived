@@ -6,7 +6,7 @@ require (
 	github.com/google/go-licenses v0.0.0-20210816172045-3099c18c36e1
 	github.com/google/licenseclassifier v0.0.0-20210722185704-3043a050f148
 	github.com/urfave/cli/v2 v2.3.0
-	go.temporal.io/sdk v1.11.1
+	go.temporal.io/sdk v1.12.0
 	go.temporal.io/server v1.14.0
 	go.uber.org/zap v1.19.1
 )
@@ -73,7 +73,7 @@ require (
 	github.com/temporalio/ringpop-go v0.0.0-20211012191444-6f91b5915e95 // indirect
 	github.com/twmb/murmur3 v1.1.6 // indirect
 	github.com/uber-common/bark v1.3.0 // indirect
-	github.com/uber-go/tally/v4 v4.1.0 // indirect
+	github.com/uber-go/tally/v4 v4.1.1 // indirect
 	github.com/uber/tchannel-go v1.22.0 // indirect
 	github.com/xanzy/ssh-agent v0.2.1 // indirect
 	github.com/xwb1989/sqlparser v0.0.0-20180606152119-120387863bf2 // indirect
@@ -86,7 +86,7 @@ require (
 	go.opentelemetry.io/otel/sdk/export/metric v0.24.0 // indirect
 	go.opentelemetry.io/otel/sdk/metric v0.24.0 // indirect
 	go.opentelemetry.io/otel/trace v1.1.0 // indirect
-	go.temporal.io/api v1.7.0 // indirect
+	go.temporal.io/api v1.7.0
 	go.temporal.io/version v0.0.0-20201015012359-4d3bb966d193 // indirect
 	go.uber.org/atomic v1.9.0 // indirect
 	go.uber.org/dig v1.13.0 // indirect
@@ -114,3 +114,5 @@ require (
 	gopkg.in/warnings.v0 v0.1.2 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
 )
+
+replace go.temporal.io/server v1.14.0 => github.com/MarcosCela/temporal v1.11.1-0.20211217113904-006795ee15d0
