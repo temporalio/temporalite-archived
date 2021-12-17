@@ -11,6 +11,7 @@ import (
 	"testing"
 	"time"
 
+	"go.temporal.io/api/enums/v1"
 	"go.temporal.io/sdk/client"
 	"go.temporal.io/sdk/worker"
 	"go.temporal.io/server/common/log"
@@ -27,6 +28,7 @@ type TestServer struct {
 	clients              []client.Client
 	workers              []worker.Worker
 	t                    *testing.T
+	searchAttributes     map[string]enums.IndexedValueType
 }
 
 func (ts *TestServer) fatal(err error) {
@@ -120,6 +122,7 @@ func NewServer(opts ...TestServerOption) *TestServer {
 	}
 
 	s, err := temporalite.NewServer(
+		temporalite.WithSearchAttributes(ts.searchAttributes),
 		temporalite.WithNamespaces(ts.defaultTestNamespace),
 		temporalite.WithPersistenceDisabled(),
 		temporalite.WithDynamicPorts(),
