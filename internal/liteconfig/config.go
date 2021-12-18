@@ -89,7 +89,13 @@ func Convert(cfg *Config) *config.Config {
 
 	for _, pragma := range cfg.SQLitePragmas {
 		kv := strings.Split(pragma, "=")
-		ca := SupportedPragmas[strings.ToLower(kv[0])]
+		if len(kv) != 2 {
+			continue
+		}
+		ca, found := SupportedPragmas[strings.ToLower(kv[0])]
+		if !found {
+			continue
+		}
 		sqliteConfig.ConnectAttributes[ca] = kv[1]
 	}
 

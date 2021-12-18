@@ -55,6 +55,12 @@ func buildCLI() *cli.App {
 	app.Usage = "Temporal server"
 	app.Version = headers.ServerVersion
 
+	allowedPragmaList := ""
+	for k := range liteconfig.SupportedPragmas {
+		allowedPragmaList += k + " "
+	}
+	allowedPragmaList = strings.Trim(allowedPragmaList, " ")
+
 	app.Commands = []*cli.Command{
 		{
 			Name:      "start",
@@ -69,7 +75,7 @@ func buildCLI() *cli.App {
 				&cli.StringSliceFlag{
 					Name:    pragmaFLag,
 					Aliases: []string{"sp"},
-					Usage:   `specify sqlite pragma statements (pragma=value format)`,
+					Usage:   `specify sqlite pragma statements (pragma=value format, supported pragmas are: ` + allowedPragmaList + `)`,
 					EnvVars: nil,
 					Value:   nil,
 				},
@@ -119,11 +125,7 @@ func buildCLI() *cli.App {
 						return cli.Exit("ERROR: pragma statements must be in KEY=VALUE format", 1)
 					}
 					if _, ok := liteconfig.SupportedPragmas[strings.ToLower(vals[0])]; !ok {
-						allowed := ""
-						for k := range liteconfig.SupportedPragmas {
-							allowed += k + " "
-						}
-						return cli.Exit(fmt.Sprintf("ERROR: unsupported pragma %q, %q allowed", vals[0], strings.Trim(allowed, " ")), 1)
+						return cli.Exit(fmt.Sprintf("ERROR: unsupported pragma %q, %q allowed", vals[0], strings.Trim(allowedPragmaList, " ")), 1)
 					}
 				}
 
