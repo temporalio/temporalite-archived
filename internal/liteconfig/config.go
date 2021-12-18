@@ -40,7 +40,7 @@ type Config struct {
 }
 
 var SupportedPragmas = map[string]string{
-	"journal_mode": "mode",
+	"journal_mode": "_journal",
 	"synchronous":  "_sync",
 }
 

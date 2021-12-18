@@ -65,6 +65,13 @@ func WithNamespaces(namespaces ...string) ServerOption {
 	})
 }
 
+// WithSQLitePragmas applies pragma statements to SQLite on Temporal start.
+func WithSQLitePragmas(pragmas ...string) ServerOption {
+	return newApplyFuncContainer(func(cfg *liteconfig.Config) {
+		cfg.SQLitePragmas = append(cfg.SQLitePragmas, pragmas...)
+	})
+}
+
 // WithUpstreamOptions registers Temporal server options.
 func WithUpstreamOptions(options ...temporal.ServerOption) ServerOption {
 	return newApplyFuncContainer(func(cfg *liteconfig.Config) {

@@ -147,6 +147,7 @@ func buildCLI() *cli.App {
 					temporalite.WithFrontendPort(c.Int(portFlag)),
 					temporalite.WithDatabaseFilePath(c.String(dbPathFlag)),
 					temporalite.WithNamespaces(c.StringSlice(namespaceFlag)...),
+					temporalite.WithSQLitePragmas(c.StringSlice(pragmaFLag)...),
 					temporalite.WithUpstreamOptions(
 						temporal.InterruptOn(temporal.InterruptCh()),
 					),
