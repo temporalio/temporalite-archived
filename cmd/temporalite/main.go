@@ -9,6 +9,7 @@ import (
 	goLog "log"
 	"net"
 	"os"
+	"strings"
 
 	"github.com/urfave/cli/v2"
 	"go.temporal.io/server/common/headers"
@@ -35,6 +36,7 @@ const (
 	ipFlag        = "ip"
 	logFormatFlag = "log-format"
 	namespaceFlag = "namespace"
+	pragmaFLag    = "sqlite-pragma"
 )
 
 func init() {
@@ -63,6 +65,13 @@ func buildCLI() *cli.App {
 					Name:  ephemeralFlag,
 					Value: defaultCfg.Ephemeral,
 					Usage: "enable the in-memory storage driver **data will be lost on restart**",
+				},
+				&cli.StringSliceFlag{
+					Name:    pragmaFLag,
+					Aliases: []string{"sp"},
+					Usage:   `specify sqlite pragma statements (pragma=value format)`,
+					EnvVars: nil,
+					Value:   nil,
 				},
 				&cli.StringFlag{
 					Name:    dbPathFlag,
@@ -103,6 +112,21 @@ func buildCLI() *cli.App {
 				if c.IsSet(ephemeralFlag) && c.IsSet(dbPathFlag) {
 					return cli.Exit(fmt.Sprintf("ERROR: only one of %q or %q flags may be passed at a time", ephemeralFlag, dbPathFlag), 1)
 				}
+
+				for _, pragma := range c.StringSlice(pragmaFLag) {
+					vals := strings.Split(pragma, "=")
+					if len(vals) != 2 {
+						return cli.Exit("ERROR: pragma statements must be in KEY=VALUE format", 1)
+					}
+					if _, ok := liteconfig.SupportedPragmas[strings.ToLower(vals[0])]; !ok {
+						allowed := ""
+						for k := range liteconfig.SupportedPragmas {
+							allowed += k + " "
+						}
+						return cli.Exit(fmt.Sprintf("ERROR: unsupported pragma %q, %q allowed", vals[0], strings.Trim(allowed, " ")), 1)
+					}
+				}
+
 				switch c.String(logFormatFlag) {
 				case "json", "pretty":
 				default:

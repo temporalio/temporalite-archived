@@ -9,6 +9,7 @@ import (
 	"math/rand"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"go.temporal.io/server/common/cluster"
@@ -31,10 +32,16 @@ type Config struct {
 	FrontendPort     int
 	DynamicPorts     bool
 	Namespaces       []string
+	SQLitePragmas    []string
 	Logger           log.Logger
 	UpstreamOptions  []temporal.ServerOption
 	portProvider     *portProvider
 	FrontendIP       string
+}
+
+var SupportedPragmas = map[string]string{
+	"journal_mode": "mode",
+	"synchronous":  "_sync",
 }
 
 func NewDefaultConfig() (*Config, error) {
@@ -49,6 +56,7 @@ func NewDefaultConfig() (*Config, error) {
 		FrontendPort:     0,
 		DynamicPorts:     false,
 		Namespaces:       nil,
+		SQLitePragmas:    nil,
 		Logger: log.NewZapLogger(log.BuildZapLogger(log.Config{
 			Stdout:     true,
 			Level:      "debug",
@@ -77,6 +85,12 @@ func Convert(cfg *Config) *config.Config {
 		sqliteConfig.DatabaseName = fmt.Sprintf("%d", rand.Intn(9999999))
 	} else {
 		sqliteConfig.ConnectAttributes["mode"] = "rwc"
+	}
+
+	for _, pragma := range cfg.SQLitePragmas {
+		kv := strings.Split(pragma, "=")
+		ca := SupportedPragmas[strings.ToLower(kv[0])]
+		sqliteConfig.ConnectAttributes[ca] = kv[1]
 	}
 
 	var metricsPort, pprofPort int
