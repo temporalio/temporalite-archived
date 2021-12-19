@@ -147,7 +147,7 @@ func buildCLI() *cli.App {
 					temporalite.WithFrontendPort(c.Int(portFlag)),
 					temporalite.WithDatabaseFilePath(c.String(dbPathFlag)),
 					temporalite.WithNamespaces(c.StringSlice(namespaceFlag)...),
-					temporalite.WithSQLitePragmas(c.StringSlice(pragmaFLag)...),
+					temporalite.WithSQLitePragmas(getPragmaMap(c.StringSlice(pragmaFLag))),
 					temporalite.WithUpstreamOptions(
 						temporal.InterruptOn(temporal.InterruptCh()),
 					),
@@ -187,4 +187,16 @@ func buildCLI() *cli.App {
 	}
 
 	return app
+}
+
+func getPragmaMap(input []string) map[string]string {
+	result := make(map[string]string)
+	for _, pragma := range input {
+		vals := strings.Split(pragma, "=")
+		if len(vals) != 2 {
+			continue
+		}
+		result[vals[0]] = vals[1]
+	}
+	return result
 }

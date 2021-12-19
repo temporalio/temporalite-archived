@@ -66,9 +66,14 @@ func WithNamespaces(namespaces ...string) ServerOption {
 }
 
 // WithSQLitePragmas applies pragma statements to SQLite on Temporal start.
-func WithSQLitePragmas(pragmas ...string) ServerOption {
+func WithSQLitePragmas(pragmas map[string]string) ServerOption {
 	return newApplyFuncContainer(func(cfg *liteconfig.Config) {
-		cfg.SQLitePragmas = append(cfg.SQLitePragmas, pragmas...)
+		if cfg.SQLitePragmas == nil {
+			cfg.SQLitePragmas = make(map[string]string)
+		}
+		for k, v := range pragmas {
+			cfg.SQLitePragmas[k] = v
+		}
 	})
 }
 

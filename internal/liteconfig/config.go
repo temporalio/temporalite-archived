@@ -32,7 +32,7 @@ type Config struct {
 	FrontendPort     int
 	DynamicPorts     bool
 	Namespaces       []string
-	SQLitePragmas    []string
+	SQLitePragmas    map[string]string
 	Logger           log.Logger
 	UpstreamOptions  []temporal.ServerOption
 	portProvider     *portProvider
@@ -87,16 +87,12 @@ func Convert(cfg *Config) *config.Config {
 		sqliteConfig.ConnectAttributes["mode"] = "rwc"
 	}
 
-	for _, pragma := range cfg.SQLitePragmas {
-		kv := strings.Split(pragma, "=")
-		if len(kv) != 2 {
-			continue
-		}
-		ca, found := SupportedPragmas[strings.ToLower(kv[0])]
+	for k, v := range cfg.SQLitePragmas {
+		ca, found := SupportedPragmas[strings.ToLower(k)]
 		if !found {
 			continue
 		}
-		sqliteConfig.ConnectAttributes[ca] = kv[1]
+		sqliteConfig.ConnectAttributes[ca] = v
 	}
 
 	var metricsPort, pprofPort int
