@@ -6,7 +6,7 @@ require (
 	github.com/google/go-licenses v0.0.0-20210816172045-3099c18c36e1
 	github.com/google/licenseclassifier v0.0.0-20210722185704-3043a050f148
 	github.com/urfave/cli/v2 v2.3.0
-	go.temporal.io/sdk v1.12.0
+	go.temporal.io/sdk v1.11.1
 	go.temporal.io/server v1.14.0
 	go.uber.org/zap v1.19.1
 )
@@ -114,5 +114,3 @@ require (
 	gopkg.in/warnings.v0 v0.1.2 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
 )
-
-replace go.temporal.io/server v1.14.0 => github.com/MarcosCela/temporal v1.11.1-0.20211217113904-006795ee15d0
