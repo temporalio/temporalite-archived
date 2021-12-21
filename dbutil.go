@@ -75,7 +75,6 @@ func (s *searchAttributesHelper) getClusterMeta(clusterConfig *cluster.Config) (
 }
 
 func (s *searchAttributesHelper) AddSearchAttributes(clusterConfig *cluster.Config, searchAttributes map[string]enums.IndexedValueType) error {
-
 	clusterMeta, err := s.getClusterMeta(clusterConfig)
 	if err != nil {
 		return err
@@ -88,12 +87,10 @@ func (s *searchAttributesHelper) AddSearchAttributes(clusterConfig *cluster.Conf
 			CustomSearchAttributes: map[string]enums.IndexedValueType{},
 		}
 	}
-
 	for key, value := range searchAttributes {
 		clusterMeta.IndexSearchAttributes[""].CustomSearchAttributes[key] = value
 	}
 	serializer := serialization.NewSerializer()
-
 	dataBlob, err := serializer.SerializeClusterMetadata(clusterMeta, enums.ENCODING_TYPE_PROTO3)
 	if err != nil {
 		return err
