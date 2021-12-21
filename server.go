@@ -63,7 +63,7 @@ func NewServer(opts ...ServerOption) (*Server, error) {
 	}
 
 	if c.SearchAttributes != nil && len(c.SearchAttributes) > 0 {
-		if err := sqlite.AddSearchAttributes(cfg.ClusterMetadata, sqlConfig, c.SearchAttributes); err != nil {
+		if err := AddSearchAttributes(cfg.ClusterMetadata, sqlConfig, c.SearchAttributes); err != nil {
 			return nil, fmt.Errorf("error setting up initial search attributes: %w", err)
 		}
 	}
