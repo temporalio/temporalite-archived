@@ -16,18 +16,28 @@ import (
 	"go.temporal.io/server/common/resolver"
 )
 
-type searchAttributeHelper struct {
+type searchAttributesHelper struct {
+	db sqlplugin.DB
 }
 
-// getClusterMeta will return the de-serialized cluster metadata from the DB if it's present. Otherwise, it will
-// initialize one in-memory
-func getClusterMeta(clusterConfig *cluster.Config, cfg *config.SQL) (*persistence.ClusterMetadata, error) {
+func (s *searchAttributesHelper) Close() error {
+	return s.db.Close()
+}
+
+func NewSearchAttributesHelper(cfg *config.SQL) (*searchAttributesHelper, error) {
 	db, err := sql.NewSQLDB(sqlplugin.DbKindUnknown, cfg, resolver.NewNoopResolver())
 	if err != nil {
 		return nil, fmt.Errorf("unable to create SQLite admin DB: %w", err)
 	}
-	defer func() { _ = db.Close() }()
-	row, err := db.GetClusterMetadata(context.Background(), &sqlplugin.ClusterMetadataFilter{
+	return &searchAttributesHelper{
+		db: db,
+	}, nil
+}
+
+// getClusterMeta will return the de-serialized cluster metadata from the DB if it's present. Otherwise, it will
+// initialize one in-memory
+func (s *searchAttributesHelper) getClusterMeta(clusterConfig *cluster.Config) (*persistence.ClusterMetadata, error) {
+	row, err := s.db.GetClusterMetadata(context.Background(), &sqlplugin.ClusterMetadataFilter{
 		ClusterName: clusterConfig.CurrentClusterName,
 	})
 	if err != nil && err != sql2.ErrNoRows {
@@ -64,14 +74,9 @@ func getClusterMeta(clusterConfig *cluster.Config, cfg *config.SQL) (*persistenc
 	return clusterMeta, nil
 }
 
-func AddSearchAttributes(clusterConfig *cluster.Config, cfg *config.SQL, searchAttributes map[string]enums.IndexedValueType) error {
-	db, err := sql.NewSQLDB(sqlplugin.DbKindUnknown, cfg, resolver.NewNoopResolver())
-	if err != nil {
-		return fmt.Errorf("unable to create SQLite admin DB: %w", err)
-	}
-	defer func() { _ = db.Close() }()
+func (s *searchAttributesHelper) AddSearchAttributes(clusterConfig *cluster.Config, searchAttributes map[string]enums.IndexedValueType) error {
 
-	clusterMeta, err := getClusterMeta(clusterConfig, cfg)
+	clusterMeta, err := s.getClusterMeta(clusterConfig)
 	if err != nil {
 		return err
 	}
@@ -94,7 +99,7 @@ func AddSearchAttributes(clusterConfig *cluster.Config, cfg *config.SQL, searchA
 		return err
 	}
 	var metaVersion int64
-	metaRow, err := db.WriteLockGetClusterMetadataV1(context.Background())
+	metaRow, err := s.db.WriteLockGetClusterMetadataV1(context.Background())
 	if err != nil {
 		if err != sql2.ErrNoRows {
 			return err
@@ -102,7 +107,7 @@ func AddSearchAttributes(clusterConfig *cluster.Config, cfg *config.SQL, searchA
 	} else {
 		metaVersion = metaRow.Version
 	}
-	_, err = db.SaveClusterMetadata(context.Background(), &sqlplugin.ClusterMetadataRow{
+	_, err = s.db.SaveClusterMetadata(context.Background(), &sqlplugin.ClusterMetadataRow{
 		ClusterName:  clusterConfig.CurrentClusterName,
 		Data:         dataBlob.Data,
 		DataEncoding: enums.ENCODING_TYPE_PROTO3.String(),

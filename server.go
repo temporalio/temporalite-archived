@@ -63,9 +63,14 @@ func NewServer(opts ...ServerOption) (*Server, error) {
 	}
 
 	if c.SearchAttributes != nil && len(c.SearchAttributes) > 0 {
-		if err := AddSearchAttributes(cfg.ClusterMetadata, sqlConfig, c.SearchAttributes); err != nil {
+		helper, err := NewSearchAttributesHelper(sqlConfig)
+		if err != nil {
+			return nil, err
+		}
+		if err := helper.AddSearchAttributes(cfg.ClusterMetadata, c.SearchAttributes); err != nil {
 			return nil, fmt.Errorf("error setting up initial search attributes: %w", err)
 		}
+		defer func() { _ = helper.Close() }()
 	}
 	authorizer, err := authorization.GetAuthorizerFromConfig(&cfg.Global.Authorization)
 	if err != nil {
