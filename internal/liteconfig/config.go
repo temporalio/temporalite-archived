@@ -9,7 +9,7 @@ import (
 	"math/rand"
 	"os"
 	"path/filepath"
-	"strings"
+	"sort"
 	"time"
 
 	"go.temporal.io/server/common/cluster"
@@ -42,6 +42,15 @@ type Config struct {
 var SupportedPragmas = map[string]struct{}{
 	"journal_mode": {},
 	"synchronous":  {},
+}
+
+func GetAllowedPragmas() []string {
+	var allowedPragmaList []string
+	for k := range SupportedPragmas {
+		allowedPragmaList = append(allowedPragmaList, k)
+	}
+	sort.Strings(allowedPragmaList)
+	return allowedPragmaList
 }
 
 func NewDefaultConfig() (*Config, error) {
@@ -88,11 +97,7 @@ func Convert(cfg *Config) *config.Config {
 	}
 
 	for k, v := range cfg.SQLitePragmas {
-		ca, found := SupportedPragmas[strings.ToLower(k)]
-		if !found {
-			continue
-		}
-		sqliteConfig.ConnectAttributes[ca] = v
+		sqliteConfig.ConnectAttributes["_"+k] = v
 	}
 
 	var metricsPort, pprofPort int

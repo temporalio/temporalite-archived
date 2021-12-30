@@ -54,13 +54,6 @@ func buildCLI() *cli.App {
 	app.Name = "temporal"
 	app.Usage = "Temporal server"
 	app.Version = headers.ServerVersion
-
-	var allowedPragmaList []string
-	for k := range liteconfig.SupportedPragmas {
-		allowedPragmaList = append(allowedPragmaList, k)
-	}
-	sort.Strings(allowedPragmaList)
-
 	app.Commands = []*cli.Command{
 		{
 			Name:      "start",
@@ -75,7 +68,7 @@ func buildCLI() *cli.App {
 				&cli.StringSliceFlag{
 					Name:    pragmaFLag,
 					Aliases: []string{"sp"},
-					Usage:   fmt.Sprintf("specify sqlite pragma statements in pragma=value format. allowed pragmas: %s", allowedPragmaList),
+					Usage:   fmt.Sprintf("specify sqlite pragma statements in pragma=value format. allowed pragmas: %v", liteconfig.GetAllowedPragmas()),
 					EnvVars: nil,
 					Value:   nil,
 				},
@@ -119,16 +112,6 @@ func buildCLI() *cli.App {
 					return cli.Exit(fmt.Sprintf("ERROR: only one of %q or %q flags may be passed at a time", ephemeralFlag, dbPathFlag), 1)
 				}
 
-				for _, pragma := range c.StringSlice(pragmaFLag) {
-					vals := strings.Split(pragma, "=")
-					if len(vals) != 2 {
-						return cli.Exit("ERROR: pragma statements must be in KEY=VALUE format", 1)
-					}
-					if _, ok := liteconfig.SupportedPragmas[strings.ToLower(vals[0])]; !ok {
-						return cli.Exit(fmt.Sprintf("ERROR: unsupported pragma %q, %q allowed", vals[0], strings.Trim(allowedPragmaList, " ")), 1)
-					}
-				}
-
 				switch c.String(logFormatFlag) {
 				case "json", "pretty":
 				default:
@@ -143,11 +126,16 @@ func buildCLI() *cli.App {
 				return nil
 			},
 			Action: func(c *cli.Context) error {
+				pragmas, err := getPragmaMap(c.StringSlice(pragmaFLag))
+				if err != nil {
+					return err
+				}
+
 				opts := []temporalite.ServerOption{
 					temporalite.WithFrontendPort(c.Int(portFlag)),
 					temporalite.WithDatabaseFilePath(c.String(dbPathFlag)),
 					temporalite.WithNamespaces(c.StringSlice(namespaceFlag)...),
-					temporalite.WithSQLitePragmas(getPragmaMap(c.StringSlice(pragmaFLag))),
+					temporalite.WithSQLitePragmas(pragmas),
 					temporalite.WithUpstreamOptions(
 						temporal.InterruptOn(temporal.InterruptCh()),
 					),
@@ -189,14 +177,14 @@ func buildCLI() *cli.App {
 	return app
 }
 
-func getPragmaMap(input []string) map[string]string {
+func getPragmaMap(input []string) (map[string]string, error) {
 	result := make(map[string]string)
 	for _, pragma := range input {
 		vals := strings.Split(pragma, "=")
 		if len(vals) != 2 {
-			continue
+			return nil, fmt.Errorf("ERROR: pragma statements must be in KEY=VALUE format, got %q", pragma)
 		}
 		result[vals[0]] = vals[1]
 	}
-	return result
+	return result, nil
 }

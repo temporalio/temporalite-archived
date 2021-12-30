@@ -8,6 +8,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/DataDog/temporalite/internal/liteconfig"
@@ -39,6 +40,13 @@ func NewServer(opts ...ServerOption) (*Server, error) {
 	for _, opt := range opts {
 		opt.apply(c)
 	}
+
+	for pragma := range c.SQLitePragmas {
+		if _, ok := liteconfig.SupportedPragmas[strings.ToLower(pragma)]; !ok {
+			return nil, fmt.Errorf("ERROR: unsupported pragma %q, %v allowed", pragma, liteconfig.GetAllowedPragmas())
+		}
+	}
+
 	cfg := liteconfig.Convert(c)
 	sqlConfig := cfg.Persistence.DataStores[liteconfig.PersistenceStoreName].SQL
 
