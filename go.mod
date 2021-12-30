@@ -7,7 +7,7 @@ require (
 	github.com/google/licenseclassifier v0.0.0-20210722185704-3043a050f148
 	github.com/urfave/cli/v2 v2.3.0
 	go.temporal.io/sdk v1.11.1
-	go.temporal.io/server v1.14.0
+	go.temporal.io/server v1.14.1
 	go.uber.org/zap v1.19.1
 )
 
