@@ -55,11 +55,11 @@ func buildCLI() *cli.App {
 	app.Usage = "Temporal server"
 	app.Version = headers.ServerVersion
 
-	allowedPragmaList := ""
+	var allowedPragmaList []string
 	for k := range liteconfig.SupportedPragmas {
-		allowedPragmaList += k + " "
+		allowedPragmaList = append(allowedPragmaList, k)
 	}
-	allowedPragmaList = strings.Trim(allowedPragmaList, " ")
+	sort.Strings(allowedPragmaList)
 
 	app.Commands = []*cli.Command{
 		{
@@ -75,7 +75,7 @@ func buildCLI() *cli.App {
 				&cli.StringSliceFlag{
 					Name:    pragmaFLag,
 					Aliases: []string{"sp"},
-					Usage:   `specify sqlite pragma statements (pragma=value format, supported pragmas are: ` + allowedPragmaList + `)`,
+					Usage:   fmt.Sprintf("specify sqlite pragma statements in pragma=value format. allowed pragmas: %s", allowedPragmaList),
 					EnvVars: nil,
 					Value:   nil,
 				},

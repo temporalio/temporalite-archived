@@ -39,9 +39,9 @@ type Config struct {
 	FrontendIP       string
 }
 
-var SupportedPragmas = map[string]string{
-	"journal_mode": "_journal",
-	"synchronous":  "_sync",
+var SupportedPragmas = map[string]struct{}{
+	"journal_mode": {},
+	"synchronous":  {},
 }
 
 func NewDefaultConfig() (*Config, error) {
