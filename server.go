@@ -10,18 +10,20 @@ import (
 	"os"
 	"time"
 
-	"github.com/DataDog/temporalite/internal/liteconfig"
 	"go.temporal.io/sdk/client"
 	"go.temporal.io/server/common/authorization"
 	"go.temporal.io/server/common/config"
 	"go.temporal.io/server/common/dynamicconfig"
 	"go.temporal.io/server/schema/sqlite"
 	"go.temporal.io/server/temporal"
+
+	"github.com/DataDog/temporalite/internal/liteconfig"
 )
 
-// Server wraps a temporal.Server.
+// Server wraps temporal.Server.
 type Server struct {
 	internal         temporal.Server
+	ui               liteconfig.UIServer
 	frontendHostPort string
 	config           *liteconfig.Config
 }
@@ -89,6 +91,7 @@ func NewServer(opts ...ServerOption) (*Server, error) {
 
 	s := &Server{
 		internal:         temporal.NewServer(serverOpts...),
+		ui:               c.UIServer,
 		frontendHostPort: cfg.PublicClient.HostPort,
 		config:           c,
 	}
@@ -98,11 +101,17 @@ func NewServer(opts ...ServerOption) (*Server, error) {
 
 // Start temporal server.
 func (s *Server) Start() error {
+	go func() {
+		if err := s.ui.Start(); err != nil {
+			panic(err)
+		}
+	}()
 	return s.internal.Start()
 }
 
 // Stop the server.
 func (s *Server) Stop() {
+	s.ui.Stop()
 	s.internal.Stop()
 }
 

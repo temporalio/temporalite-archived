@@ -10,14 +10,17 @@ github.com/beorn7/perks/quantile,https://github.com/beorn7/perks,MIT,Blake Mizer
 github.com/blang/semver/v4,https://github.com/blang/semver,MIT,Benedikt Lang <github at benediktlang.de>
 github.com/cactus/go-statsd-client/statsd,https://github.com/cactus/go-statsd-client,MIT,Eli Janssen
 github.com/cespare/xxhash/v2,https://github.com/cespare/xxhash,MIT,Caleb Spare
+github.com/coreos/go-oidc/v3/oidc,https://github.com/coreos/go-oidc,Apache-2.0,
 github.com/cpuguy83/go-md2man/v2/md2man,https://github.com/cpuguy83/go-md2man,MIT,Brian Goff
 github.com/davecgh/go-spew/spew,https://github.com/davecgh/go-spew,ISC,Dave Collins <dave@davec.name>
+github.com/dgrijalva/jwt-go,https://github.com/dgrijalva/jwt-go,MIT,Dave Grijalva
 github.com/dgrijalva/jwt-go/v4,https://github.com/dgrijalva/jwt-go,MIT,Dave Grijalva
 github.com/dgryski/go-farm,https://github.com/dgryski/go-farm,MIT,Damian Gryski
 github.com/emirpasic/gods,https://github.com/emirpasic/gods,BSD-2-Clause,Emir Pasic
 github.com/facebookgo/clock,https://github.com/facebookgo/clock,MIT,Ben Johnson
 github.com/gocql/gocql,https://github.com/gocql/gocql,BSD-3-Clause,The Gocql authors
-github.com/gogo/googleapis/google/rpc,https://github.com/gogo/googleapis,Apache-2.0,Google Inc
+github.com/gogo/gateway,https://github.com/gogo/gateway,BSD-3-Clause,"Gengo, Inc."
+github.com/gogo/googleapis/google,https://github.com/gogo/googleapis,Apache-2.0,Google Inc
 github.com/gogo/protobuf,https://github.com/gogo/protobuf,BSD-3-Clause,The GoGo Authors
 github.com/gogo/status,https://github.com/gogo/status,Apache-2.0,
 github.com/golang/glog,https://github.com/golang/glog,Apache-2.0,
@@ -31,7 +34,11 @@ github.com/google/licenseclassifier,https://github.com/google/licenseclassifier,
 github.com/google/licenseclassifier/stringclassifier,https://github.com/google/licenseclassifier,Apache-2.0,
 github.com/google/uuid,https://github.com/google/uuid,BSD-3-Clause,Google Inc.
 github.com/googleapis/gax-go/v2,https://github.com/googleapis/gax-go,BSD-3-Clause,Google Inc.
+github.com/gorilla/context,https://github.com/gorilla/context,BSD-3-Clause,Rodrigo Moraes
+github.com/gorilla/securecookie,https://github.com/gorilla/securecookie,BSD-3-Clause,Rodrigo Moraes
+github.com/gorilla/sessions,https://github.com/gorilla/sessions,BSD-3-Clause,The Gorilla Authors
 github.com/grpc-ecosystem/go-grpc-middleware,https://github.com/grpc-ecosystem/go-grpc-middleware,Apache-2.0,
+github.com/grpc-ecosystem/grpc-gateway,https://github.com/grpc-ecosystem/grpc-gateway,BSD-3-Clause,"Gengo, Inc."
 github.com/hailocab/go-hostpool,https://github.com/hailocab/go-hostpool,MIT,Bitly
 github.com/iancoleman/strcase,https://github.com/iancoleman/strcase,MIT,Ian Coleman
 github.com/jbenet/go-context/io,https://github.com/jbenet/go-context,MIT,Juan Batiz-Benet
@@ -40,7 +47,12 @@ github.com/jmoiron/sqlx,https://github.com/jmoiron/sqlx,MIT,Jason Moiron
 github.com/jonboulle/clockwork,https://github.com/jonboulle/clockwork,Apache-2.0,
 github.com/josharian/intern,https://github.com/josharian/intern,MIT,Josh Bleecher Snyder
 github.com/kevinburke/ssh_config,https://github.com/kevinburke/ssh_config,MIT,Kevin Burke
+github.com/labstack/echo-contrib/session,https://github.com/labstack/echo-contrib,MIT,LabStack
+github.com/labstack/echo/v4,https://github.com/labstack/echo,MIT,LabStack
+github.com/labstack/gommon,https://github.com/labstack/gommon,MIT,labstack
 github.com/mailru/easyjson,https://github.com/mailru/easyjson,MIT,Mail.Ru Group
+github.com/mattn/go-colorable,https://github.com/mattn/go-colorable,MIT,Yasuhiro Matsumoto
+github.com/mattn/go-isatty,https://github.com/mattn/go-isatty,MIT,
 github.com/mattn/go-sqlite3,https://github.com/mattn/go-sqlite3,MIT,Yasuhiro Matsumoto
 github.com/matttproud/golang_protobuf_extensions/pbutil,https://github.com/matttproud/golang_protobuf_extensions,Apache-2.0,
 github.com/mitchellh/go-homedir,https://github.com/mitchellh/go-homedir,MIT,Mitchell Hashimoto
@@ -66,11 +78,14 @@ github.com/src-d/gcfg,https://github.com/src-d/gcfg,BSD-3-Clause,Péter Surányi
 github.com/stretchr/objx,https://github.com/stretchr/objx,MIT,"Stretchr, Inc."
 github.com/stretchr/testify,https://github.com/stretchr/testify,MIT,"Mat Ryer, Tyler Bunnell and contributors"
 github.com/temporalio/ringpop-go,https://github.com/temporalio/ringpop-go,MIT,"Uber Technologies, Inc."
+github.com/temporalio/ui-server/server,https://github.com/temporalio/ui-server,MIT,Temporal Technologies Inc.
 github.com/twmb/murmur3,https://github.com/twmb/murmur3,BSD-3-Clause,Sébastien Paolacci
 github.com/uber-common/bark,https://github.com/uber-common/bark,MIT,"Uber Technologies, Inc."
 github.com/uber-go/tally/v4,https://github.com/uber-go/tally,MIT,"Permission is hereby granted, free of charge, to any person obtaining a copy"
 github.com/uber/tchannel-go,https://github.com/uber/tchannel-go,MIT,"Uber Technologies, Inc."
 github.com/urfave/cli/v2,https://github.com/urfave/cli,MIT,Jeremy Saenz & Contributors
+github.com/valyala/bytebufferpool,https://github.com/valyala/bytebufferpool,MIT,"Aliaksandr Valialkin, VertaMedia"
+github.com/valyala/fasttemplate,https://github.com/valyala/fasttemplate,MIT,Aliaksandr Valialkin
 github.com/xanzy/ssh-agent,https://github.com/xanzy/ssh-agent,Apache-2.0,
 github.com/xwb1989/sqlparser,https://github.com/xwb1989/sqlparser,Apache-2.0,
 go.opencensus.io,,Apache-2.0,
@@ -102,7 +117,7 @@ golang.org/x/tools,,BSD-3-Clause,The Go Authors
 golang.org/x/xerrors,,BSD-3-Clause,The Go Authors
 google.golang.org/api,,BSD-3-Clause,Google Inc.
 google.golang.org/api/internal/third_party/uritemplates,,BSD-3-Clause,Joshua Tacoma
-google.golang.org/genproto/googleapis,,Apache-2.0,
+google.golang.org/genproto,,Apache-2.0,
 google.golang.org/grpc,,Apache-2.0,
 google.golang.org/protobuf,,BSD-3-Clause,The Go Authors
 gopkg.in/inf.v0,,BSD-3-Clause,Péter Surányi. Portions Copyright (c) 2009 The Go
@@ -112,5 +127,4 @@ gopkg.in/src-d/go-billy.v4,,Apache-2.0,Sourced Technologies S.L
 gopkg.in/src-d/go-git.v4,,Apache-2.0,"Sourced Technologies, S.L"
 gopkg.in/validator.v2,,Apache-2.0,
 gopkg.in/warnings.v0,,BSD-2-Clause,Péter Surányi
-gopkg.in/yaml.v2,,Apache-2.0,
 gopkg.in/yaml.v3,,MIT,Kirill Simonov
