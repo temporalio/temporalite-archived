@@ -40,7 +40,7 @@ const (
 	ipFlag        = "ip"
 	logFormatFlag = "log-format"
 	namespaceFlag = "namespace"
-	pragmaFLag    = "sqlite-pragma"
+	pragmaFlag    = "sqlite-pragma"
 )
 
 func init() {
@@ -70,7 +70,7 @@ func buildCLI() *cli.App {
 					Usage: "enable the in-memory storage driver **data will be lost on restart**",
 				},
 				&cli.StringSliceFlag{
-					Name:    pragmaFLag,
+					Name:    pragmaFlag,
 					Aliases: []string{"sp"},
 					Usage:   fmt.Sprintf("specify sqlite pragma statements in pragma=value format. allowed pragmas: %v", liteconfig.GetAllowedPragmas()),
 					EnvVars: nil,
@@ -151,7 +151,7 @@ func buildCLI() *cli.App {
 					EnableUI:            true,
 				}
 
-				pragmas, err := getPragmaMap(c.StringSlice(pragmaFLag))
+				pragmas, err := getPragmaMap(c.StringSlice(pragmaFlag))
 				if err != nil {
 					return err
 				}
