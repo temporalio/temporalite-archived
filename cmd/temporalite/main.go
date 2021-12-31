@@ -69,18 +69,18 @@ func buildCLI() *cli.App {
 					Value: defaultCfg.Ephemeral,
 					Usage: "enable the in-memory storage driver **data will be lost on restart**",
 				},
-				&cli.StringSliceFlag{
-					Name:    pragmaFlag,
-					Aliases: []string{"sp"},
-					Usage:   fmt.Sprintf("specify sqlite pragma statements in pragma=value format. allowed pragmas: %v", liteconfig.GetAllowedPragmas()),
-					EnvVars: nil,
-					Value:   nil,
-				},
 				&cli.StringFlag{
 					Name:    dbPathFlag,
 					Aliases: []string{"f"},
 					Value:   defaultCfg.DatabaseFilePath,
 					Usage:   "file in which to persist Temporal state",
+				},
+				&cli.StringSliceFlag{
+					Name:    namespaceFlag,
+					Aliases: []string{"n"},
+					Usage:   `specify namespaces that should be pre-created`,
+					EnvVars: nil,
+					Value:   nil,
 				},
 				&cli.IntFlag{
 					Name:    portFlag,
@@ -94,23 +94,23 @@ func buildCLI() *cli.App {
 					DefaultText: fmt.Sprintf("--port + 1000, eg. %d", liteconfig.DefaultFrontendPort+1000),
 				},
 				&cli.StringFlag{
+					Name:    ipFlag,
+					Usage:   `IPv4 address to bind the frontend service to instead of localhost`,
+					EnvVars: nil,
+					Value:   "127.0.0.1",
+				},
+				&cli.StringFlag{
 					Name:    logFormatFlag,
 					Usage:   `customize the log formatting (allowed: "json", "pretty")`,
 					EnvVars: nil,
 					Value:   "json",
 				},
 				&cli.StringSliceFlag{
-					Name:    namespaceFlag,
-					Aliases: []string{"n"},
-					Usage:   `specify namespaces that should be pre-created`,
+					Name:    pragmaFlag,
+					Aliases: []string{"sp"},
+					Usage:   fmt.Sprintf("specify sqlite pragma statements in pragma=value format. allowed pragmas: %v", liteconfig.GetAllowedPragmas()),
 					EnvVars: nil,
 					Value:   nil,
-				},
-				&cli.StringFlag{
-					Name:    ipFlag,
-					Usage:   `IPv4 address to bind the frontend service to instead of localhost`,
-					EnvVars: nil,
-					Value:   "127.0.0.1",
 				},
 			},
 			Before: func(c *cli.Context) error {
