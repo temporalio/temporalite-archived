@@ -101,14 +101,14 @@ func buildCLI() *cli.App {
 				},
 				&cli.StringFlag{
 					Name:    logFormatFlag,
-					Usage:   `customize the log formatting (allowed: "json", "pretty")`,
+					Usage:   `customize the log formatting (allowed: ["json" "pretty"])`,
 					EnvVars: nil,
 					Value:   "json",
 				},
 				&cli.StringSliceFlag{
 					Name:    pragmaFlag,
 					Aliases: []string{"sp"},
-					Usage:   fmt.Sprintf("specify sqlite pragma statements in pragma=value format. allowed pragmas: %v", liteconfig.GetAllowedPragmas()),
+					Usage:   fmt.Sprintf("specify sqlite pragma statements in pragma=value format (allowed: %q)", liteconfig.GetAllowedPragmas()),
 					EnvVars: nil,
 					Value:   nil,
 				},
