@@ -21,6 +21,7 @@ Features that align with this goal:
 - Fast startup time
 - Minimal resource overhead: no dependencies on a container runtime or database server
 - Support for Windows, Linux, and macOS
+- Ships with a web interface
 
 ## Getting Started
 
@@ -37,8 +38,10 @@ go install github.com/DataDog/temporalite/cmd/temporalite@latest
 Start Temporal server:
 
 ```bash
-temporalite start
+temporalite start --namespace default
 ```
+
+At this point you should have a server running on `localhost:7233` and a web interface at http://localhost:8233.
 
 ### Use CLI
 

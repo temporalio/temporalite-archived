@@ -26,6 +26,24 @@ const (
 	DefaultFrontendPort  = 7233
 )
 
+// UIServer abstracts the github.com/temporalio/ui-server project to
+// make it an optional import for programs that need web UI support.
+//
+// A working implementation of this interface is available here:
+// https://pkg.go.dev/github.com/temporalio/ui-server/server#Server
+type UIServer interface {
+	Start() error
+	Stop()
+}
+
+type noopUIServer struct{}
+
+func (noopUIServer) Start() error {
+	return nil
+}
+
+func (noopUIServer) Stop() {}
+
 type Config struct {
 	Ephemeral        bool
 	DatabaseFilePath string
@@ -37,6 +55,7 @@ type Config struct {
 	UpstreamOptions  []temporal.ServerOption
 	portProvider     *portProvider
 	FrontendIP       string
+	UIServer         UIServer
 }
 
 var SupportedPragmas = map[string]struct{}{
@@ -63,6 +82,7 @@ func NewDefaultConfig() (*Config, error) {
 		Ephemeral:        false,
 		DatabaseFilePath: filepath.Join(userConfigDir, "temporalite/db/default.db"),
 		FrontendPort:     0,
+		UIServer:         noopUIServer{},
 		DynamicPorts:     false,
 		Namespaces:       nil,
 		SQLitePragmas:    nil,

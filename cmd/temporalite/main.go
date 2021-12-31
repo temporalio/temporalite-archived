@@ -11,6 +11,9 @@ import (
 	"os"
 	"strings"
 
+	uiserver "github.com/temporalio/ui-server/server"
+	uiconfig "github.com/temporalio/ui-server/server/config"
+	uiserveroptions "github.com/temporalio/ui-server/server/server_options"
 	"github.com/urfave/cli/v2"
 	"go.temporal.io/server/common/headers"
 	"go.temporal.io/server/common/log"
@@ -33,6 +36,7 @@ const (
 	ephemeralFlag = "ephemeral"
 	dbPathFlag    = "filename"
 	portFlag      = "port"
+	uiPortFlag    = "ui-port"
 	ipFlag        = "ip"
 	logFormatFlag = "log-format"
 	namespaceFlag = "namespace"
@@ -84,6 +88,11 @@ func buildCLI() *cli.App {
 					Usage:   "port for the temporal-frontend GRPC service",
 					Value:   liteconfig.DefaultFrontendPort,
 				},
+				&cli.IntFlag{
+					Name:        uiPortFlag,
+					Usage:       "port for the temporal web UI",
+					DefaultText: fmt.Sprintf("--port + 1000, eg. %d", liteconfig.DefaultFrontendPort+1000),
+				},
 				&cli.StringFlag{
 					Name:    logFormatFlag,
 					Usage:   `customize the log formatting (allowed: "json", "pretty")`,
@@ -101,7 +110,7 @@ func buildCLI() *cli.App {
 					Name:    ipFlag,
 					Usage:   `IPv4 address to bind the frontend service to instead of localhost`,
 					EnvVars: nil,
-					Value:   "",
+					Value:   "127.0.0.1",
 				},
 			},
 			Before: func(c *cli.Context) error {
@@ -126,19 +135,37 @@ func buildCLI() *cli.App {
 				return nil
 			},
 			Action: func(c *cli.Context) error {
+				var (
+					ip         = c.String(ipFlag)
+					serverPort = c.Int(portFlag)
+					uiPort     = serverPort + 1000
+				)
+
+				if c.IsSet(uiPortFlag) {
+					uiPort = c.Int(uiPortFlag)
+				}
+				uiOpts := uiconfig.Config{
+					TemporalGRPCAddress: fmt.Sprintf(":%d", c.Int(portFlag)),
+					Host:                ip,
+					Port:                uiPort,
+					EnableUI:            true,
+				}
+
 				pragmas, err := getPragmaMap(c.StringSlice(pragmaFLag))
 				if err != nil {
 					return err
 				}
 
 				opts := []temporalite.ServerOption{
-					temporalite.WithFrontendPort(c.Int(portFlag)),
+					temporalite.WithFrontendPort(serverPort),
+					temporalite.WithFrontendIP(ip),
 					temporalite.WithDatabaseFilePath(c.String(dbPathFlag)),
 					temporalite.WithNamespaces(c.StringSlice(namespaceFlag)...),
 					temporalite.WithSQLitePragmas(pragmas),
 					temporalite.WithUpstreamOptions(
 						temporal.InterruptOn(temporal.InterruptCh()),
 					),
+					temporalite.WithUI(uiserver.NewServer(uiserveroptions.WithConfig(&uiOpts))),
 				}
 				if c.Bool(ephemeralFlag) {
 					opts = append(opts, temporalite.WithPersistenceDisabled())
@@ -155,10 +182,6 @@ func buildCLI() *cli.App {
 					}
 					logger := log.NewZapLogger(l)
 					opts = append(opts, temporalite.WithLogger(logger))
-				}
-
-				if c.IsSet(ipFlag) {
-					opts = append(opts, temporalite.WithFrontendIP(c.String(ipFlag)))
 				}
 
 				s, err := temporalite.NewServer(opts...)

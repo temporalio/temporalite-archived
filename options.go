@@ -26,14 +26,29 @@ func WithDatabaseFilePath(filepath string) ServerOption {
 	})
 }
 
-// WithPersistenceDisabled disables file persistence and uses the in-memory storage driver. State will be reset on each process restart.
+// WithPersistenceDisabled disables file persistence and uses the in-memory storage driver.
+// State will be reset on each process restart.
 func WithPersistenceDisabled() ServerOption {
 	return newApplyFuncContainer(func(cfg *liteconfig.Config) {
 		cfg.Ephemeral = true
 	})
 }
 
+// WithUI enables the Temporal web interface.
+//
+// When unspecified, Temporal will run in headless mode.
+//
+// This option accepts a UIServer implementation in order to avoid bloating
+// programs that do not need to embed the UI.
+// See ./cmd/temporalite/main.go for an example of usage.
+func WithUI(server liteconfig.UIServer) ServerOption {
+	return newApplyFuncContainer(func(cfg *liteconfig.Config) {
+		cfg.UIServer = server
+	})
+}
+
 // WithFrontendPort sets the listening port for the temporal-frontend GRPC service.
+//
 // When unspecified, the default port number of 7233 is used.
 func WithFrontendPort(port int) ServerOption {
 	return newApplyFuncContainer(func(cfg *liteconfig.Config) {
