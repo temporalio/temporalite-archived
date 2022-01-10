@@ -9,6 +9,7 @@ import (
 	"math/rand"
 	"os"
 	"path/filepath"
+	"sort"
 	"time"
 
 	"go.temporal.io/api/enums/v1"
@@ -26,17 +27,51 @@ const (
 	DefaultFrontendPort  = 7233
 )
 
+// UIServer abstracts the github.com/temporalio/ui-server project to
+// make it an optional import for programs that need web UI support.
+//
+// A working implementation of this interface is available here:
+// https://pkg.go.dev/github.com/temporalio/ui-server/server#Server
+type UIServer interface {
+	Start() error
+	Stop()
+}
+
+type noopUIServer struct{}
+
+func (noopUIServer) Start() error {
+	return nil
+}
+
+func (noopUIServer) Stop() {}
+
 type Config struct {
 	Ephemeral        bool
 	DatabaseFilePath string
 	FrontendPort     int
 	DynamicPorts     bool
 	Namespaces       []string
+	SQLitePragmas    map[string]string
 	Logger           log.Logger
 	UpstreamOptions  []temporal.ServerOption
 	portProvider     *portProvider
 	SearchAttributes map[string]enums.IndexedValueType
 	FrontendIP       string
+	UIServer         UIServer
+}
+
+var SupportedPragmas = map[string]struct{}{
+	"journal_mode": {},
+	"synchronous":  {},
+}
+
+func GetAllowedPragmas() []string {
+	var allowedPragmaList []string
+	for k := range SupportedPragmas {
+		allowedPragmaList = append(allowedPragmaList, k)
+	}
+	sort.Strings(allowedPragmaList)
+	return allowedPragmaList
 }
 
 func NewDefaultConfig() (*Config, error) {
@@ -49,8 +84,10 @@ func NewDefaultConfig() (*Config, error) {
 		Ephemeral:        false,
 		DatabaseFilePath: filepath.Join(userConfigDir, "temporalite/db/default.db"),
 		FrontendPort:     0,
+		UIServer:         noopUIServer{},
 		DynamicPorts:     false,
 		Namespaces:       nil,
+		SQLitePragmas:    nil,
 		Logger: log.NewZapLogger(log.BuildZapLogger(log.Config{
 			Stdout:     true,
 			Level:      "debug",
@@ -79,6 +116,10 @@ func Convert(cfg *Config) *config.Config {
 		sqliteConfig.DatabaseName = fmt.Sprintf("%d", rand.Intn(9999999))
 	} else {
 		sqliteConfig.ConnectAttributes["mode"] = "rwc"
+	}
+
+	for k, v := range cfg.SQLitePragmas {
+		sqliteConfig.ConnectAttributes["_"+k] = v
 	}
 
 	var metricsPort, pprofPort int

@@ -9,7 +9,11 @@ import (
 	goLog "log"
 	"net"
 	"os"
+	"strings"
 
+	uiserver "github.com/temporalio/ui-server/server"
+	uiconfig "github.com/temporalio/ui-server/server/config"
+	uiserveroptions "github.com/temporalio/ui-server/server/server_options"
 	"github.com/urfave/cli/v2"
 	"go.temporal.io/api/enums/v1"
 	"go.temporal.io/server/common/headers"
@@ -35,9 +39,11 @@ const (
 	ephemeralFlag  = "ephemeral"
 	dbPathFlag     = "filename"
 	portFlag       = "port"
+	uiPortFlag    = "ui-port"
 	ipFlag         = "ip"
 	logFormatFlag  = "log-format"
 	namespaceFlag  = "namespace"
+	pragmaFlag    = "sqlite-pragma"
 )
 
 func init() {
@@ -55,7 +61,6 @@ func buildCLI() *cli.App {
 	app.Name = "temporal"
 	app.Usage = "Temporal server"
 	app.Version = headers.ServerVersion
-
 	app.Commands = []*cli.Command{
 		{
 			Name:      "start",
@@ -81,18 +86,6 @@ func buildCLI() *cli.App {
 					Value:   defaultCfg.DatabaseFilePath,
 					Usage:   "file in which to persist Temporal state",
 				},
-				&cli.IntFlag{
-					Name:    portFlag,
-					Aliases: []string{"p"},
-					Usage:   "port for the temporal-frontend GRPC service",
-					Value:   liteconfig.DefaultFrontendPort,
-				},
-				&cli.StringFlag{
-					Name:    logFormatFlag,
-					Usage:   `customize the log formatting (allowed: "json", "pretty")`,
-					EnvVars: nil,
-					Value:   "json",
-				},
 				&cli.StringSliceFlag{
 					Name:    namespaceFlag,
 					Aliases: []string{"n"},
@@ -100,11 +93,35 @@ func buildCLI() *cli.App {
 					EnvVars: nil,
 					Value:   nil,
 				},
+				&cli.IntFlag{
+					Name:    portFlag,
+					Aliases: []string{"p"},
+					Usage:   "port for the temporal-frontend GRPC service",
+					Value:   liteconfig.DefaultFrontendPort,
+				},
+				&cli.IntFlag{
+					Name:        uiPortFlag,
+					Usage:       "port for the temporal web UI",
+					DefaultText: fmt.Sprintf("--port + 1000, eg. %d", liteconfig.DefaultFrontendPort+1000),
+				},
 				&cli.StringFlag{
 					Name:    ipFlag,
 					Usage:   `IPv4 address to bind the frontend service to instead of localhost`,
 					EnvVars: nil,
-					Value:   "",
+					Value:   "127.0.0.1",
+				},
+				&cli.StringFlag{
+					Name:    logFormatFlag,
+					Usage:   `customize the log formatting (allowed: ["json" "pretty"])`,
+					EnvVars: nil,
+					Value:   "json",
+				},
+				&cli.StringSliceFlag{
+					Name:    pragmaFlag,
+					Aliases: []string{"sp"},
+					Usage:   fmt.Sprintf("specify sqlite pragma statements in pragma=value format (allowed: %q)", liteconfig.GetAllowedPragmas()),
+					EnvVars: nil,
+					Value:   nil,
 				},
 			},
 			Before: func(c *cli.Context) error {
@@ -129,13 +146,37 @@ func buildCLI() *cli.App {
 				return nil
 			},
 			Action: func(c *cli.Context) error {
+				var (
+					ip         = c.String(ipFlag)
+					serverPort = c.Int(portFlag)
+					uiPort     = serverPort + 1000
+				)
+
+				if c.IsSet(uiPortFlag) {
+					uiPort = c.Int(uiPortFlag)
+				}
+				uiOpts := uiconfig.Config{
+					TemporalGRPCAddress: fmt.Sprintf(":%d", c.Int(portFlag)),
+					Host:                ip,
+					Port:                uiPort,
+					EnableUI:            true,
+				}
+
+				pragmas, err := getPragmaMap(c.StringSlice(pragmaFlag))
+				if err != nil {
+					return err
+				}
+
 				opts := []temporalite.ServerOption{
-					temporalite.WithFrontendPort(c.Int(portFlag)),
+					temporalite.WithFrontendPort(serverPort),
+					temporalite.WithFrontendIP(ip),
 					temporalite.WithDatabaseFilePath(c.String(dbPathFlag)),
 					temporalite.WithNamespaces(c.StringSlice(namespaceFlag)...),
+					temporalite.WithSQLitePragmas(pragmas),
 					temporalite.WithUpstreamOptions(
 						temporal.InterruptOn(temporal.InterruptCh()),
 					),
+					temporalite.WithUI(uiserver.NewServer(uiserveroptions.WithConfig(&uiOpts))),
 				}
 				if c.Bool(ephemeralFlag) {
 					opts = append(opts, temporalite.WithPersistenceDisabled())
@@ -161,10 +202,6 @@ func buildCLI() *cli.App {
 					opts = append(opts, temporalite.WithLogger(logger))
 				}
 
-				if c.IsSet(ipFlag) {
-					opts = append(opts, temporalite.WithFrontendIP(c.String(ipFlag)))
-				}
-
 				s, err := temporalite.NewServer(opts...)
 				if err != nil {
 					return err
@@ -179,6 +216,18 @@ func buildCLI() *cli.App {
 	}
 
 	return app
+}
+
+func getPragmaMap(input []string) (map[string]string, error) {
+	result := make(map[string]string)
+	for _, pragma := range input {
+		vals := strings.Split(pragma, "=")
+		if len(vals) != 2 {
+			return nil, fmt.Errorf("ERROR: pragma statements must be in KEY=VALUE format, got %q", pragma)
+		}
+		result[vals[0]] = vals[1]
+	}
+	return result, nil
 }
 
 func parseSearchAttributes(keys []string, types []string) (map[string]enums.IndexedValueType, error) {
