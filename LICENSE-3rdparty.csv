@@ -1,5 +1,7 @@
 Component,Origin,License,Copyright
-cloud.google.com/go,,Apache-2.0,
+cloud.google.com/go/compute/metadata,,Apache-2.0,
+cloud.google.com/go/iam,,Apache-2.0,
+cloud.google.com/go/internal,,Apache-2.0,
 cloud.google.com/go/storage,,Apache-2.0,
 github.com/DataDog/temporalite,https://github.com/DataDog/temporalite,MIT,"Datadog, Inc."
 github.com/apache/thrift/lib/go/thrift,https://github.com/apache/thrift,Apache-2.0,
@@ -14,15 +16,17 @@ github.com/coreos/go-oidc/v3/oidc,https://github.com/coreos/go-oidc,Apache-2.0,
 github.com/cpuguy83/go-md2man/v2/md2man,https://github.com/cpuguy83/go-md2man,MIT,Brian Goff
 github.com/davecgh/go-spew/spew,https://github.com/davecgh/go-spew,ISC,Dave Collins <dave@davec.name>
 github.com/dgrijalva/jwt-go,https://github.com/dgrijalva/jwt-go,MIT,Dave Grijalva
-github.com/dgrijalva/jwt-go/v4,https://github.com/dgrijalva/jwt-go,MIT,Dave Grijalva
 github.com/dgryski/go-farm,https://github.com/dgryski/go-farm,MIT,Damian Gryski
 github.com/emirpasic/gods,https://github.com/emirpasic/gods,BSD-2-Clause,Emir Pasic
 github.com/facebookgo/clock,https://github.com/facebookgo/clock,MIT,Ben Johnson
+github.com/go-logr/logr,https://github.com/go-logr/logr,Apache-2.0,
+github.com/go-logr/stdr,https://github.com/go-logr/stdr,Apache-2.0,
 github.com/gocql/gocql,https://github.com/gocql/gocql,BSD-3-Clause,The Gocql authors
 github.com/gogo/gateway,https://github.com/gogo/gateway,BSD-3-Clause,"Gengo, Inc."
 github.com/gogo/googleapis/google,https://github.com/gogo/googleapis,Apache-2.0,Google Inc
 github.com/gogo/protobuf,https://github.com/gogo/protobuf,BSD-3-Clause,The GoGo Authors
 github.com/gogo/status,https://github.com/gogo/status,Apache-2.0,
+github.com/golang-jwt/jwt/v4,https://github.com/golang-jwt/jwt,MIT,Dave Grijalva
 github.com/golang/glog,https://github.com/golang/glog,Apache-2.0,
 github.com/golang/groupcache/lru,https://github.com/golang/groupcache,Apache-2.0,
 github.com/golang/mock/gomock,https://github.com/golang/mock,Apache-2.0,
@@ -71,6 +75,7 @@ github.com/prometheus/common/internal/bitbucket.org/ww/goautoneg,https://github.
 github.com/prometheus/procfs,https://github.com/prometheus/procfs,Apache-2.0,
 github.com/rcrowley/go-metrics,https://github.com/rcrowley/go-metrics,BSD-2-Clause-FreeBSD,Richard Crowley
 github.com/robfig/cron,https://github.com/robfig/cron,MIT,Rob Figueiredo
+github.com/robfig/cron/v3,https://github.com/robfig/cron,MIT,Rob Figueiredo
 github.com/russross/blackfriday/v2,https://github.com/russross/blackfriday,BSD-2-Clause,Russ Ross
 github.com/sergi/go-diff/diffmatchpatch,https://github.com/sergi/go-diff,MIT,The go-diff Authors
 github.com/sirupsen/logrus,https://github.com/sirupsen/logrus,MIT,Simon Eskildsen
