@@ -7,11 +7,12 @@ require (
 	github.com/google/licenseclassifier v0.0.0-20210722185704-3043a050f148
 	github.com/temporalio/ui-server v0.1.1-0.20211223210854-4484839e0398
 	github.com/urfave/cli/v2 v2.3.0
-	go.temporal.io/api v1.7.1-0.20220131203817-08fe71b1361d
-	go.temporal.io/sdk v1.13.0
+	go.temporal.io/sdk v1.13.1
 	go.temporal.io/server v1.15.0
 	go.uber.org/zap v1.21.0
 )
+
+require go.temporal.io/api v1.7.1-0.20220131203817-08fe71b1361d // indirect
 
 require (
 	cloud.google.com/go v0.100.2 // indirect
