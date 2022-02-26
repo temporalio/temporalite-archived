@@ -165,7 +165,7 @@ func buildCLI() *cli.App {
 					temporalite.WithUpstreamOptions(
 						temporal.InterruptOn(temporal.InterruptCh()),
 					),
-					temporalite.WithUI(uiserver.NewServer(uiserveroptions.WithConfig(&uiOpts))),
+					temporalite.WithUI(uiserver.NewServer(uiserveroptions.WithConfigProvider(&uiOpts))),
 				}
 				if c.Bool(ephemeralFlag) {
 					opts = append(opts, temporalite.WithPersistenceDisabled())
