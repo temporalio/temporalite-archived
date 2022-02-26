@@ -11,9 +11,6 @@ import (
 	"os"
 	"strings"
 
-	uiserver "github.com/temporalio/ui-server/server"
-	uiconfig "github.com/temporalio/ui-server/server/config"
-	uiserveroptions "github.com/temporalio/ui-server/server/server_options"
 	"github.com/urfave/cli/v2"
 	"go.temporal.io/server/common/headers"
 	"go.temporal.io/server/common/log"
@@ -28,6 +25,10 @@ import (
 	"github.com/DataDog/temporalite/internal/liteconfig"
 )
 
+// Name of the ui-server module, used in tests to verify that it is included/excluded
+// as a dependency when building with the `headless` tag enabled.
+const uiServerModule = "github.com/temporalio/ui-server"
+
 var (
 	defaultCfg *liteconfig.Config
 )
@@ -37,6 +38,7 @@ const (
 	dbPathFlag    = "filename"
 	portFlag      = "port"
 	uiPortFlag    = "ui-port"
+	headlessFlag  = "headless"
 	ipFlag        = "ip"
 	logFormatFlag = "log-format"
 	namespaceFlag = "namespace"
@@ -93,6 +95,10 @@ func buildCLI() *cli.App {
 					Usage:       "port for the temporal web UI",
 					DefaultText: fmt.Sprintf("--port + 1000, eg. %d", liteconfig.DefaultFrontendPort+1000),
 				},
+				&cli.BoolFlag{
+					Name:  headlessFlag,
+					Usage: "disable the temporal web UI",
+				},
 				&cli.StringFlag{
 					Name:    ipFlag,
 					Usage:   `IPv4 address to bind the frontend service to instead of localhost`,
@@ -144,12 +150,6 @@ func buildCLI() *cli.App {
 				if c.IsSet(uiPortFlag) {
 					uiPort = c.Int(uiPortFlag)
 				}
-				uiOpts := uiconfig.Config{
-					TemporalGRPCAddress: fmt.Sprintf(":%d", c.Int(portFlag)),
-					Host:                ip,
-					Port:                uiPort,
-					EnableUI:            true,
-				}
 
 				pragmas, err := getPragmaMap(c.StringSlice(pragmaFlag))
 				if err != nil {
@@ -165,7 +165,12 @@ func buildCLI() *cli.App {
 					temporalite.WithUpstreamOptions(
 						temporal.InterruptOn(temporal.InterruptCh()),
 					),
-					temporalite.WithUI(uiserver.NewServer(uiserveroptions.WithConfigProvider(&uiOpts))),
+				}
+				if !c.Bool(headlessFlag) {
+					opt := newUIOption(fmt.Sprintf(":%d", c.Int(portFlag)), ip, uiPort)
+					if opt != nil {
+						opts = append(opts, opt)
+					}
 				}
 				if c.Bool(ephemeralFlag) {
 					opts = append(opts, temporalite.WithPersistenceDisabled())
