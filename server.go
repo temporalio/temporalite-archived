@@ -8,20 +8,23 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"strings"
 	"time"
 
-	"github.com/DataDog/temporalite/internal/liteconfig"
 	"go.temporal.io/sdk/client"
 	"go.temporal.io/server/common/authorization"
 	"go.temporal.io/server/common/config"
 	"go.temporal.io/server/common/dynamicconfig"
 	"go.temporal.io/server/schema/sqlite"
 	"go.temporal.io/server/temporal"
+
+	"github.com/DataDog/temporalite/internal/liteconfig"
 )
 
-// Server wraps a temporal.Server.
+// Server wraps temporal.Server.
 type Server struct {
 	internal         temporal.Server
+	ui               liteconfig.UIServer
 	frontendHostPort string
 	config           *liteconfig.Config
 }
@@ -39,20 +42,24 @@ func NewServer(opts ...ServerOption) (*Server, error) {
 	for _, opt := range opts {
 		opt.apply(c)
 	}
-	cfg := liteconfig.Convert(c)
-	sqlConfig := cfg.Persistence.DataStores[liteconfig.PersistenceStoreName].SQL
 
-	// Apply migrations if file does not already exist
-	if c.Ephemeral {
-		if err := sqlite.SetupSchema(sqlConfig); err != nil {
-			return nil, fmt.Errorf("error setting up schema: %w", err)
-		}
-	} else if _, err := os.Stat(c.DatabaseFilePath); os.IsNotExist(err) {
-		if err := sqlite.SetupSchema(sqlConfig); err != nil {
-			return nil, fmt.Errorf("error setting up schema: %w", err)
+	for pragma := range c.SQLitePragmas {
+		if _, ok := liteconfig.SupportedPragmas[strings.ToLower(pragma)]; !ok {
+			return nil, fmt.Errorf("ERROR: unsupported pragma %q, %v allowed", pragma, liteconfig.GetAllowedPragmas())
 		}
 	}
 
+	cfg := liteconfig.Convert(c)
+	sqlConfig := cfg.Persistence.DataStores[liteconfig.PersistenceStoreName].SQL
+
+	if !c.Ephemeral {
+		// Apply migrations if file does not already exist
+		if _, err := os.Stat(c.DatabaseFilePath); os.IsNotExist(err) {
+			if err := sqlite.SetupSchema(sqlConfig); err != nil {
+				return nil, fmt.Errorf("error setting up schema: %w", err)
+			}
+		}
+	}
 	// Pre-create namespaces
 	var namespaces []*sqlite.NamespaceConfig
 	for _, ns := range c.Namespaces {
@@ -89,6 +96,7 @@ func NewServer(opts ...ServerOption) (*Server, error) {
 
 	s := &Server{
 		internal:         temporal.NewServer(serverOpts...),
+		ui:               c.UIServer,
 		frontendHostPort: cfg.PublicClient.HostPort,
 		config:           c,
 	}
@@ -98,11 +106,17 @@ func NewServer(opts ...ServerOption) (*Server, error) {
 
 // Start temporal server.
 func (s *Server) Start() error {
+	go func() {
+		if err := s.ui.Start(); err != nil {
+			panic(err)
+		}
+	}()
 	return s.internal.Start()
 }
 
 // Stop the server.
 func (s *Server) Stop() {
+	s.ui.Stop()
 	s.internal.Stop()
 }
 

@@ -10,6 +10,8 @@ Temporalite is a distribution of [Temporal](https://github.com/temporalio/tempor
 
 Persistence to disk and an in-memory mode are both supported via SQLite.
 
+_Check out this video for a brief introduction and demo:_ [youtu.be/Hz7ZZzafBoE](https://youtu.be/Hz7ZZzafBoE?t=284) [16:13] -- demo starts at [11:28](https://youtu.be/Hz7ZZzafBoE?t=688)
+
 ## Why
 
 The primary goal of Temporalite is to make it simple and fast to run Temporal locally or in testing environments.
@@ -19,12 +21,15 @@ Features that align with this goal:
 - Fast startup time
 - Minimal resource overhead: no dependencies on a container runtime or database server
 - Support for Windows, Linux, and macOS
+- Ships with a web interface
 
 ## Getting Started
 
 ### Download and Start Temporal Server Locally
 
 Build from source using [go install](https://golang.org/ref/mod#go-install):
+
+> Note: Go 1.17 or greater is currently required.
 
 ```bash
 go install github.com/DataDog/temporalite/cmd/temporalite@latest
@@ -33,8 +38,10 @@ go install github.com/DataDog/temporalite/cmd/temporalite@latest
 Start Temporal server:
 
 ```bash
-temporalite start
+temporalite start --namespace default
 ```
+
+At this point you should have a server running on `localhost:7233` and a web interface at http://localhost:8233.
 
 ### Use CLI
 
