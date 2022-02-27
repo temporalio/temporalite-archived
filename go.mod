@@ -1,4 +1,4 @@
-module github.com/DataDog/temporalite
+module github.com/evgenebruter-zoomin/temporalite
 
 go 1.17
 
