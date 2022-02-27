@@ -24,8 +24,8 @@ import (
 	// Load sqlite storage driver
 	_ "go.temporal.io/server/common/persistence/sql/sqlplugin/sqlite"
 
-	"github.com/DataDog/temporalite"
-	"github.com/DataDog/temporalite/internal/liteconfig"
+	"github.com/evgenebruter-zoomin/temporalite"
+	"github.com/evgenebruter-zoomin/temporalite/internal/liteconfig"
 )
 
 var (
@@ -33,17 +33,16 @@ var (
 )
 
 const (
-  searchAttrType = "search-attributes-type"
+	searchAttrType = "search-attributes-type"
 	searchAttrKey  = "search-attributes-key"
 	ephemeralFlag  = "ephemeral"
 	dbPathFlag     = "filename"
 	portFlag       = "port"
-	uiPortFlag    = "ui-port"
-	ipFlag        = "ip"
+	uiPortFlag     = "ui-port"
+	ipFlag         = "ip"
 	logFormatFlag  = "log-format"
 	namespaceFlag  = "namespace"
-	pragmaFlag    = "sqlite-pragma"
-
+	pragmaFlag     = "sqlite-pragma"
 )
 
 func init() {
@@ -137,7 +136,7 @@ func buildCLI() *cli.App {
 				if c.IsSet(searchAttrType) && c.IsSet(searchAttrKey) && len(c.StringSlice(searchAttrType)) == len(c.StringSlice(searchAttrKey)) {
 					return cli.Exit(fmt.Sprintf("ERROR: number of search attributes (type/key) in %q and %q must be the same", searchAttrType, searchAttrKey), 1)
 				}
-        
+
 				switch c.String(logFormatFlag) {
 				case "json", "pretty":
 				default:

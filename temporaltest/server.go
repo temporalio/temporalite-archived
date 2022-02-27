@@ -15,7 +15,7 @@ import (
 	"go.temporal.io/sdk/worker"
 	"go.temporal.io/server/common/log"
 
-	"github.com/DataDog/temporalite"
+	"github.com/evgenebruter-zoomin/temporalite"
 )
 
 // A TestServer is a Temporal server listening on a system-chosen port on the
