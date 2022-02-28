@@ -157,6 +157,7 @@ func buildCLI() *cli.App {
 				}
 
 				opts := []temporalite.ServerOption{
+					temporalite.WithDynamicPorts(),
 					temporalite.WithFrontendPort(serverPort),
 					temporalite.WithFrontendIP(ip),
 					temporalite.WithDatabaseFilePath(c.String(dbPathFlag)),
