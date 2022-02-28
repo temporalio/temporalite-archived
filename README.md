@@ -63,6 +63,7 @@ temporalite start -h
 ### Namespace Registration
 
 Namespaces can be pre-registered at startup so they're available to use right away:
+
 ```bash
 temporalite start --namespace foo --namespace bar
 ```
@@ -85,4 +86,18 @@ An in-memory mode is also available. Note that all data will be lost on each res
 
 ```bash
 temporalite start --ephemeral
+```
+
+### Web UI
+
+The `temporalite` binary can be compiled to omit static assets for installations that will never use the UI:
+
+```bash
+go install -tags headless github.com/DataDog/temporalite/cmd/temporalite@latest
+```
+
+The UI can also be disabled via a runtime flag:
+
+```bash
+temporalite start --headless
 ```
