@@ -117,7 +117,7 @@ func BenchmarkRunWorkflow(b *testing.B) {
 func TestWithSearchAttributes(t *testing.T) {
 	// Create test Temporal server and client
 	ts := temporaltest.NewServer(temporaltest.WithT(t),
-		temporaltest.WithSA(map[string]enums.IndexedValueType{
+		temporaltest.WithSearchAttributes(map[string]enums.IndexedValueType{
 			"test": enums.INDEXED_VALUE_TYPE_TEXT,
 		}))
 	c := ts.Client()
