@@ -3,32 +3,21 @@ package temporalite
 import (
 	"context"
 	sql2 "database/sql"
-	"fmt"
 
 	"go.temporal.io/api/enums/v1"
 	"go.temporal.io/server/api/persistence/v1"
 	"go.temporal.io/server/common/cluster"
-	"go.temporal.io/server/common/config"
 	p "go.temporal.io/server/common/persistence"
 	"go.temporal.io/server/common/persistence/serialization"
-	"go.temporal.io/server/common/persistence/sql"
 	"go.temporal.io/server/common/persistence/sql/sqlplugin"
-	"go.temporal.io/server/common/resolver"
 )
 
 type searchAttributesHelper struct {
 	db sqlplugin.DB
 }
 
-func (s *searchAttributesHelper) Close() error {
-	return s.db.Close()
-}
+func newSearchAttributesHelper(db sqlplugin.DB) (*searchAttributesHelper, error) {
 
-func newSearchAttributesHelper(cfg *config.SQL) (*searchAttributesHelper, error) {
-	db, err := sql.NewSQLDB(sqlplugin.DbKindUnknown, cfg, resolver.NewNoopResolver())
-	if err != nil {
-		return nil, fmt.Errorf("unable to create SQLite admin DB: %w", err)
-	}
 	return &searchAttributesHelper{
 		db: db,
 	}, nil

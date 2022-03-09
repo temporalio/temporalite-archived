@@ -15,6 +15,9 @@ import (
 	"go.temporal.io/server/common/authorization"
 	"go.temporal.io/server/common/config"
 	"go.temporal.io/server/common/dynamicconfig"
+	"go.temporal.io/server/common/persistence/sql"
+	"go.temporal.io/server/common/persistence/sql/sqlplugin"
+	"go.temporal.io/server/common/resolver"
 	"go.temporal.io/server/schema/sqlite"
 	"go.temporal.io/server/temporal"
 
@@ -73,14 +76,18 @@ func NewServer(opts ...ServerOption) (*Server, error) {
 	}
 
 	if c.SearchAttributes != nil && len(c.SearchAttributes) > 0 {
-		helper, err := newSearchAttributesHelper(sqlConfig)
+		db, err := sql.NewSQLDB(sqlplugin.DbKindUnknown, sqlConfig, resolver.NewNoopResolver())
+		if err != nil {
+			return nil, fmt.Errorf("unable to create SQLite admin DB: %w", err)
+		}
+		helper, err := newSearchAttributesHelper(db)
 		if err != nil {
 			return nil, err
 		}
 		if err := helper.AddSearchAttributes(cfg.ClusterMetadata, c.SearchAttributes); err != nil {
 			return nil, fmt.Errorf("error setting up initial search attributes: %w", err)
 		}
-		defer func() { _ = helper.Close() }()
+		defer func() { _ = db.Close() }()
 	}
 	authorizer, err := authorization.GetAuthorizerFromConfig(&cfg.Global.Authorization)
 	if err != nil {
