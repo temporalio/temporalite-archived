@@ -24,7 +24,7 @@ func (s *searchAttributesHelper) Close() error {
 	return s.db.Close()
 }
 
-func NewSearchAttributesHelper(cfg *config.SQL) (*searchAttributesHelper, error) {
+func newSearchAttributesHelper(cfg *config.SQL) (*searchAttributesHelper, error) {
 	db, err := sql.NewSQLDB(sqlplugin.DbKindUnknown, cfg, resolver.NewNoopResolver())
 	if err != nil {
 		return nil, fmt.Errorf("unable to create SQLite admin DB: %w", err)

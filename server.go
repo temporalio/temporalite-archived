@@ -73,7 +73,7 @@ func NewServer(opts ...ServerOption) (*Server, error) {
 	}
 
 	if c.SearchAttributes != nil && len(c.SearchAttributes) > 0 {
-		helper, err := NewSearchAttributesHelper(sqlConfig)
+		helper, err := newSearchAttributesHelper(sqlConfig)
 		if err != nil {
 			return nil, err
 		}
