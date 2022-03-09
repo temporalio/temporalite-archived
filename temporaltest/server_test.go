@@ -117,24 +117,30 @@ func BenchmarkRunWorkflow(b *testing.B) {
 
 func TestRegisterSearchAttributes(t *testing.T) {
 	// Create test Temporal server and client
+	addedAttributes := map[string]enums.IndexedValueType{
+		"testText":     enums.INDEXED_VALUE_TYPE_TEXT,
+		"testBool":     enums.INDEXED_VALUE_TYPE_BOOL,
+		"testDouble":   enums.INDEXED_VALUE_TYPE_DOUBLE,
+		"testDatetime": enums.INDEXED_VALUE_TYPE_DATETIME,
+		"testInt":      enums.INDEXED_VALUE_TYPE_INT,
+	}
 	ts := temporaltest.NewServer(temporaltest.WithT(t),
-		temporaltest.WithSearchAttributes(map[string]enums.IndexedValueType{
-			"test": enums.INDEXED_VALUE_TYPE_TEXT,
-		}))
+		temporaltest.WithSearchAttributes(addedAttributes))
 
-	searchAttrs, err := ts.Client().GetSearchAttributes(context.Background())
+	serverAttrs, err := ts.Client().GetSearchAttributes(context.Background())
 	if err != nil {
 		t.Fatal(err)
 	}
-	// Ensure that the search attributes returned by the server
-	// have the search attribute defined in the test
-	value, ok := searchAttrs.Keys["test"]
-	if ok {
-		if value != enums.INDEXED_VALUE_TYPE_TEXT {
-			t.Fatal(fmt.Sprintf("search attribute was defined and present, but the value did not match. Expected %s, but got %s", enums.INDEXED_VALUE_TYPE_TEXT, value.String()))
+
+	for saName, saType := range addedAttributes {
+		value, ok := serverAttrs.Keys[saName]
+		if ok {
+			if value != saType {
+				t.Fatalf("search attribute was defined and present, but the expected type: %s did not match the returned type: %s", saType, value)
+			}
+		} else {
+			t.Fatalf("expected search attribute: %s to be present, but was not", saName)
 		}
-	} else {
-		t.Fatal("search attribute was defined, but not returned by the server")
 	}
 }
 
