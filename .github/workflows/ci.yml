@@ -25,15 +25,21 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
   build:
-    runs-on: ubuntu-latest
     strategy:
       matrix:
-        include:
-          # cgo is currently required by the upstream SQLite driver.
-          # This case should be un-commented if and when cgo is
-          # supported again.
-          # - cgo: "0"
-          - cgo: "1"
+        os: [macos-latest, windows-latest, ubuntu-18.04]
+        flags:
+        - ""
+        - -tags headless
+        cgo: ["0", "1"]
+        exclude:
+        # TODO: remove this exception after https://github.com/temporalio/ui-server/issues/104 is closed.
+        - os: windows-latest
+          flags: ""
+        # cgo is currently required by the upstream SQLite driver.
+        # This exception should be removed if/when non-cgo builds are supported again.
+        - cgo: "0"
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v2
       - name: Set up Go
@@ -43,4 +49,4 @@ jobs:
       - name: Test
         env:
           CGO_ENABLED: ${{ matrix.cgo }}
-        run: go test -v ./...
+        run: go test -v ${{ matrix.flags }} ./...

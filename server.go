@@ -55,17 +55,14 @@ func NewServer(opts ...ServerOption) (*Server, error) {
 	cfg := liteconfig.Convert(c)
 	sqlConfig := cfg.Persistence.DataStores[liteconfig.PersistenceStoreName].SQL
 
-	// Apply migrations if file does not already exist
-	if c.Ephemeral {
-		if err := sqlite.SetupSchema(sqlConfig); err != nil {
-			return nil, fmt.Errorf("error setting up schema: %w", err)
-		}
-	} else if _, err := os.Stat(c.DatabaseFilePath); os.IsNotExist(err) {
-		if err := sqlite.SetupSchema(sqlConfig); err != nil {
-			return nil, fmt.Errorf("error setting up schema: %w", err)
+	if !c.Ephemeral {
+		// Apply migrations if file does not already exist
+		if _, err := os.Stat(c.DatabaseFilePath); os.IsNotExist(err) {
+			if err := sqlite.SetupSchema(sqlConfig); err != nil {
+				return nil, fmt.Errorf("error setting up schema: %w", err)
+			}
 		}
 	}
-
 	// Pre-create namespaces
 	var namespaces []*sqlite.NamespaceConfig
 	for _, ns := range c.Namespaces {
