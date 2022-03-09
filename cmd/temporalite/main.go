@@ -34,15 +34,14 @@ var (
 )
 
 const (
-	searchAttrType = "search-attributes-type"
-	searchAttrKey  = "search-attributes-key"
-	ephemeralFlag  = "ephemeral"
-	dbPathFlag     = "filename"
-	portFlag       = "port"
+	searchAttr    = "search-attribute"
+	ephemeralFlag = "ephemeral"
+	dbPathFlag    = "filename"
+	portFlag      = "port"
 	uiPortFlag    = "ui-port"
-	ipFlag         = "ip"
-	logFormatFlag  = "log-format"
-	namespaceFlag  = "namespace"
+	ipFlag        = "ip"
+	logFormatFlag = "log-format"
+	namespaceFlag = "namespace"
 	pragmaFlag    = "sqlite-pragma"
 )
 
@@ -68,12 +67,8 @@ func buildCLI() *cli.App {
 			ArgsUsage: " ",
 			Flags: []cli.Flag{
 				&cli.StringSliceFlag{
-					Name:  searchAttrKey,
-					Usage: "Optional search attributes keys that will be registered at startup. If there are multiple keys, concatenate them and separate by ,",
-				},
-				&cli.StringSliceFlag{
-					Name:  searchAttrType,
-					Usage: "Optional search attributes types that will be registered at startup. If there are multiple keys, concatenate them and separate by ,",
+					Name:  searchAttr,
+					Usage: "Optional search attributes that will be registered at startup. The expected format is searchAttributeName=searchAttributeType",
 				},
 				&cli.BoolFlag{
 					Name:  ephemeralFlag,
@@ -181,8 +176,8 @@ func buildCLI() *cli.App {
 				if c.Bool(ephemeralFlag) {
 					opts = append(opts, temporalite.WithPersistenceDisabled())
 				}
-				if c.IsSet(searchAttrType) && c.IsSet(searchAttrKey) {
-					sa, err := parseSearchAttributes(c.StringSlice(searchAttrKey), c.StringSlice(searchAttrType))
+				if c.IsSet(searchAttr) {
+					sa, err := parseSearchAttributes(c.StringSlice(searchAttr))
 					if err != nil {
 						return err
 					}
@@ -230,24 +225,34 @@ func getPragmaMap(input []string) (map[string]string, error) {
 	return result, nil
 }
 
-func parseSearchAttributes(keys []string, types []string) (map[string]enums.IndexedValueType, error) {
-	var searchAttributes = make(map[string]enums.IndexedValueType, len(keys))
-	for i, key := range keys {
-		t, ok := enums.IndexedValueType_value[types[i]]
-		if !ok {
-			return nil, fmt.Errorf("the type: %s is not a valid type for a search attribute", types[i])
+func parseSearchAttributes(rawSearchAttributes []string) (map[string]enums.IndexedValueType, error) {
+	var searchAttributes = make(map[string]enums.IndexedValueType, len(rawSearchAttributes))
+	for _, keyedAttribute := range rawSearchAttributes {
+		parsed := strings.Split(keyedAttribute, "=")
+		if len(parsed) != 2 {
+			return nil, fmt.Errorf("could not parse searchAttributeName=searchAttributeType from: %s", keyedAttribute)
 		}
-		searchAttributes[key] = enums.IndexedValueType(t)
+		saType := parsed[1]
+		saName := parsed[0]
+
+		t, ok := enums.IndexedValueType_value[saType]
+		if !ok {
+			return nil, fmt.Errorf("the type: %s is not a valid type for a search attribute", saType)
+		}
+		searchAttributes[saName] = enums.IndexedValueType(t)
 	}
 	return searchAttributes, nil
 }
 
 func searchAttributesValid(c *cli.Context) error {
-	if (c.IsSet(searchAttrType) || c.IsSet(searchAttrKey)) && !(c.IsSet(searchAttrType) && c.IsSet(searchAttrKey)) {
-		return cli.Exit(fmt.Sprintf("ERROR: both %q and %q must be set at the same time, or omitted completely", searchAttrType, searchAttrKey), 1)
-	}
-	if c.IsSet(searchAttrType) && c.IsSet(searchAttrKey) && len(c.StringSlice(searchAttrType)) != len(c.StringSlice(searchAttrKey)) {
-		return cli.Exit(fmt.Sprintf("ERROR: number of search attributes (type/key) in %q and %q must be the same", searchAttrType, searchAttrKey), 1)
+	if c.IsSet(searchAttr) {
+		rawSearchAttributes := c.StringSlice(searchAttr)
+		for _, keyedAttribute := range rawSearchAttributes {
+			parsed := strings.Split(keyedAttribute, "=")
+			if len(parsed) != 2 {
+				return fmt.Errorf("could not parse searchAttributeName=searchAttributeType from: %s", keyedAttribute)
+			}
+		}
 	}
 	return nil
 }
