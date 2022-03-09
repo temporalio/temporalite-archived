@@ -5,17 +5,18 @@
 package temporaltest_test
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
 	"testing"
 	"time"
 
+	"github.com/DataDog/temporalite/internal/examples/helloworld"
+	"github.com/DataDog/temporalite/temporaltest"
 	"go.temporal.io/api/enums/v1"
 	"go.temporal.io/sdk/client"
 	"go.temporal.io/sdk/worker"
-
-	"github.com/DataDog/temporalite/internal/examples/helloworld"
-	"github.com/DataDog/temporalite/temporaltest"
 )
 
 // to be used in example code
@@ -164,14 +165,22 @@ func TestWithSearchAttributes(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	// Get workflow result
-	var result string
-	if err := wfr.Get(context.Background(), &result); err != nil {
+	wfExecution, err := c.DescribeWorkflowExecution(context.Background(), wfr.GetID(), wfr.GetRunID())
+	if err != nil {
 		t.Fatal(err)
 	}
 
-	// Print result
-	fmt.Println(result)
-	// Output: Hello world
-
+	searchAttrs := wfExecution.GetWorkflowExecutionInfo().GetSearchAttributes()
+	if val, ok := searchAttrs.IndexedFields["test"]; !ok {
+		t.Fatalf("Expected search attributes to contain the key 'test', but was not present")
+	} else {
+		dec := json.NewDecoder(bytes.NewReader(val.GetData()))
+		var value string
+		if err := dec.Decode(&value); err != nil {
+			t.Fatal(err)
+		}
+		if value != "test-value" {
+			t.Fatalf("search attribute value expected to be 'test-value' but was %s", value)
+		}
+	}
 }
