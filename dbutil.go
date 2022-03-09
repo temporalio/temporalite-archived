@@ -85,7 +85,9 @@ func (s *searchAttributesHelper) AddSearchAttributes(clusterConfig *cluster.Conf
 		return err
 	}
 	var metaVersion int64
-	metaRow, err := s.db.WriteLockGetClusterMetadataV1(context.Background())
+	metaRow, err := s.db.WriteLockGetClusterMetadata(context.Background(), &sqlplugin.ClusterMetadataFilter{
+		ClusterName: clusterConfig.CurrentClusterName,
+	})
 	if err != nil {
 		if err != sql2.ErrNoRows {
 			return err
