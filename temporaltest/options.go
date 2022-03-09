@@ -24,8 +24,8 @@ func WithT(t *testing.T) TestServerOption {
 	})
 }
 
-// WithSA will ensure that the test server is initialized with the passed search attributes
-func WithSA(searchAttributes map[string]enums.IndexedValueType) TestServerOption {
+// WithSearchAttributes allows workflows to register any of the passed search attributes.
+func WithSearchAttributes(searchAttributes map[string]enums.IndexedValueType) TestServerOption {
 	return newApplyFuncContainer(func(server *TestServer) {
 		server.searchAttributes = searchAttributes
 	})
