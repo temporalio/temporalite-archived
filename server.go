@@ -133,7 +133,6 @@ func (s *Server) NewClient(ctx context.Context, namespace string) (client.Client
 // Note that the HostPort and ConnectionOptions fields of client.Options will always be overridden.
 func (s *Server) NewClientWithOptions(ctx context.Context, options client.Options) (client.Client, error) {
 	options.HostPort = s.frontendHostPort
-	options.ConnectionOptions = client.ConnectionOptions{}
 	return client.NewClient(options)
 }
 
