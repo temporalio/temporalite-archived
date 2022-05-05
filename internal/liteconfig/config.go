@@ -88,7 +88,7 @@ func NewDefaultConfig() (*Config, error) {
 		SQLitePragmas:    nil,
 		Logger: log.NewZapLogger(log.BuildZapLogger(log.Config{
 			Stdout:     true,
-			Level:      "debug",
+			Level:      "info",
 			OutputFile: "",
 		})),
 		portProvider: &portProvider{},
