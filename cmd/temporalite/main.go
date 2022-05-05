@@ -41,6 +41,7 @@ const (
 	headlessFlag  = "headless"
 	ipFlag        = "ip"
 	logFormatFlag = "log-format"
+	logLevelFlag  = "log-level"
 	namespaceFlag = "namespace"
 	pragmaFlag    = "sqlite-pragma"
 )
@@ -111,6 +112,12 @@ func buildCLI() *cli.App {
 					EnvVars: nil,
 					Value:   "json",
 				},
+				&cli.StringFlag{
+					Name:    logLevelFlag,
+					Usage:   `customize the log level (allowed: ["debug" "info" "warn" "error" "fatal"])`,
+					EnvVars: nil,
+					Value:   "info",
+				},
 				&cli.StringSliceFlag{
 					Name:    pragmaFlag,
 					Aliases: []string{"sp"},
@@ -131,6 +138,12 @@ func buildCLI() *cli.App {
 				case "json", "pretty":
 				default:
 					return cli.Exit(fmt.Sprintf("bad value %q passed for flag %q", c.String(logFormatFlag), logFormatFlag), 1)
+				}
+
+				switch c.String(logLevelFlag) {
+				case "debug", "info", "warn", "error", "fatal":
+				default:
+					return cli.Exit(fmt.Sprintf("bad value %q passed for flag %q", c.String(logLevelFlag), logLevelFlag), 1)
 				}
 
 				// Check that ip address is valid
@@ -176,8 +189,22 @@ func buildCLI() *cli.App {
 				if c.Bool(ephemeralFlag) {
 					opts = append(opts, temporalite.WithPersistenceDisabled())
 				}
+
+				var logger log.Logger
 				if c.String(logFormatFlag) == "pretty" {
 					lcfg := zap.NewDevelopmentConfig()
+					switch c.String(logLevelFlag) {
+					case "debug":
+						lcfg.Level.SetLevel(zap.DebugLevel)
+					case "info":
+						lcfg.Level.SetLevel(zap.InfoLevel)
+					case "warn":
+						lcfg.Level.SetLevel(zap.WarnLevel)
+					case "error":
+						lcfg.Level.SetLevel(zap.ErrorLevel)
+					case "fatal":
+						lcfg.Level.SetLevel(zap.FatalLevel)
+					}
 					lcfg.EncoderConfig.EncodeLevel = zapcore.CapitalColorLevelEncoder
 					l, err := lcfg.Build(
 						zap.WithCaller(false),
@@ -186,9 +213,15 @@ func buildCLI() *cli.App {
 					if err != nil {
 						return err
 					}
-					logger := log.NewZapLogger(l)
-					opts = append(opts, temporalite.WithLogger(logger))
+					logger = log.NewZapLogger(l)
+				} else {
+					logger = log.NewZapLogger(log.BuildZapLogger(log.Config{
+						Stdout:     true,
+						Level:      c.String(logLevelFlag),
+						OutputFile: "",
+					}))
 				}
+				opts = append(opts, temporalite.WithLogger(logger))
 
 				s, err := temporalite.NewServer(opts...)
 				if err != nil {
