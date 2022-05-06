@@ -6,7 +6,7 @@ require (
 	github.com/google/go-licenses v0.0.0-20210816172045-3099c18c36e1
 	github.com/google/licenseclassifier v0.0.0-20210722185704-3043a050f148
 	github.com/temporalio/ui-server v0.2.1-0.20220226010605-9804b4397392
-	github.com/urfave/cli/v2 v2.4.0
+	github.com/urfave/cli/v2 v2.5.1
 	go.temporal.io/sdk v1.14.0
 	go.temporal.io/server v1.16.1
 	go.uber.org/zap v1.21.0
@@ -27,7 +27,7 @@ require (
 	github.com/cactus/go-statsd-client v3.1.1+incompatible // indirect
 	github.com/cespare/xxhash/v2 v2.1.2 // indirect
 	github.com/coreos/go-oidc/v3 v3.0.0 // indirect
-	github.com/cpuguy83/go-md2man/v2 v2.0.1 // indirect
+	github.com/cpuguy83/go-md2man/v2 v2.0.2 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/dgryski/go-farm v0.0.0-20200201041132-a6ae2369ad13 // indirect
 	github.com/emirpasic/gods v1.12.0 // indirect
