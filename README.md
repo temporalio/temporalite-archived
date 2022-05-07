@@ -29,7 +29,7 @@ Features that align with this goal:
 
 Build from source using [go install](https://golang.org/ref/mod#go-install):
 
-> Note: Go 1.17 or greater is currently required.
+> Note: Go 1.18 or greater is currently required.
 
 ```bash
 go install github.com/DataDog/temporalite/cmd/temporalite@latest

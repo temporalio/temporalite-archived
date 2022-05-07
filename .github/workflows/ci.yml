@@ -14,7 +14,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v2
         with:
-          go-version: 1.17
+          go-version: 1.18
       - name: Race
         run: go test -v -race ./...
         continue-on-error: true
@@ -33,9 +33,6 @@ jobs:
         - -tags headless
         cgo: ["0", "1"]
         exclude:
-        # TODO: remove this exception after https://github.com/temporalio/ui-server/issues/104 is closed.
-        - os: windows-latest
-          flags: ""
         # cgo is currently required by the upstream SQLite driver.
         # This exception should be removed if/when non-cgo builds are supported again.
         - cgo: "0"
@@ -45,7 +42,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v2
         with:
-          go-version: 1.17
+          go-version: 1.18
       - name: Test
         env:
           CGO_ENABLED: ${{ matrix.cgo }}

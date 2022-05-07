@@ -8,7 +8,7 @@ This doc is for contributors to Temporalite (hopefully that's you!)
 ## Prerequisites
 
 ### Build prerequisites
-* [Go Lang](https://golang.org/) (minimum version required is 1.17):
+* [Go Lang](https://golang.org/) (minimum version required is 1.18):
     - Install on macOS with `brew install go`.
     - Install on Ubuntu with `sudo apt install golang`.
 
