@@ -1,6 +1,6 @@
 module github.com/DataDog/temporalite
 
-go 1.17
+go 1.18
 
 require (
 	github.com/google/go-licenses v0.0.0-20210816172045-3099c18c36e1
