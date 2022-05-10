@@ -461,8 +461,8 @@ github.com/stretchr/testify v1.7.0 h1:nwc3DEeHmmLAfoZucVR881uASk0Mfjw8xYJ99tb5Cc
 github.com/stretchr/testify v1.7.0/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=
 github.com/temporalio/ringpop-go v0.0.0-20211012191444-6f91b5915e95 h1:8G34e73qtrkG9sDFcSC8uot0np3e6BLoMZxleTcpUiA=
 github.com/temporalio/ringpop-go v0.0.0-20211012191444-6f91b5915e95/go.mod h1:Ek9J8CAfI1IwVSqHpTOgj7FjzRSJ5SM/ud52eCmkhsw=
-github.com/temporalio/ui-server v0.13.0 h1:uwYkudvzHCRtRaVH0QLLePOFoNURvv5FvApcEeL4Z5A=
-github.com/temporalio/ui-server v0.13.0/go.mod h1:lNNVnighw3jPQzsocLWn9Ry8km3xGMBT/w6nEuQogxw=
+github.com/temporalio/ui-server v0.13.1 h1:TIW23zCgG2vhq9tRqNmWS8En0nhntf35apqYmJVA1x4=
+github.com/temporalio/ui-server v0.13.1/go.mod h1:lNNVnighw3jPQzsocLWn9Ry8km3xGMBT/w6nEuQogxw=
 github.com/twmb/murmur3 v1.1.5/go.mod h1:Qq/R7NUyOfr65zD+6Q5IHKsJLwP7exErjN6lyyq3OSQ=
 github.com/twmb/murmur3 v1.1.6 h1:mqrRot1BRxm+Yct+vavLMou2/iJt0tNVTTC0QoIjaZg=
 github.com/twmb/murmur3 v1.1.6/go.mod h1:Qq/R7NUyOfr65zD+6Q5IHKsJLwP7exErjN6lyyq3OSQ=
