@@ -8,7 +8,7 @@ require (
 	github.com/temporalio/ui-server v0.13.1
 	github.com/urfave/cli/v2 v2.6.0
 	go.temporal.io/sdk v1.14.0
-	go.temporal.io/server v1.16.1
+	go.temporal.io/server v1.16.2
 	go.uber.org/zap v1.21.0
 )
 
