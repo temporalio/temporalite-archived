@@ -5,14 +5,14 @@ go 1.18
 require (
 	github.com/google/go-licenses v0.0.0-20210816172045-3099c18c36e1
 	github.com/google/licenseclassifier v0.0.0-20210722185704-3043a050f148
-	github.com/temporalio/ui-server v0.13.1
+	github.com/temporalio/ui-server v0.13.2
 	github.com/urfave/cli/v2 v2.6.0
 	go.temporal.io/sdk v1.14.0
 	go.temporal.io/server v1.16.2
 	go.uber.org/zap v1.21.0
 )
 
-require go.temporal.io/api v1.7.1-0.20220326004856-88a7c92fb8b4 // indirect
+require go.temporal.io/api v1.7.1-0.20220510183009-449d18444c9a // indirect
 
 require (
 	cloud.google.com/go v0.100.2 // indirect
@@ -115,17 +115,17 @@ require (
 	go.uber.org/multierr v1.7.0 // indirect
 	golang.org/x/crypto v0.0.0-20220214200702-86341886e292 // indirect
 	golang.org/x/mod v0.4.2 // indirect
-	golang.org/x/net v0.0.0-20220325170049-de3da57026de // indirect
+	golang.org/x/net v0.0.0-20220425223048-2871e0cb64e4 // indirect
 	golang.org/x/oauth2 v0.0.0-20220223155221-ee480838109b // indirect
-	golang.org/x/sys v0.0.0-20220325203850-36772127a21f // indirect
+	golang.org/x/sys v0.0.0-20220503163025-988cb79eb6c6 // indirect
 	golang.org/x/text v0.3.7 // indirect
 	golang.org/x/time v0.0.0-20220224211638-0e9765cccd65 // indirect
 	golang.org/x/tools v0.1.5 // indirect
 	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
 	google.golang.org/api v0.68.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
-	google.golang.org/genproto v0.0.0-20220324131243-acbaeb5b85eb // indirect
-	google.golang.org/grpc v1.45.0 // indirect
+	google.golang.org/genproto v0.0.0-20220505152158-f39f71e6c8f3 // indirect
+	google.golang.org/grpc v1.46.0 // indirect
 	google.golang.org/protobuf v1.28.0 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/square/go-jose.v2 v2.6.0 // indirect
