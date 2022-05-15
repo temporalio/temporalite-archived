@@ -31,6 +31,10 @@ Build from source using [go install](https://golang.org/ref/mod#go-install):
 
 > Note: Go 1.18 or greater is currently required.
 
+> Note: On Windows, first, make sure that you have Go and GCC installed:
+> * Go: https://go.dev/doc/install
+> * GCC: https://jmeubank.github.io/tdm-gcc/ (pick an install for both 32 & 64 bit)
+
 ```bash
 go install github.com/DataDog/temporalite/cmd/temporalite@latest
 ```
