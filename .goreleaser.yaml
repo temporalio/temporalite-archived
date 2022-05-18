@@ -72,6 +72,7 @@ archives:
       386: i386
       amd64: x86_64
     format: zip
+    id: 'zip_files'
 checksum:
   name_template: 'checksums.txt'
 snapshot:
