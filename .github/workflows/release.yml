@@ -28,6 +28,6 @@ jobs:
             -v `pwd`/sysroot:/sysroot \
             -w /go/src/github.com/DataDog/temporalite \
             goreleaser/goreleaser-cross:v1.18.2 \
-            --rm-dist --skip-validate --skip-publish
+            --rm-dist
         env: 
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
