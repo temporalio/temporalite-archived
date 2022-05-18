@@ -56,7 +56,6 @@ type Config struct {
 	portProvider     *portProvider
 	FrontendIP       string
 	UIServer         UIServer
-	Tls              config.ServerTLS
 }
 
 var SupportedPragmas = map[string]struct{}{
@@ -94,7 +93,6 @@ func NewDefaultConfig() (*Config, error) {
 		})),
 		portProvider: &portProvider{},
 		FrontendIP:   "",
-		Tls:          config.ServerTLS{},
 	}, nil
 }
 
@@ -137,34 +135,6 @@ func Convert(cfg *Config) *config.Config {
 		pprofPort = cfg.FrontendPort + 201
 	}
 
-	tls := config.RootTLS{
-		Frontend: config.GroupTLS{
-			Server: config.ServerTLS{
-				CertFile:          cfg.Tls.CertFile,
-				KeyFile:           cfg.Tls.KeyFile,
-				RequireClientAuth: cfg.Tls.RequireClientAuth,
-				ClientCAFiles:     cfg.Tls.ClientCAFiles,
-			},
-			Client: config.ClientTLS{
-				RootCAFiles: cfg.Tls.ClientCAFiles,
-			},
-		},
-	}
-
-	if tls.Frontend.Server.RequireClientAuth {
-		tls.Internode = config.GroupTLS{
-			Server: config.ServerTLS{
-				CertFile:          cfg.Tls.CertFile,
-				KeyFile:           cfg.Tls.KeyFile,
-				RequireClientAuth: cfg.Tls.RequireClientAuth,
-				ClientCAFiles:     cfg.Tls.ClientCAFiles,
-			},
-			Client: config.ClientTLS{
-				RootCAFiles: cfg.Tls.ClientCAFiles,
-			},
-		}
-	}
-
 	return &config.Config{
 		Global: config.Global{
 			Membership: config.Membership{
@@ -178,7 +148,6 @@ func Convert(cfg *Config) *config.Config {
 				},
 			},
 			PProf: config.PProf{Port: pprofPort},
-			TLS:   tls,
 		},
 		Persistence: config.Persistence{
 			DefaultStore:     PersistenceStoreName,

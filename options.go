@@ -99,17 +99,6 @@ func WithUpstreamOptions(options ...temporal.ServerOption) ServerOption {
 	})
 }
 
-func WithTlsOptions(caCertificate, certificate, key string, useMtls bool) ServerOption {
-	return newApplyFuncContainer(func(cfg *liteconfig.Config) {
-		if caCertificate != "" {
-			cfg.Tls.ClientCAFiles = append(cfg.Tls.ClientCAFiles, caCertificate)
-		}
-		cfg.Tls.CertFile = certificate
-		cfg.Tls.KeyFile = key
-		cfg.Tls.RequireClientAuth = useMtls
-	})
-}
-
 type applyFuncContainer struct {
 	applyInternal func(*liteconfig.Config)
 }
