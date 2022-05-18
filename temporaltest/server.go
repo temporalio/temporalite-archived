@@ -138,3 +138,47 @@ func NewServer(opts ...TestServerOption) *TestServer {
 
 	return &ts
 }
+
+// NewServerWithTls starts and returns a new TestServer.
+//
+// If not specifying the WithT option, the caller should execute Stop when finished to close
+// the server and release resources.
+func NewServerWithTls(caCertificate, certificate, key string, useMtls bool, defaultClientOptions client.Options, opts ...TestServerOption) *TestServer {
+	rand.Seed(time.Now().UnixNano())
+	testNamespace := fmt.Sprintf("temporaltest-%d", rand.Intn(999999))
+
+	ts := TestServer{
+		defaultTestNamespace: testNamespace,
+	}
+
+	// Apply options
+	for _, opt := range opts {
+		opt.apply(&ts)
+	}
+
+	if ts.t != nil {
+		ts.t.Cleanup(func() {
+			ts.Stop()
+		})
+	}
+
+	s, err := temporalite.NewServer(
+		temporalite.WithNamespaces(ts.defaultTestNamespace),
+		temporalite.WithPersistenceDisabled(),
+		temporalite.WithDynamicPorts(),
+		temporalite.WithLogger(log.NewNoopLogger()),
+		temporalite.WithTlsOptions(caCertificate, certificate, key, useMtls),
+	)
+	if err != nil {
+		ts.fatal(fmt.Errorf("error creating server: %w", err))
+	}
+	ts.server = s
+	go func() {
+		if err := s.Start(); err != nil {
+			ts.fatal(fmt.Errorf("error starting server: %w", err))
+		}
+	}()
+
+	ts.defaultClient = ts.NewClientWithOptions(defaultClientOptions)
+	return &ts
+}
