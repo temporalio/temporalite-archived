@@ -19,3 +19,5 @@
 
 # sqlite databases
 *.db
+
+dist/
