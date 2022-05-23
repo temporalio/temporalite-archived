@@ -6,13 +6,16 @@ require (
 	github.com/google/go-licenses v0.0.0-20210816172045-3099c18c36e1
 	github.com/google/licenseclassifier v0.0.0-20210722185704-3043a050f148
 	github.com/temporalio/ui-server v0.13.1
-	github.com/urfave/cli/v2 v2.6.0
+	github.com/urfave/cli/v2 v2.8.0
 	go.temporal.io/sdk v1.14.0
 	go.temporal.io/server v1.16.2
 	go.uber.org/zap v1.21.0
 )
 
-require go.temporal.io/api v1.7.1-0.20220326004856-88a7c92fb8b4 // indirect
+require (
+	github.com/antzucaro/matchr v0.0.0-20210222213004-b04723ef80f0 // indirect
+	go.temporal.io/api v1.7.1-0.20220326004856-88a7c92fb8b4 // indirect
+)
 
 require (
 	cloud.google.com/go v0.100.2 // indirect
