@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"time"
 
+	"go.temporal.io/sdk/activity"
 	"go.temporal.io/sdk/worker"
 	"go.temporal.io/sdk/workflow"
 )
@@ -31,7 +32,12 @@ func PickGreeting(ctx context.Context) (string, error) {
 	return "Hello", nil
 }
 
+func TestIntercept(ctx context.Context) (string, error) {
+	return "Ok", nil
+}
+
 func RegisterWorkflowsAndActivities(r worker.Registry) {
 	r.RegisterWorkflow(Greet)
 	r.RegisterActivity(PickGreeting)
+	r.RegisterActivityWithOptions(TestIntercept, activity.RegisterOptions{Name: "TestIntercept"})
 }

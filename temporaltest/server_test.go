@@ -10,8 +10,11 @@ import (
 	"testing"
 	"time"
 
+	enumspb "go.temporal.io/api/enums/v1"
+	historypb "go.temporal.io/api/history/v1"
 	"go.temporal.io/sdk/client"
 	"go.temporal.io/sdk/worker"
+	"go.temporal.io/sdk/workflow"
 
 	"github.com/DataDog/temporalite/internal/examples/helloworld"
 	"github.com/DataDog/temporalite/temporaltest"
@@ -82,7 +85,7 @@ func TestNewServer(t *testing.T) {
 	}
 }
 
-func TestWorkerWithOptions(t *testing.T) {
+func TestNewWorkerWithOptions(t *testing.T) {
 	ts := temporaltest.NewServer(temporaltest.WithT(t))
 
 	ts.NewWorkerWithOptions(
@@ -118,6 +121,109 @@ func TestWorkerWithOptions(t *testing.T) {
 		t.Fatalf("unexpected result: %q", result)
 	}
 
+}
+
+// Tests creating a worker with a custom client. Embeds an interceptor in the worker.
+func TestNewWorkerWithClient(t *testing.T) {
+	ts := temporaltest.NewServer(temporaltest.WithT(t))
+	var opts client.Options
+	opts.Interceptors = append(opts.Interceptors, helloworld.NewTestInterceptor())
+	c := ts.NewClientWithOptions(opts)
+
+	ts.NewWorkerWithClient(
+		c,
+		"hello_world",
+		func(registry worker.Registry) {
+			helloworld.RegisterWorkflowsAndActivities(registry)
+		},
+		worker.Options{
+			MaxConcurrentActivityExecutionSize:      1,
+			MaxConcurrentLocalActivityExecutionSize: 1,
+		},
+	)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	wfr, err := ts.Client().ExecuteWorkflow(
+		ctx,
+		client.StartWorkflowOptions{TaskQueue: "hello_world"},
+		helloworld.Greet,
+		"world",
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	var result string
+	if err := wfr.Get(ctx, &result); err != nil {
+		t.Fatal(err)
+	}
+
+	if result != "Hello world" {
+		t.Fatalf("unexpected result: %q", result)
+	}
+}
+
+func TestReplayInterceptor(t *testing.T) {
+	ts := temporaltest.NewServer(temporaltest.WithT(t))
+	var opts client.Options
+
+	opts.Interceptors = append(opts.Interceptors, helloworld.NewTestInterceptor())
+	c := ts.NewClientWithOptions(opts)
+
+	ts.NewWorkerWithClient(
+		c,
+		"hello_world",
+		func(registry worker.Registry) {
+			helloworld.RegisterWorkflowsAndActivities(registry)
+		},
+		worker.Options{
+			MaxConcurrentActivityExecutionSize:      1,
+			MaxConcurrentLocalActivityExecutionSize: 1,
+		},
+	)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	wfr, err := ts.Client().ExecuteWorkflow(
+		ctx,
+		client.StartWorkflowOptions{TaskQueue: "hello_world"},
+		helloworld.Greet,
+		"world",
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	var result string
+	if err := wfr.Get(ctx, &result); err != nil {
+		t.Fatal(err)
+	}
+	wid := wfr.GetID()
+	rid := wfr.GetRunID()
+
+	// Replay workflow on the same task queue
+	var history historypb.History
+	iter := c.GetWorkflowHistory(ctx, wid, rid, false, enumspb.HISTORY_EVENT_FILTER_TYPE_ALL_EVENT)
+
+	for iter.HasNext() {
+		e, err := iter.Next()
+		if err != nil {
+			t.Fatal(err)
+		}
+		history.Events = append(history.Events, e)
+		fmt.Println(e)
+	}
+
+	replayer := worker.NewWorkflowReplayer()
+	replayer.RegisterWorkflowWithOptions(helloworld.Greet, workflow.RegisterOptions{Name: "Greet"})
+	err = replayer.ReplayWorkflowHistory(nil, &history)
+	fmt.Println(err)
+	if err != nil {
+		t.Fatal(err)
+	}
 }
 
 func BenchmarkRunWorkflow(b *testing.B) {
