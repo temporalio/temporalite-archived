@@ -37,10 +37,43 @@ func (ts *TestServer) fatal(err error) {
 }
 
 // Worker registers and starts a Temporal worker on the specified task queue.
+// WorkflowPanicPolicy is set to worker.FailWorkflow
 func (ts *TestServer) Worker(taskQueue string, registerFunc func(registry worker.Registry)) worker.Worker {
 	w := worker.New(ts.Client(), taskQueue, worker.Options{
 		WorkflowPanicPolicy: worker.FailWorkflow,
 	})
+	registerFunc(w)
+	ts.workers = append(ts.workers, w)
+
+	if err := w.Start(); err != nil {
+		ts.fatal(err)
+	}
+
+	return w
+}
+
+// NewWorkerWithOptions returns a Temporal worker on the specified task queue.
+// WorkflowPanicPolicy is set to worker.FailWorkflow
+func (ts *TestServer) NewWorkerWithOptions(taskQueue string, registerFunc func(registry worker.Registry), opts worker.Options) worker.Worker {
+	opts.WorkflowPanicPolicy = worker.FailWorkflow
+
+	w := worker.New(ts.Client(), taskQueue, opts)
+	registerFunc(w)
+	ts.workers = append(ts.workers, w)
+
+	if err := w.Start(); err != nil {
+		ts.fatal(err)
+	}
+
+	return w
+}
+
+// NewWorkerWithClient returns a Temporal worker on the specified task queue.
+// WorkflowPanicPolicy is set to worker.FailWorkflow
+func (ts *TestServer) NewWorkerWithClient(client client.Client, taskQueue string, registerFunc func(registry worker.Registry), opts worker.Options) worker.Worker {
+	opts.WorkflowPanicPolicy = worker.FailWorkflow
+
+	w := worker.New(client, taskQueue, opts)
 	registerFunc(w)
 	ts.workers = append(ts.workers, w)
 
