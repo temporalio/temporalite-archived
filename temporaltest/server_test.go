@@ -93,7 +93,8 @@ func TestWorkerWithOptions(t *testing.T) {
 		worker.Options{
 			MaxConcurrentActivityExecutionSize:      1,
 			MaxConcurrentLocalActivityExecutionSize: 1,
-		})
+		},
+	)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
