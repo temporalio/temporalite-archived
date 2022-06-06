@@ -165,6 +165,7 @@ func TestNewWorkerWithClient(t *testing.T) {
 	}
 }
 
+// Demonstrates potential issue with replay when executing local activities in an interceptor
 func TestReplayInterceptor(t *testing.T) {
 	ts := temporaltest.NewServer(temporaltest.WithT(t))
 	var opts client.Options
@@ -214,7 +215,6 @@ func TestReplayInterceptor(t *testing.T) {
 			t.Fatal(err)
 		}
 		history.Events = append(history.Events, e)
-		fmt.Println(e)
 	}
 
 	replayer := worker.NewWorkflowReplayer()
