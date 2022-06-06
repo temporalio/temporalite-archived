@@ -220,7 +220,6 @@ func TestReplayInterceptor(t *testing.T) {
 	replayer := worker.NewWorkflowReplayer()
 	replayer.RegisterWorkflowWithOptions(helloworld.Greet, workflow.RegisterOptions{Name: "Greet"})
 	err = replayer.ReplayWorkflowHistory(nil, &history)
-	fmt.Println(err)
 	if err != nil {
 		t.Fatal(err)
 	}
