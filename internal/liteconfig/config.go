@@ -56,7 +56,7 @@ type Config struct {
 	portProvider     *portProvider
 	FrontendIP       string
 	UIServer         UIServer
-	Tls              config.ServerTLS
+	TLS              config.ServerTLS
 }
 
 var SupportedPragmas = map[string]struct{}{
@@ -94,7 +94,7 @@ func NewDefaultConfig() (*Config, error) {
 		})),
 		portProvider: &portProvider{},
 		FrontendIP:   "",
-		Tls:          config.ServerTLS{},
+		TLS:          config.ServerTLS{},
 	}, nil
 }
 
@@ -140,13 +140,13 @@ func Convert(cfg *Config) *config.Config {
 	tls := config.RootTLS{
 		Frontend: config.GroupTLS{
 			Server: config.ServerTLS{
-				CertFile:          cfg.Tls.CertFile,
-				KeyFile:           cfg.Tls.KeyFile,
-				RequireClientAuth: cfg.Tls.RequireClientAuth,
-				ClientCAFiles:     cfg.Tls.ClientCAFiles,
+				CertFile:          cfg.TLS.CertFile,
+				KeyFile:           cfg.TLS.KeyFile,
+				RequireClientAuth: cfg.TLS.RequireClientAuth,
+				ClientCAFiles:     cfg.TLS.ClientCAFiles,
 			},
 			Client: config.ClientTLS{
-				RootCAFiles: cfg.Tls.ClientCAFiles,
+				RootCAFiles: cfg.TLS.ClientCAFiles,
 			},
 		},
 	}
@@ -154,13 +154,13 @@ func Convert(cfg *Config) *config.Config {
 	if tls.Frontend.Server.RequireClientAuth {
 		tls.Internode = config.GroupTLS{
 			Server: config.ServerTLS{
-				CertFile:          cfg.Tls.CertFile,
-				KeyFile:           cfg.Tls.KeyFile,
-				RequireClientAuth: cfg.Tls.RequireClientAuth,
-				ClientCAFiles:     cfg.Tls.ClientCAFiles,
+				CertFile:          cfg.TLS.CertFile,
+				KeyFile:           cfg.TLS.KeyFile,
+				RequireClientAuth: cfg.TLS.RequireClientAuth,
+				ClientCAFiles:     cfg.TLS.ClientCAFiles,
 			},
 			Client: config.ClientTLS{
-				RootCAFiles: cfg.Tls.ClientCAFiles,
+				RootCAFiles: cfg.TLS.ClientCAFiles,
 			},
 		}
 	}

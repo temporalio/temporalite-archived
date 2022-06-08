@@ -34,20 +34,20 @@ var (
 )
 
 const (
-	ephemeralFlag = "ephemeral"
-	dbPathFlag    = "filename"
-	portFlag      = "port"
-	uiPortFlag    = "ui-port"
-	headlessFlag  = "headless"
-	ipFlag        = "ip"
-	logFormatFlag = "log-format"
-	logLevelFlag  = "log-level"
-	namespaceFlag = "namespace"
-	pragmaFlag    = "sqlite-pragma"
-	tlsCertFlag   = "tls-certificate-file"
-	tlsKeyFlag    = "tls-key-file"
-	mtlsFlag      = "require-mutual-tls"
-	clientCaFlag  = "client-certificate-authority"
+	ephemeralFlag  = "ephemeral"
+	dbPathFlag     = "filename"
+	portFlag       = "port"
+	uiPortFlag     = "ui-port"
+	headlessFlag   = "headless"
+	ipFlag         = "ip"
+	logFormatFlag  = "log-format"
+	logLevelFlag   = "log-level"
+	namespaceFlag  = "namespace"
+	pragmaFlag     = "sqlite-pragma"
+	tlsCertFlag    = "tls-certificate-file"
+	tlsKeyFlag     = "tls-key-file"
+	clientAuthFlag = "require-mutual-tls"
+	clientCAFlag   = "client-certificate-authority"
 )
 
 func init() {
@@ -130,7 +130,7 @@ func buildCLI() *cli.App {
 					Value:   nil,
 				},
 				&cli.BoolFlag{
-					Name:    mtlsFlag,
+					Name:    clientAuthFlag,
 					Aliases: []string{"mtls"},
 					Usage:   `require mutual tls`,
 					EnvVars: nil,
@@ -150,12 +150,12 @@ func buildCLI() *cli.App {
 					EnvVars: nil,
 					Value:   "",
 				},
-				&cli.StringFlag{
-					Name:    clientCaFlag,
-					Aliases: []string{"ca"},
+				&cli.StringSliceFlag{
+					Name:    clientCAFlag,
+					Aliases: []string{},
 					Usage:   `path to client certificate authority`,
 					EnvVars: nil,
-					Value:   "",
+					Value:   cli.NewStringSlice(),
 				},
 			},
 			Before: func(c *cli.Context) error {
@@ -193,12 +193,13 @@ func buildCLI() *cli.App {
 					}
 				}
 
-				if c.IsSet(mtlsFlag) {
+				if c.IsSet(clientAuthFlag) {
 					if !(c.IsSet(tlsCertFlag) && c.IsSet(tlsKeyFlag)) {
 						return cli.Exit("tls certificate path and key file path must both be set to enable mutual tls", 1)
 					}
 
-					if !c.IsSet(clientCaFlag) || c.String(clientCaFlag) == "" {
+					clientAuthorities := c.StringSlice(clientCAFlag)
+					if !c.IsSet(clientCAFlag) || clientAuthorities == nil || len(clientAuthorities) == 0 {
 						return cli.Exit("client certificate authority required for mutual tls", 1)
 					}
 				}
@@ -231,7 +232,8 @@ func buildCLI() *cli.App {
 					temporalite.WithUpstreamOptions(
 						temporal.InterruptOn(temporal.InterruptCh()),
 					),
-					temporalite.WithTlsOptions(c.String(clientCaFlag), c.String(tlsCertFlag), c.String(tlsKeyFlag), c.Bool(mtlsFlag)),
+					temporalite.WithTLSOptions(c.StringSlice(clientCAFlag),
+						c.String(tlsCertFlag), c.String(tlsKeyFlag), c.Bool(clientAuthFlag)),
 				}
 				if !c.Bool(headlessFlag) {
 					opt := newUIOption(fmt.Sprintf(":%d", c.Int(portFlag)), ip, uiPort)

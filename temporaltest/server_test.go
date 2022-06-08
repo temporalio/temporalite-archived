@@ -6,11 +6,7 @@ package temporaltest_test
 
 import (
 	"context"
-	"crypto/tls"
-	"crypto/x509"
 	"fmt"
-	"io/ioutil"
-	"os"
 	"testing"
 	"time"
 
@@ -115,111 +111,4 @@ func BenchmarkRunWorkflow(b *testing.B) {
 			}
 		}(b)
 	}
-}
-
-func TestNewServerWithMutalTls(t *testing.T) {
-	testNewServerWithTlsEnabled(t, true)
-}
-
-func TestNewServerWithTls(t *testing.T) {
-	testNewServerWithTlsEnabled(t, false)
-}
-
-func testNewServerWithTlsEnabled(t *testing.T, useMutualTls bool) {
-	b, err := temporaltest.GenerateCertificates()
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	caCert, caKey, err := writeCertificate(b.Ca)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	defer os.Remove(caCert)
-	defer os.Remove(caKey)
-
-	clientCert, clientKey, err := writeCertificate(b.Client)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	defer os.Remove(clientCert)
-	defer os.Remove(clientKey)
-
-	serverCert, serverKey, err := writeCertificate(b.Server)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	defer os.Remove(serverCert)
-	defer os.Remove(serverKey)
-
-	kp, err := tls.X509KeyPair(b.Client.CertPem, b.Client.KeyPem)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	pool := x509.NewCertPool()
-	pool.AppendCertsFromPEM(b.Ca.CertPem)
-
-	ts := temporaltest.NewServerWithTls(caCert, serverCert, serverKey, useMutualTls, client.Options{
-		ConnectionOptions: client.ConnectionOptions{
-			TLS: &tls.Config{
-				Certificates: []tls.Certificate{kp},
-				RootCAs:      pool,
-			},
-		},
-	}, temporaltest.WithT(t))
-
-	ts.Worker("hello_world", func(registry worker.Registry) {
-		helloworld.RegisterWorkflowsAndActivities(registry)
-	})
-
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-	wfr, err := ts.Client().ExecuteWorkflow(
-		ctx,
-		client.StartWorkflowOptions{TaskQueue: "hello_world"},
-		helloworld.Greet,
-		"world",
-	)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	var result string
-	if err := wfr.Get(ctx, &result); err != nil {
-		t.Fatal(err)
-	}
-
-	if result != "Hello world" {
-		t.Fatalf("unexpected result: %q", result)
-	}
-}
-
-func writeCertificate(cert *temporaltest.Certificate) (string, string, error) {
-	file, err := ioutil.TempFile("", "certificate")
-	if err != nil {
-		return "", "", err
-	}
-
-	if _, err := file.Write(cert.CertPem); err != nil {
-		defer os.Remove(file.Name())
-		return "", "", err
-	}
-
-	key, err := ioutil.TempFile("", "key")
-	if err != nil {
-		defer os.Remove(file.Name())
-		return "", "", err
-	}
-
-	if _, err := key.Write(cert.KeyPem); err != nil {
-		defer os.Remove(file.Name())
-		defer os.Remove(key.Name())
-		return "", "", err
-	}
-
-	return file.Name(), key.Name(), nil
 }

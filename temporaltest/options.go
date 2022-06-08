@@ -4,7 +4,11 @@
 
 package temporaltest
 
-import "testing"
+import (
+	"github.com/DataDog/temporalite"
+	"go.temporal.io/sdk/client"
+	"testing"
+)
 
 type TestServerOption interface {
 	apply(*TestServer)
@@ -17,6 +21,18 @@ type TestServerOption interface {
 func WithT(t *testing.T) TestServerOption {
 	return newApplyFuncContainer(func(server *TestServer) {
 		server.t = t
+	})
+}
+
+func WithClientOptions(o client.Options) TestServerOption {
+	return newApplyFuncContainer(func(server *TestServer) {
+		server.defaultClientOptions = o
+	})
+}
+
+func WithTls(caCertificates []string, certificate, key string, useMtls bool) TestServerOption {
+	return newApplyFuncContainer(func(server *TestServer) {
+		server.serverOptions = append(server.serverOptions, temporalite.WithTLSOptions(caCertificates, certificate, key, useMtls))
 	})
 }
 

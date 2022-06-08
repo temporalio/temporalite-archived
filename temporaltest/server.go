@@ -27,6 +27,8 @@ type TestServer struct {
 	clients              []client.Client
 	workers              []worker.Worker
 	t                    *testing.T
+	defaultClientOptions client.Options
+	serverOptions        []temporalite.ServerOption
 }
 
 func (ts *TestServer) fatal(err error) {
@@ -56,7 +58,7 @@ func (ts *TestServer) Worker(taskQueue string, registerFunc func(registry worker
 // be closed on TestServer.Stop.
 func (ts *TestServer) Client() client.Client {
 	if ts.defaultClient == nil {
-		ts.defaultClient = ts.NewClientWithOptions(client.Options{})
+		ts.defaultClient = ts.NewClientWithOptions(ts.defaultClientOptions)
 	}
 	return ts.defaultClient
 }
@@ -120,11 +122,12 @@ func NewServer(opts ...TestServerOption) *TestServer {
 	}
 
 	s, err := temporalite.NewServer(
-		temporalite.WithNamespaces(ts.defaultTestNamespace),
-		temporalite.WithPersistenceDisabled(),
-		temporalite.WithDynamicPorts(),
-		temporalite.WithLogger(log.NewNoopLogger()),
+		append([]temporalite.ServerOption{temporalite.WithNamespaces(ts.defaultTestNamespace),
+			temporalite.WithPersistenceDisabled(),
+			temporalite.WithDynamicPorts(),
+			temporalite.WithLogger(log.NewNoopLogger())}, ts.serverOptions...)...,
 	)
+
 	if err != nil {
 		ts.fatal(fmt.Errorf("error creating server: %w", err))
 	}
@@ -143,42 +146,3 @@ func NewServer(opts ...TestServerOption) *TestServer {
 //
 // If not specifying the WithT option, the caller should execute Stop when finished to close
 // the server and release resources.
-func NewServerWithTls(caCertificate, certificate, key string, useMtls bool, defaultClientOptions client.Options, opts ...TestServerOption) *TestServer {
-	rand.Seed(time.Now().UnixNano())
-	testNamespace := fmt.Sprintf("temporaltest-%d", rand.Intn(999999))
-
-	ts := TestServer{
-		defaultTestNamespace: testNamespace,
-	}
-
-	// Apply options
-	for _, opt := range opts {
-		opt.apply(&ts)
-	}
-
-	if ts.t != nil {
-		ts.t.Cleanup(func() {
-			ts.Stop()
-		})
-	}
-
-	s, err := temporalite.NewServer(
-		temporalite.WithNamespaces(ts.defaultTestNamespace),
-		temporalite.WithPersistenceDisabled(),
-		temporalite.WithDynamicPorts(),
-		temporalite.WithLogger(log.NewNoopLogger()),
-		temporalite.WithTlsOptions(caCertificate, certificate, key, useMtls),
-	)
-	if err != nil {
-		ts.fatal(fmt.Errorf("error creating server: %w", err))
-	}
-	ts.server = s
-	go func() {
-		if err := s.Start(); err != nil {
-			ts.fatal(fmt.Errorf("error starting server: %w", err))
-		}
-	}()
-
-	ts.defaultClient = ts.NewClientWithOptions(defaultClientOptions)
-	return &ts
-}

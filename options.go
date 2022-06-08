@@ -99,14 +99,15 @@ func WithUpstreamOptions(options ...temporal.ServerOption) ServerOption {
 	})
 }
 
-func WithTlsOptions(caCertificate, certificate, key string, useMtls bool) ServerOption {
+func WithTLSOptions(caCertificates []string, certificate, key string, useMtls bool) ServerOption {
 	return newApplyFuncContainer(func(cfg *liteconfig.Config) {
-		if caCertificate != "" {
-			cfg.Tls.ClientCAFiles = append(cfg.Tls.ClientCAFiles, caCertificate)
+		for _, v := range caCertificates {
+			cfg.TLS.ClientCAFiles = append(cfg.TLS.ClientCAFiles, v)
 		}
-		cfg.Tls.CertFile = certificate
-		cfg.Tls.KeyFile = key
-		cfg.Tls.RequireClientAuth = useMtls
+
+		cfg.TLS.CertFile = certificate
+		cfg.TLS.KeyFile = key
+		cfg.TLS.RequireClientAuth = useMtls
 	})
 }
 
