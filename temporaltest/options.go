@@ -24,15 +24,17 @@ func WithT(t *testing.T) TestServerOption {
 	})
 }
 
+// WithClientOptions configures options for the default client of the test server
 func WithClientOptions(o client.Options) TestServerOption {
 	return newApplyFuncContainer(func(server *TestServer) {
 		server.defaultClientOptions = o
 	})
 }
 
-func WithTLS(caCertificates []string, certificate, key string, useMtls bool) TestServerOption {
+// WithTLS configures the tls options for the server
+func WithTLS(caCertificates []string, certificate, key string, clientAuth bool) TestServerOption {
 	return newApplyFuncContainer(func(server *TestServer) {
-		server.serverOptions = append(server.serverOptions, temporalite.WithTLSOptions(caCertificates, certificate, key, useMtls))
+		server.serverOptions = append(server.serverOptions, temporalite.WithTLSOptions(caCertificates, certificate, key, clientAuth))
 	})
 }
 

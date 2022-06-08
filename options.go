@@ -99,7 +99,8 @@ func WithUpstreamOptions(options ...temporal.ServerOption) ServerOption {
 	})
 }
 
-func WithTLSOptions(caCertificates []string, certificate, key string, useMtls bool) ServerOption {
+// WithTLSOptions configures tls for the Temporal server
+func WithTLSOptions(caCertificates []string, certificate, key string, clientAuth bool) ServerOption {
 	return newApplyFuncContainer(func(cfg *liteconfig.Config) {
 		for _, v := range caCertificates {
 			cfg.TLS.ClientCAFiles = append(cfg.TLS.ClientCAFiles, v)
@@ -107,7 +108,7 @@ func WithTLSOptions(caCertificates []string, certificate, key string, useMtls bo
 
 		cfg.TLS.CertFile = certificate
 		cfg.TLS.KeyFile = key
-		cfg.TLS.RequireClientAuth = useMtls
+		cfg.TLS.RequireClientAuth = clientAuth
 	})
 }
 
