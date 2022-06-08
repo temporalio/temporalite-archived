@@ -30,7 +30,7 @@ func WithClientOptions(o client.Options) TestServerOption {
 	})
 }
 
-func WithTls(caCertificates []string, certificate, key string, useMtls bool) TestServerOption {
+func WithTLS(caCertificates []string, certificate, key string, useMtls bool) TestServerOption {
 	return newApplyFuncContainer(func(server *TestServer) {
 		server.serverOptions = append(server.serverOptions, temporalite.WithTLSOptions(caCertificates, certificate, key, useMtls))
 	})

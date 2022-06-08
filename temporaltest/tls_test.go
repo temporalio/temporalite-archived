@@ -96,7 +96,7 @@ func testNewServerWithTLSEnabled(t *testing.T, useMutualTls bool, taskQueue stri
 	// pool.AppendCertsFromPEM(b.Client.Authority.CertPEM)
 
 	ts := temporaltest.NewServer(
-		temporaltest.WithTls([]string{caCert, serverCA}, serverCert, serverKey, useMutualTls),
+		temporaltest.WithTLS([]string{caCert, serverCA}, serverCert, serverKey, useMutualTls),
 		temporaltest.WithClientOptions(client.Options{
 			ConnectionOptions: client.ConnectionOptions{
 				TLS: &tls.Config{
