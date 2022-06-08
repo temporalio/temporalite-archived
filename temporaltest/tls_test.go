@@ -166,7 +166,7 @@ func writeCertificate(cert *certificate) (string, string, error) {
 }
 
 func generateCertificates() (*bundle, error) {
-	serverAuthority, serverAuthorityCertificate, err := generateCa("server")
+	serverAuthority, serverAuthorityCertificate, err := generateCA("server")
 	if err != nil {
 		return nil, err
 	}
@@ -176,7 +176,7 @@ func generateCertificates() (*bundle, error) {
 		return nil, err
 	}
 
-	clientAuthority, clientAuthorityCertificate, err := generateCa("client")
+	clientAuthority, clientAuthorityCertificate, err := generateCA("client")
 	if err != nil {
 		return nil, err
 	}
@@ -219,7 +219,7 @@ func convertCertData(d *certData) (*certificate, error) {
 	}, nil
 }
 
-func generateCa(name string) (*certData, *certificate, error) {
+func generateCA(name string) (*certData, *certificate, error) {
 	ca := &x509.Certificate{
 		Subject: pkix.Name{
 			Country:            []string{"US"},

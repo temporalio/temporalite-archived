@@ -141,8 +141,3 @@ func NewServer(opts ...TestServerOption) *TestServer {
 
 	return &ts
 }
-
-// NewServerWithTls starts and returns a new TestServer.
-//
-// If not specifying the WithT option, the caller should execute Stop when finished to close
-// the server and release resources.
