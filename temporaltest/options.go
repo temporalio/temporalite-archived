@@ -24,7 +24,7 @@ func WithT(t *testing.T) TestServerOption {
 	})
 }
 
-// WithClientOptions configures options for the default client of the test server
+// WithClientOptions configures options for the default clients and workers connected to the test server.
 func WithClientOptions(o client.Options) TestServerOption {
 	return newApplyFuncContainer(func(server *TestServer) {
 		server.defaultClientOptions = o
