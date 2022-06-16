@@ -5,10 +5,15 @@
 package temporalite
 
 import (
+	"os"
+
 	"go.temporal.io/server/common/log"
 	"go.temporal.io/server/temporal"
+	"gopkg.in/yaml.v3"
 
 	"github.com/DataDog/temporalite/internal/liteconfig"
+
+	temporalconfig "go.temporal.io/server/common/config"
 )
 
 // WithLogger overrides the default logger.
@@ -99,16 +104,23 @@ func WithUpstreamOptions(options ...temporal.ServerOption) ServerOption {
 	})
 }
 
-// WithTLSOptions configures tls for the Temporal server
-func WithTLSOptions(caCertificates []string, certificate, key string, clientAuth bool) ServerOption {
+// WithTemporalConfigFile imports configuration from a standard temporal configuration file.
+func WithTemporalConfigFile(path string) ServerOption {
 	return newApplyFuncContainer(func(cfg *liteconfig.Config) {
-		for _, v := range caCertificates {
-			cfg.TLS.ClientCAFiles = append(cfg.TLS.ClientCAFiles, v)
+		cfg.BaseConfig = &temporalconfig.Config{}
+		if path == "" {
+			return
 		}
 
-		cfg.TLS.CertFile = certificate
-		cfg.TLS.KeyFile = key
-		cfg.TLS.RequireClientAuth = clientAuth
+		b, err := os.ReadFile(path)
+		if err != nil {
+			panic(err)
+		}
+
+		err = yaml.Unmarshal(b, cfg.BaseConfig)
+		if err != nil {
+			panic(err)
+		}
 	})
 }
 

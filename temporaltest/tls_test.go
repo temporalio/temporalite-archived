@@ -12,12 +12,15 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"crypto/x509/pkix"
+	"encoding/base64"
 	"encoding/pem"
 	"fmt"
 	"github.com/DataDog/temporalite/internal/examples/helloworld"
 	"github.com/DataDog/temporalite/temporaltest"
 	"go.temporal.io/sdk/client"
 	"go.temporal.io/sdk/worker"
+	"go.temporal.io/server/common/config"
+	"gopkg.in/yaml.v3"
 	"io/ioutil"
 	"math"
 	"math/big"
@@ -62,30 +65,6 @@ func testNewServerWithTLSEnabled(t *testing.T, useMutualTls bool, taskQueue stri
 		t.Fatal(err)
 	}
 
-	caCert, caKey, err := writeCertificate(b.Client.Authority)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	defer os.Remove(caCert)
-	defer os.Remove(caKey)
-
-	serverCA, serverCAKey, err := writeCertificate(b.Server.Authority)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	defer os.Remove(serverCA)
-	defer os.Remove(serverCAKey)
-
-	serverCert, serverKey, err := writeCertificate(b.Server.Cert)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	defer os.Remove(serverCert)
-	defer os.Remove(serverKey)
-
 	kp, err := tls.X509KeyPair(b.Client.Cert.CertPEM, b.Client.Cert.KeyPEM)
 	if err != nil {
 		t.Fatal(err)
@@ -95,8 +74,58 @@ func testNewServerWithTLSEnabled(t *testing.T, useMutualTls bool, taskQueue stri
 	pool.AppendCertsFromPEM(b.Server.Authority.CertPEM)
 	// pool.AppendCertsFromPEM(b.Client.Authority.CertPEM)
 
+	cfg := config.Config{
+		Global: config.Global{
+			TLS: config.RootTLS{
+				Frontend: config.GroupTLS{
+					Client: config.ClientTLS{
+						RootCAData: []string{base64.StdEncoding.EncodeToString(b.Server.Authority.CertPEM)},
+					},
+					Server: config.ServerTLS{
+						CertData: base64.StdEncoding.EncodeToString(b.Server.Cert.CertPEM),
+						KeyData:  base64.StdEncoding.EncodeToString(b.Server.Cert.KeyPEM),
+						ClientCAData: []string{
+							base64.StdEncoding.EncodeToString(b.Client.Authority.CertPEM),
+							base64.StdEncoding.EncodeToString(b.Server.Authority.CertPEM)},
+						RequireClientAuth: useMutualTls,
+					},
+				},
+			},
+		},
+	}
+
+	if useMutualTls {
+		cfg.Global.TLS.Internode = config.GroupTLS{
+			Client: config.ClientTLS{
+				RootCAData: []string{base64.StdEncoding.EncodeToString(b.Server.Authority.CertPEM)},
+			},
+			Server: config.ServerTLS{
+				CertData:          base64.StdEncoding.EncodeToString(b.Server.Cert.CertPEM),
+				KeyData:           base64.StdEncoding.EncodeToString(b.Server.Cert.KeyPEM),
+				ClientCAData:      []string{base64.StdEncoding.EncodeToString(b.Server.Authority.CertPEM)},
+				RequireClientAuth: useMutualTls,
+			},
+		}
+	}
+
+	configBytes, err := yaml.Marshal(&cfg)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	file, err := ioutil.TempFile("", "config")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	defer os.Remove(file.Name())
+	_, err = file.Write(configBytes)
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	ts := temporaltest.NewServer(
-		temporaltest.WithTLS([]string{caCert, serverCA}, serverCert, serverKey, useMutualTls),
+		temporaltest.WithConfigFile(file.Name()),
 		temporaltest.WithClientOptions(client.Options{
 			ConnectionOptions: client.ConnectionOptions{
 				TLS: &tls.Config{
@@ -137,32 +166,6 @@ func testNewServerWithTLSEnabled(t *testing.T, useMutualTls bool, taskQueue stri
 	if result != "Hello world" {
 		t.Fatalf("unexpected result: %q", result)
 	}
-}
-
-func writeCertificate(cert *certificate) (string, string, error) {
-	file, err := ioutil.TempFile("", "certificate")
-	if err != nil {
-		return "", "", err
-	}
-
-	if _, err := file.Write(cert.CertPEM); err != nil {
-		defer os.Remove(file.Name())
-		return "", "", err
-	}
-
-	key, err := ioutil.TempFile("", "key")
-	if err != nil {
-		defer os.Remove(file.Name())
-		return "", "", err
-	}
-
-	if _, err := key.Write(cert.KeyPEM); err != nil {
-		defer os.Remove(file.Name())
-		defer os.Remove(key.Name())
-		return "", "", err
-	}
-
-	return file.Name(), key.Name(), nil
 }
 
 func generateCertificates() (*bundle, error) {

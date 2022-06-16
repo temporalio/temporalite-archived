@@ -31,10 +31,9 @@ func WithClientOptions(o client.Options) TestServerOption {
 	})
 }
 
-// WithTLS configures the tls options for the server
-func WithTLS(caCertificates []string, certificate, key string, clientAuth bool) TestServerOption {
+func WithConfigFile(path string) TestServerOption {
 	return newApplyFuncContainer(func(server *TestServer) {
-		server.serverOptions = append(server.serverOptions, temporalite.WithTLSOptions(caCertificates, certificate, key, clientAuth))
+		server.serverOptions = append(server.serverOptions, temporalite.WithTemporalConfigFile(path))
 	})
 }
 

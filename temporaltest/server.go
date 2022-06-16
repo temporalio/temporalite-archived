@@ -121,12 +121,11 @@ func NewServer(opts ...TestServerOption) *TestServer {
 		})
 	}
 
-	s, err := temporalite.NewServer(
-		append([]temporalite.ServerOption{temporalite.WithNamespaces(ts.defaultTestNamespace),
-			temporalite.WithPersistenceDisabled(),
-			temporalite.WithDynamicPorts(),
-			temporalite.WithLogger(log.NewNoopLogger())}, ts.serverOptions...)...,
-	)
+	s, err := temporalite.NewServer(append(ts.serverOptions,
+		temporalite.WithNamespaces(ts.defaultTestNamespace),
+		temporalite.WithPersistenceDisabled(),
+		temporalite.WithDynamicPorts(),
+		temporalite.WithLogger(log.NewNoopLogger()))...)
 
 	if err != nil {
 		ts.fatal(fmt.Errorf("error creating server: %w", err))
