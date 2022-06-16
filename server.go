@@ -15,8 +15,6 @@ import (
 	"go.temporal.io/server/common/authorization"
 	"go.temporal.io/server/common/config"
 	"go.temporal.io/server/common/dynamicconfig"
-	"go.temporal.io/server/common/metrics"
-	"go.temporal.io/server/common/rpc/encryption"
 	"go.temporal.io/server/schema/sqlite"
 	"go.temporal.io/server/temporal"
 
@@ -94,14 +92,6 @@ func NewServer(opts ...ServerOption) (*Server, error) {
 
 	if len(c.UpstreamOptions) > 0 {
 		serverOpts = append(serverOpts, c.UpstreamOptions...)
-	}
-
-	if cfg.Global.TLS.Frontend.Server.CertFile != "" {
-		provider, err := encryption.NewLocalStoreTlsProvider(&cfg.Global.TLS, metrics.NoopClient.Scope(0), c.Logger, encryption.NewLocalStoreCertProvider)
-		if err != nil {
-			return nil, fmt.Errorf("unable to instiate tls provider: %w", err)
-		}
-		serverOpts = append(serverOpts, temporal.WithTLSConfigFactory(provider))
 	}
 
 	s := &Server{
