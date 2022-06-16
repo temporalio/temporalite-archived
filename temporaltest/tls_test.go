@@ -15,17 +15,15 @@ import (
 	"encoding/base64"
 	"encoding/pem"
 	"fmt"
+	"github.com/DataDog/temporalite"
 	"github.com/DataDog/temporalite/internal/examples/helloworld"
 	"github.com/DataDog/temporalite/temporaltest"
 	"go.temporal.io/sdk/client"
 	"go.temporal.io/sdk/worker"
 	"go.temporal.io/server/common/config"
-	"gopkg.in/yaml.v3"
-	"io/ioutil"
 	"math"
 	"math/big"
 	"net"
-	"os"
 	"testing"
 	"time"
 )
@@ -108,24 +106,8 @@ func testNewServerWithTLSEnabled(t *testing.T, useMutualTls bool, taskQueue stri
 		}
 	}
 
-	configBytes, err := yaml.Marshal(&cfg)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	file, err := ioutil.TempFile("", "config")
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	defer os.Remove(file.Name())
-	_, err = file.Write(configBytes)
-	if err != nil {
-		t.Fatal(err)
-	}
-
 	ts := temporaltest.NewServer(
-		temporaltest.WithConfigFile(file.Name()),
+		temporaltest.WithTemporalLiteOptions(temporalite.WithBaseConfig(&cfg)),
 		temporaltest.WithClientOptions(client.Options{
 			ConnectionOptions: client.ConnectionOptions{
 				TLS: &tls.Config{

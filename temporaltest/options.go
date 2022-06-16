@@ -31,9 +31,9 @@ func WithClientOptions(o client.Options) TestServerOption {
 	})
 }
 
-func WithConfigFile(path string) TestServerOption {
+func WithTemporalLiteOptions(options ...temporalite.ServerOption) TestServerOption {
 	return newApplyFuncContainer(func(server *TestServer) {
-		server.serverOptions = append(server.serverOptions, temporalite.WithTemporalConfigFile(path))
+		server.serverOptions = append(server.serverOptions, options...)
 	})
 }
 

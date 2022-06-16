@@ -6,6 +6,8 @@ package main
 
 import (
 	"fmt"
+	temporalconfig "go.temporal.io/server/common/config"
+	"gopkg.in/yaml.v3"
 	goLog "log"
 	"net"
 	"os"
@@ -159,7 +161,8 @@ func buildCLI() *cli.App {
 				}
 
 				if c.IsSet(configFileFlag) {
-					if _, err := os.Stat(c.String(configFileFlag)); os.IsNotExist(err) {
+					cfgPath := c.String(configFileFlag)
+					if _, err := os.Stat(cfgPath); os.IsNotExist(err) {
 						return cli.Exit(fmt.Sprintf("bad value %q passed for flag %q: file not found", c.String(configFileFlag), configFileFlag), 1)
 					}
 				}
@@ -182,6 +185,19 @@ func buildCLI() *cli.App {
 					return err
 				}
 
+				baseConfig := &temporalconfig.Config{}
+				if c.IsSet(configFileFlag) {
+					b, err := os.ReadFile(c.String(configFileFlag))
+					if err != nil {
+						return err
+					}
+
+					err = yaml.Unmarshal(b, baseConfig)
+					if err != nil {
+						return err
+					}
+				}
+
 				opts := []temporalite.ServerOption{
 					temporalite.WithDynamicPorts(),
 					temporalite.WithFrontendPort(serverPort),
@@ -192,7 +208,7 @@ func buildCLI() *cli.App {
 					temporalite.WithUpstreamOptions(
 						temporal.InterruptOn(temporal.InterruptCh()),
 					),
-					temporalite.WithTemporalConfigFile(c.String(configFileFlag)),
+					temporalite.WithBaseConfig(baseConfig),
 				}
 				if !c.Bool(headlessFlag) {
 					opt := newUIOption(fmt.Sprintf(":%d", c.Int(portFlag)), ip, uiPort)

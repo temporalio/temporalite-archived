@@ -5,13 +5,9 @@
 package temporalite
 
 import (
-	"os"
-
+	"github.com/DataDog/temporalite/internal/liteconfig"
 	"go.temporal.io/server/common/log"
 	"go.temporal.io/server/temporal"
-	"gopkg.in/yaml.v3"
-
-	"github.com/DataDog/temporalite/internal/liteconfig"
 
 	temporalconfig "go.temporal.io/server/common/config"
 )
@@ -104,23 +100,10 @@ func WithUpstreamOptions(options ...temporal.ServerOption) ServerOption {
 	})
 }
 
-// WithTemporalConfigFile imports configuration from a standard temporal configuration file.
-func WithTemporalConfigFile(path string) ServerOption {
+// WithBaseConfig imports configuration from a standard temporal configuration file.
+func WithBaseConfig(base *temporalconfig.Config) ServerOption {
 	return newApplyFuncContainer(func(cfg *liteconfig.Config) {
-		cfg.BaseConfig = &temporalconfig.Config{}
-		if path == "" {
-			return
-		}
-
-		b, err := os.ReadFile(path)
-		if err != nil {
-			panic(err)
-		}
-
-		err = yaml.Unmarshal(b, cfg.BaseConfig)
-		if err != nil {
-			panic(err)
-		}
+		cfg.BaseConfig = base
 	})
 }
 
