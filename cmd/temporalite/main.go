@@ -130,8 +130,9 @@ func buildCLI() *cli.App {
 				},
 				&cli.StringFlag{
 					Name:    configFileFlag,
-					Usage:   `path to tls key`,
-					EnvVars: nil,
+					Aliases: []string{"c"},
+					Usage:   "config dir path",
+					EnvVars: []string{temporalconfig.EnvKeyConfigDir},
 					Value:   "",
 				},
 			},
