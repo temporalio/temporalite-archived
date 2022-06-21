@@ -9,7 +9,7 @@ import (
 	"go.temporal.io/server/common/log"
 	"go.temporal.io/server/temporal"
 
-	temporalconfig "go.temporal.io/server/common/config"
+	"go.temporal.io/server/common/config"
 )
 
 // WithLogger overrides the default logger.
@@ -100,8 +100,8 @@ func WithUpstreamOptions(options ...temporal.ServerOption) ServerOption {
 	})
 }
 
-// WithBaseConfig imports configuration from a standard temporal configuration file.
-func WithBaseConfig(base *temporalconfig.Config) ServerOption {
+// WithBaseConfig sets the default Temporal server configuration.
+func WithBaseConfig(base *config.Config) ServerOption {
 	return newApplyFuncContainer(func(cfg *liteconfig.Config) {
 		cfg.BaseConfig = base
 	})

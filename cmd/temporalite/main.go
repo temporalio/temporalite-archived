@@ -6,12 +6,12 @@ package main
 
 import (
 	"fmt"
-	temporalconfig "go.temporal.io/server/common/config"
-	"gopkg.in/yaml.v3"
 	goLog "log"
 	"net"
 	"os"
 	"strings"
+
+	"go.temporal.io/server/common/config"
 
 	"github.com/urfave/cli/v2"
 	"go.temporal.io/server/common/headers"
@@ -36,17 +36,17 @@ var (
 )
 
 const (
-	ephemeralFlag  = "ephemeral"
-	dbPathFlag     = "filename"
-	portFlag       = "port"
-	uiPortFlag     = "ui-port"
-	headlessFlag   = "headless"
-	ipFlag         = "ip"
-	logFormatFlag  = "log-format"
-	logLevelFlag   = "log-level"
-	namespaceFlag  = "namespace"
-	pragmaFlag     = "sqlite-pragma"
-	configFileFlag = "config-file"
+	ephemeralFlag = "ephemeral"
+	dbPathFlag    = "filename"
+	portFlag      = "port"
+	uiPortFlag    = "ui-port"
+	headlessFlag  = "headless"
+	ipFlag        = "ip"
+	logFormatFlag = "log-format"
+	logLevelFlag  = "log-level"
+	namespaceFlag = "namespace"
+	pragmaFlag    = "sqlite-pragma"
+	configFlag    = "config"
 )
 
 func init() {
@@ -129,9 +129,10 @@ func buildCLI() *cli.App {
 					Value:   nil,
 				},
 				&cli.StringFlag{
-					Name:    configFileFlag,
-					Usage:   `path to tls key`,
-					EnvVars: nil,
+					Name:    configFlag,
+					Aliases: []string{"c"},
+					Usage:   `config dir path`,
+					EnvVars: []string{config.EnvKeyConfigDir},
 					Value:   "",
 				},
 			},
@@ -160,10 +161,10 @@ func buildCLI() *cli.App {
 					return cli.Exit(fmt.Sprintf("bad value %q passed for flag %q", c.String(ipFlag), ipFlag), 1)
 				}
 
-				if c.IsSet(configFileFlag) {
-					cfgPath := c.String(configFileFlag)
+				if c.IsSet(configFlag) {
+					cfgPath := c.String(configFlag)
 					if _, err := os.Stat(cfgPath); os.IsNotExist(err) {
-						return cli.Exit(fmt.Sprintf("bad value %q passed for flag %q: file not found", c.String(configFileFlag), configFileFlag), 1)
+						return cli.Exit(fmt.Sprintf("bad value %q passed for flag %q: file not found", c.String(configFlag), configFlag), 1)
 					}
 				}
 
@@ -185,14 +186,9 @@ func buildCLI() *cli.App {
 					return err
 				}
 
-				baseConfig := &temporalconfig.Config{}
-				if c.IsSet(configFileFlag) {
-					b, err := os.ReadFile(c.String(configFileFlag))
-					if err != nil {
-						return err
-					}
-
-					err = yaml.Unmarshal(b, baseConfig)
+				baseConfig := &config.Config{}
+				if c.IsSet(configFlag) {
+					baseConfig, err = config.LoadConfig("temporalite", c.String(configFlag), "")
 					if err != nil {
 						return err
 					}

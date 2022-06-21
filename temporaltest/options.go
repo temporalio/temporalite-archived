@@ -31,8 +31,8 @@ func WithClientOptions(o client.Options) TestServerOption {
 	})
 }
 
-// WithTemporalLiteOptions provides the ability to use additional temporalite options and potentially temporalite.WithUpstreamOptions.
-func WithTemporalLiteOptions(options ...temporalite.ServerOption) TestServerOption {
+// WithTemporaliteOptions provides the ability to use additional Temporalite options, including temporalite.WithUpstreamOptions.
+func WithTemporaliteOptions(options ...temporalite.ServerOption) TestServerOption {
 	return newApplyFuncContainer(func(server *TestServer) {
 		server.serverOptions = append(server.serverOptions, options...)
 	})
