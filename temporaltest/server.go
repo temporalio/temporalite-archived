@@ -131,7 +131,6 @@ func NewServer(opts ...TestServerOption) *TestServer {
 	)
 
 	s, err := temporalite.NewServer(ts.serverOptions...)
-
 	if err != nil {
 		ts.fatal(fmt.Errorf("error creating server: %w", err))
 	}
