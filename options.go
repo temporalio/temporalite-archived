@@ -100,7 +100,10 @@ func WithUpstreamOptions(options ...temporal.ServerOption) ServerOption {
 	})
 }
 
-// WithBaseConfig imports configuration from a standard temporal configuration file.
+// WithBaseConfig sets the default Temporal server configuration.
+//
+// Storage and client configuration will always be overridden, however base config can be
+// used to enable settings like TLS or authentication.
 func WithBaseConfig(base *temporalconfig.Config) ServerOption {
 	return newApplyFuncContainer(func(cfg *liteconfig.Config) {
 		cfg.BaseConfig = base
