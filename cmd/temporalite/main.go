@@ -46,7 +46,7 @@ const (
 	logLevelFlag   = "log-level"
 	namespaceFlag  = "namespace"
 	pragmaFlag     = "sqlite-pragma"
-	configFileFlag = "config-file"
+	configFileFlag = "config"
 )
 
 func init() {
