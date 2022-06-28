@@ -12,6 +12,7 @@ import (
 	"strings"
 
 	"github.com/urfave/cli/v2"
+	"go.temporal.io/server/common/config"
 	"go.temporal.io/server/common/headers"
 	"go.temporal.io/server/common/log"
 	"go.temporal.io/server/temporal"
@@ -44,6 +45,7 @@ const (
 	logLevelFlag  = "log-level"
 	namespaceFlag = "namespace"
 	pragmaFlag    = "sqlite-pragma"
+	configFlag    = "config"
 )
 
 func init() {
@@ -125,6 +127,13 @@ func buildCLI() *cli.App {
 					EnvVars: nil,
 					Value:   nil,
 				},
+				&cli.StringFlag{
+					Name:    configFlag,
+					Aliases: []string{"c"},
+					Usage:   `config dir path`,
+					EnvVars: []string{config.EnvKeyConfigDir},
+					Value:   "",
+				},
 			},
 			Before: func(c *cli.Context) error {
 				if c.Args().Len() > 0 {
@@ -151,6 +160,13 @@ func buildCLI() *cli.App {
 					return cli.Exit(fmt.Sprintf("bad value %q passed for flag %q", c.String(ipFlag), ipFlag), 1)
 				}
 
+				if c.IsSet(configFlag) {
+					cfgPath := c.String(configFlag)
+					if _, err := os.Stat(cfgPath); os.IsNotExist(err) {
+						return cli.Exit(fmt.Sprintf("bad value %q passed for flag %q: file not found", c.String(configFlag), configFlag), 1)
+					}
+				}
+
 				return nil
 			},
 			Action: func(c *cli.Context) error {
@@ -169,6 +185,14 @@ func buildCLI() *cli.App {
 					return err
 				}
 
+				baseConfig := &config.Config{}
+				if c.IsSet(configFlag) {
+					baseConfig, err = config.LoadConfig("temporalite", c.String(configFlag), "")
+					if err != nil {
+						return err
+					}
+				}
+
 				opts := []temporalite.ServerOption{
 					temporalite.WithDynamicPorts(),
 					temporalite.WithFrontendPort(serverPort),
@@ -179,6 +203,7 @@ func buildCLI() *cli.App {
 					temporalite.WithUpstreamOptions(
 						temporal.InterruptOn(temporal.InterruptCh()),
 					),
+					temporalite.WithBaseConfig(baseConfig),
 				}
 				if !c.Bool(headlessFlag) {
 					opt := newUIOption(fmt.Sprintf(":%d", c.Int(portFlag)), ip, uiPort)
