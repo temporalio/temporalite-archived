@@ -5,9 +5,11 @@
 package temporaltest
 
 import (
-	"github.com/DataDog/temporalite"
-	"go.temporal.io/sdk/client"
 	"testing"
+
+	"go.temporal.io/sdk/client"
+
+	"github.com/DataDog/temporalite"
 )
 
 type TestServerOption interface {

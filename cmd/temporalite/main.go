@@ -11,9 +11,8 @@ import (
 	"os"
 	"strings"
 
-	"go.temporal.io/server/common/config"
-
 	"github.com/urfave/cli/v2"
+	"go.temporal.io/server/common/config"
 	"go.temporal.io/server/common/headers"
 	"go.temporal.io/server/common/log"
 	"go.temporal.io/server/temporal"

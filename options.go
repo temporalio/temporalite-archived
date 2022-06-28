@@ -5,11 +5,11 @@
 package temporalite
 
 import (
-	"github.com/DataDog/temporalite/internal/liteconfig"
+	"go.temporal.io/server/common/config"
 	"go.temporal.io/server/common/log"
 	"go.temporal.io/server/temporal"
 
-	"go.temporal.io/server/common/config"
+	"github.com/DataDog/temporalite/internal/liteconfig"
 )
 
 // WithLogger overrides the default logger.
