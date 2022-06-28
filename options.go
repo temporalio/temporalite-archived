@@ -5,6 +5,7 @@
 package temporalite
 
 import (
+	"go.temporal.io/server/common/config"
 	"go.temporal.io/server/common/log"
 	"go.temporal.io/server/temporal"
 
@@ -96,6 +97,16 @@ func WithSQLitePragmas(pragmas map[string]string) ServerOption {
 func WithUpstreamOptions(options ...temporal.ServerOption) ServerOption {
 	return newApplyFuncContainer(func(cfg *liteconfig.Config) {
 		cfg.UpstreamOptions = append(cfg.UpstreamOptions, options...)
+	})
+}
+
+// WithBaseConfig sets the default Temporal server configuration.
+//
+// Storage and client configuration will always be overridden, however base config can be
+// used to enable settings like TLS or authentication.
+func WithBaseConfig(base *config.Config) ServerOption {
+	return newApplyFuncContainer(func(cfg *liteconfig.Config) {
+		cfg.BaseConfig = base
 	})
 }
 

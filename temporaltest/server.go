@@ -27,6 +27,8 @@ type TestServer struct {
 	clients              []client.Client
 	workers              []worker.Worker
 	t                    *testing.T
+	defaultClientOptions client.Options
+	serverOptions        []temporalite.ServerOption
 }
 
 func (ts *TestServer) fatal(err error) {
@@ -56,7 +58,7 @@ func (ts *TestServer) Worker(taskQueue string, registerFunc func(registry worker
 // be closed on TestServer.Stop.
 func (ts *TestServer) Client() client.Client {
 	if ts.defaultClient == nil {
-		ts.defaultClient = ts.NewClientWithOptions(client.Options{})
+		ts.defaultClient = ts.NewClientWithOptions(ts.defaultClientOptions)
 	}
 	return ts.defaultClient
 }
@@ -119,12 +121,16 @@ func NewServer(opts ...TestServerOption) *TestServer {
 		})
 	}
 
-	s, err := temporalite.NewServer(
+	// Order of these options matters. When there are conflicts, options later in the list take precedence.
+	// Always specify options that are required for temporaltest last to avoid accidental overrides.
+	ts.serverOptions = append(ts.serverOptions,
 		temporalite.WithNamespaces(ts.defaultTestNamespace),
 		temporalite.WithPersistenceDisabled(),
 		temporalite.WithDynamicPorts(),
 		temporalite.WithLogger(log.NewNoopLogger()),
 	)
+
+	s, err := temporalite.NewServer(ts.serverOptions...)
 	if err != nil {
 		ts.fatal(fmt.Errorf("error creating server: %w", err))
 	}

@@ -4,7 +4,13 @@
 
 package temporaltest
 
-import "testing"
+import (
+	"testing"
+
+	"go.temporal.io/sdk/client"
+
+	"github.com/DataDog/temporalite"
+)
 
 type TestServerOption interface {
 	apply(*TestServer)
@@ -17,6 +23,20 @@ type TestServerOption interface {
 func WithT(t *testing.T) TestServerOption {
 	return newApplyFuncContainer(func(server *TestServer) {
 		server.t = t
+	})
+}
+
+// WithBaseClientOptions configures options for the default clients and workers connected to the test server.
+func WithBaseClientOptions(o client.Options) TestServerOption {
+	return newApplyFuncContainer(func(server *TestServer) {
+		server.defaultClientOptions = o
+	})
+}
+
+// WithTemporaliteOptions provides the ability to use additional Temporalite options, including temporalite.WithUpstreamOptions.
+func WithTemporaliteOptions(options ...temporalite.ServerOption) TestServerOption {
+	return newApplyFuncContainer(func(server *TestServer) {
+		server.serverOptions = append(server.serverOptions, options...)
 	})
 }
 

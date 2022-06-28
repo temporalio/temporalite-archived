@@ -56,6 +56,7 @@ type Config struct {
 	portProvider     *portProvider
 	FrontendIP       string
 	UIServer         UIServer
+	BaseConfig       *config.Config
 }
 
 var SupportedPragmas = map[string]struct{}{
@@ -93,6 +94,7 @@ func NewDefaultConfig() (*Config, error) {
 		})),
 		portProvider: &portProvider{},
 		FrontendIP:   "",
+		BaseConfig:   &config.Config{},
 	}, nil
 }
 
@@ -135,76 +137,74 @@ func Convert(cfg *Config) *config.Config {
 		pprofPort = cfg.FrontendPort + 201
 	}
 
-	return &config.Config{
-		Global: config.Global{
-			Membership: config.Membership{
-				MaxJoinDuration:  30 * time.Second,
-				BroadcastAddress: broadcastAddress,
-			},
-			Metrics: &metrics.Config{
-				Prometheus: &metrics.PrometheusConfig{
-					ListenAddress: fmt.Sprintf("%s:%d", broadcastAddress, metricsPort),
-					HandlerPath:   "/metrics",
-				},
-			},
-			PProf: config.PProf{Port: pprofPort},
+	baseConfig := cfg.BaseConfig
+	baseConfig.Global.Membership = config.Membership{
+		MaxJoinDuration:  30 * time.Second,
+		BroadcastAddress: broadcastAddress,
+	}
+	baseConfig.Global.Metrics = &metrics.Config{
+		Prometheus: &metrics.PrometheusConfig{
+			ListenAddress: fmt.Sprintf("%s:%d", broadcastAddress, metricsPort),
+			HandlerPath:   "/metrics",
 		},
-		Persistence: config.Persistence{
-			DefaultStore:     PersistenceStoreName,
-			VisibilityStore:  PersistenceStoreName,
-			NumHistoryShards: 1,
-			DataStores: map[string]config.DataStore{
-				PersistenceStoreName: {SQL: &sqliteConfig},
-			},
+	}
+	baseConfig.Global.PProf = config.PProf{Port: pprofPort}
+	baseConfig.Persistence = config.Persistence{
+		DefaultStore:     PersistenceStoreName,
+		VisibilityStore:  PersistenceStoreName,
+		NumHistoryShards: 1,
+		DataStores: map[string]config.DataStore{
+			PersistenceStoreName: {SQL: &sqliteConfig},
 		},
-		ClusterMetadata: &cluster.Config{
-			EnableGlobalNamespace:    false,
-			FailoverVersionIncrement: 10,
-			MasterClusterName:        "active",
-			CurrentClusterName:       "active",
-			ClusterInformation: map[string]cluster.ClusterInformation{
-				"active": {
-					Enabled:                true,
-					InitialFailoverVersion: 1,
-					RPCAddress:             fmt.Sprintf("%s:%d", broadcastAddress, cfg.FrontendPort),
-				},
-			},
-		},
-		DCRedirectionPolicy: config.DCRedirectionPolicy{
-			Policy: "noop",
-		},
-		Services: map[string]config.Service{
-			"frontend": cfg.mustGetService(0),
-			"history":  cfg.mustGetService(1),
-			"matching": cfg.mustGetService(2),
-			"worker":   cfg.mustGetService(3),
-		},
-		Archival: config.Archival{
-			History: config.HistoryArchival{
-				State:      "disabled",
-				EnableRead: false,
-				Provider:   nil,
-			},
-			Visibility: config.VisibilityArchival{
-				State:      "disabled",
-				EnableRead: false,
-				Provider:   nil,
-			},
-		},
-		PublicClient: config.PublicClient{
-			HostPort: fmt.Sprintf("%s:%d", broadcastAddress, cfg.FrontendPort),
-		},
-		NamespaceDefaults: config.NamespaceDefaults{
-			Archival: config.ArchivalNamespaceDefaults{
-				History: config.HistoryArchivalNamespaceDefaults{
-					State: "disabled",
-				},
-				Visibility: config.VisibilityArchivalNamespaceDefaults{
-					State: "disabled",
-				},
+	}
+	baseConfig.ClusterMetadata = &cluster.Config{
+		EnableGlobalNamespace:    false,
+		FailoverVersionIncrement: 10,
+		MasterClusterName:        "active",
+		CurrentClusterName:       "active",
+		ClusterInformation: map[string]cluster.ClusterInformation{
+			"active": {
+				Enabled:                true,
+				InitialFailoverVersion: 1,
+				RPCAddress:             fmt.Sprintf("%s:%d", broadcastAddress, cfg.FrontendPort),
 			},
 		},
 	}
+	baseConfig.DCRedirectionPolicy = config.DCRedirectionPolicy{
+		Policy: "noop",
+	}
+	baseConfig.Services = map[string]config.Service{
+		"frontend": cfg.mustGetService(0),
+		"history":  cfg.mustGetService(1),
+		"matching": cfg.mustGetService(2),
+		"worker":   cfg.mustGetService(3),
+	}
+	baseConfig.Archival = config.Archival{
+		History: config.HistoryArchival{
+			State:      "disabled",
+			EnableRead: false,
+			Provider:   nil,
+		},
+		Visibility: config.VisibilityArchival{
+			State:      "disabled",
+			EnableRead: false,
+			Provider:   nil,
+		},
+	}
+	baseConfig.PublicClient = config.PublicClient{
+		HostPort: fmt.Sprintf("%s:%d", broadcastAddress, cfg.FrontendPort),
+	}
+	baseConfig.NamespaceDefaults = config.NamespaceDefaults{
+		Archival: config.ArchivalNamespaceDefaults{
+			History: config.HistoryArchivalNamespaceDefaults{
+				State: "disabled",
+			},
+			Visibility: config.VisibilityArchivalNamespaceDefaults{
+				State: "disabled",
+			},
+		},
+	}
+	return baseConfig
 }
 
 func (o *Config) mustGetService(frontendPortOffset int) config.Service {
