@@ -151,7 +151,7 @@ func Convert(cfg *Config) *config.Config {
 	}
 	baseConfig.Global.Metrics = &metrics.Config{
 		Prometheus: &metrics.PrometheusConfig{
-			ListenAddress: fmt.Sprintf("%s:%d", broadcastAddress, cfg.MetricsPort),
+			ListenAddress: fmt.Sprintf("%s:%d", cfg.FrontendIP, cfg.MetricsPort),
 			HandlerPath:   "/metrics",
 		},
 	}
@@ -214,28 +214,28 @@ func Convert(cfg *Config) *config.Config {
 	return baseConfig
 }
 
-func (o *Config) mustGetService(frontendPortOffset int) config.Service {
+func (cfg *Config) mustGetService(frontendPortOffset int) config.Service {
 	svc := config.Service{
 		RPC: config.RPC{
-			GRPCPort:        o.FrontendPort + frontendPortOffset,
-			MembershipPort:  o.FrontendPort + 100 + frontendPortOffset,
+			GRPCPort:        cfg.FrontendPort + frontendPortOffset,
+			MembershipPort:  cfg.FrontendPort + 100 + frontendPortOffset,
 			BindOnLocalHost: true,
 			BindOnIP:        "",
 		},
 	}
 
 	// Assign any open port when configured to use dynamic ports
-	if o.DynamicPorts {
+	if cfg.DynamicPorts {
 		if frontendPortOffset != 0 {
-			svc.RPC.GRPCPort = o.portProvider.mustGetFreePort()
+			svc.RPC.GRPCPort = cfg.portProvider.mustGetFreePort()
 		}
-		svc.RPC.MembershipPort = o.portProvider.mustGetFreePort()
+		svc.RPC.MembershipPort = cfg.portProvider.mustGetFreePort()
 	}
 
 	// Optionally bind frontend to IPv4 address
-	if frontendPortOffset == 0 && o.FrontendIP != "" {
+	if frontendPortOffset == 0 && cfg.FrontendIP != "" {
 		svc.RPC.BindOnLocalHost = false
-		svc.RPC.BindOnIP = o.FrontendIP
+		svc.RPC.BindOnIP = cfg.FrontendIP
 	}
 
 	return svc
