@@ -24,6 +24,7 @@ const (
 	broadcastAddress     = "127.0.0.1"
 	PersistenceStoreName = "sqlite-default"
 	DefaultFrontendPort  = 7233
+	DefaultMetricsPort   = 0
 )
 
 // UIServer abstracts the github.com/temporalio/ui-server project to
@@ -48,6 +49,7 @@ type Config struct {
 	Ephemeral        bool
 	DatabaseFilePath string
 	FrontendPort     int
+	MetricsPort      int
 	DynamicPorts     bool
 	Namespaces       []string
 	SQLitePragmas    map[string]string
@@ -83,6 +85,7 @@ func NewDefaultConfig() (*Config, error) {
 		Ephemeral:        false,
 		DatabaseFilePath: filepath.Join(userConfigDir, "temporalite/db/default.db"),
 		FrontendPort:     0,
+		MetricsPort:      0,
 		UIServer:         noopUIServer{},
 		DynamicPorts:     false,
 		Namespaces:       nil,
@@ -122,18 +125,22 @@ func Convert(cfg *Config) *config.Config {
 		sqliteConfig.ConnectAttributes["_"+k] = v
 	}
 
-	var metricsPort, pprofPort int
+	var pprofPort int
 	if cfg.DynamicPorts {
 		if cfg.FrontendPort == 0 {
 			cfg.FrontendPort = cfg.portProvider.mustGetFreePort()
 		}
-		metricsPort = cfg.portProvider.mustGetFreePort()
+		if cfg.MetricsPort == 0 {
+			cfg.MetricsPort = cfg.portProvider.mustGetFreePort()
+		}
 		pprofPort = cfg.portProvider.mustGetFreePort()
 	} else {
 		if cfg.FrontendPort == 0 {
 			cfg.FrontendPort = DefaultFrontendPort
 		}
-		metricsPort = cfg.FrontendPort + 200
+		if cfg.MetricsPort == 0 {
+			cfg.MetricsPort = cfg.FrontendPort + 200
+		}
 		pprofPort = cfg.FrontendPort + 201
 	}
 
@@ -144,7 +151,7 @@ func Convert(cfg *Config) *config.Config {
 	}
 	baseConfig.Global.Metrics = &metrics.Config{
 		Prometheus: &metrics.PrometheusConfig{
-			ListenAddress: fmt.Sprintf("%s:%d", broadcastAddress, metricsPort),
+			ListenAddress: fmt.Sprintf("%s:%d", broadcastAddress, cfg.MetricsPort),
 			HandlerPath:   "/metrics",
 		},
 	}
