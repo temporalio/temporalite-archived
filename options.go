@@ -57,6 +57,15 @@ func WithFrontendPort(port int) ServerOption {
 	})
 }
 
+// WithMetricsPort sets the listening port for metrics.
+//
+// When unspecified, the port will be system-chosen.
+func WithMetricsPort(port int) ServerOption {
+	return newApplyFuncContainer(func(cfg *liteconfig.Config) {
+		cfg.MetricsPort = port
+	})
+}
+
 // WithFrontendIP binds the temporal-frontend GRPC service to a specific IP (eg. `0.0.0.0`)
 // Check net.ParseIP for supported syntax; only IPv4 is supported.
 //

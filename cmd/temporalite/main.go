@@ -35,17 +35,18 @@ var (
 )
 
 const (
-	ephemeralFlag = "ephemeral"
-	dbPathFlag    = "filename"
-	portFlag      = "port"
-	uiPortFlag    = "ui-port"
-	headlessFlag  = "headless"
-	ipFlag        = "ip"
-	logFormatFlag = "log-format"
-	logLevelFlag  = "log-level"
-	namespaceFlag = "namespace"
-	pragmaFlag    = "sqlite-pragma"
-	configFlag    = "config"
+	ephemeralFlag   = "ephemeral"
+	dbPathFlag      = "filename"
+	portFlag        = "port"
+	metricsPortFlag = "metrics-port"
+	uiPortFlag      = "ui-port"
+	headlessFlag    = "headless"
+	ipFlag          = "ip"
+	logFormatFlag   = "log-format"
+	logLevelFlag    = "log-level"
+	namespaceFlag   = "namespace"
+	pragmaFlag      = "sqlite-pragma"
+	configFlag      = "config"
 )
 
 func init() {
@@ -92,6 +93,11 @@ func buildCLI() *cli.App {
 					Aliases: []string{"p"},
 					Usage:   "port for the temporal-frontend GRPC service",
 					Value:   liteconfig.DefaultFrontendPort,
+				},
+				&cli.IntFlag{
+					Name:  metricsPortFlag,
+					Usage: "port for the metrics listener",
+					Value: liteconfig.DefaultMetricsPort,
 				},
 				&cli.IntFlag{
 					Name:        uiPortFlag,
@@ -171,9 +177,10 @@ func buildCLI() *cli.App {
 			},
 			Action: func(c *cli.Context) error {
 				var (
-					ip         = c.String(ipFlag)
-					serverPort = c.Int(portFlag)
-					uiPort     = serverPort + 1000
+					ip          = c.String(ipFlag)
+					serverPort  = c.Int(portFlag)
+					metricsPort = c.Int(metricsPortFlag)
+					uiPort      = serverPort + 1000
 				)
 
 				if c.IsSet(uiPortFlag) {
@@ -196,6 +203,7 @@ func buildCLI() *cli.App {
 				opts := []temporalite.ServerOption{
 					temporalite.WithDynamicPorts(),
 					temporalite.WithFrontendPort(serverPort),
+					temporalite.WithMetricsPort(metricsPort),
 					temporalite.WithFrontendIP(ip),
 					temporalite.WithDatabaseFilePath(c.String(dbPathFlag)),
 					temporalite.WithNamespaces(c.StringSlice(namespaceFlag)...),

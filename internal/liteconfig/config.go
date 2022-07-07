@@ -24,6 +24,7 @@ const (
 	broadcastAddress     = "127.0.0.1"
 	PersistenceStoreName = "sqlite-default"
 	DefaultFrontendPort  = 7233
+	DefaultMetricsPort   = 0
 )
 
 // UIServer abstracts the github.com/temporalio/ui-server project to
@@ -48,6 +49,7 @@ type Config struct {
 	Ephemeral        bool
 	DatabaseFilePath string
 	FrontendPort     int
+	MetricsPort      int
 	DynamicPorts     bool
 	Namespaces       []string
 	SQLitePragmas    map[string]string
@@ -83,6 +85,7 @@ func NewDefaultConfig() (*Config, error) {
 		Ephemeral:        false,
 		DatabaseFilePath: filepath.Join(userConfigDir, "temporalite/db/default.db"),
 		FrontendPort:     0,
+		MetricsPort:      0,
 		UIServer:         noopUIServer{},
 		DynamicPorts:     false,
 		Namespaces:       nil,
@@ -122,18 +125,22 @@ func Convert(cfg *Config) *config.Config {
 		sqliteConfig.ConnectAttributes["_"+k] = v
 	}
 
-	var metricsPort, pprofPort int
+	var pprofPort int
 	if cfg.DynamicPorts {
 		if cfg.FrontendPort == 0 {
 			cfg.FrontendPort = cfg.portProvider.mustGetFreePort()
 		}
-		metricsPort = cfg.portProvider.mustGetFreePort()
+		if cfg.MetricsPort == 0 {
+			cfg.MetricsPort = cfg.portProvider.mustGetFreePort()
+		}
 		pprofPort = cfg.portProvider.mustGetFreePort()
 	} else {
 		if cfg.FrontendPort == 0 {
 			cfg.FrontendPort = DefaultFrontendPort
 		}
-		metricsPort = cfg.FrontendPort + 200
+		if cfg.MetricsPort == 0 {
+			cfg.MetricsPort = cfg.FrontendPort + 200
+		}
 		pprofPort = cfg.FrontendPort + 201
 	}
 
@@ -144,7 +151,7 @@ func Convert(cfg *Config) *config.Config {
 	}
 	baseConfig.Global.Metrics = &metrics.Config{
 		Prometheus: &metrics.PrometheusConfig{
-			ListenAddress: fmt.Sprintf("%s:%d", broadcastAddress, metricsPort),
+			ListenAddress: fmt.Sprintf("%s:%d", cfg.FrontendIP, cfg.MetricsPort),
 			HandlerPath:   "/metrics",
 		},
 	}
@@ -207,28 +214,28 @@ func Convert(cfg *Config) *config.Config {
 	return baseConfig
 }
 
-func (o *Config) mustGetService(frontendPortOffset int) config.Service {
+func (cfg *Config) mustGetService(frontendPortOffset int) config.Service {
 	svc := config.Service{
 		RPC: config.RPC{
-			GRPCPort:        o.FrontendPort + frontendPortOffset,
-			MembershipPort:  o.FrontendPort + 100 + frontendPortOffset,
+			GRPCPort:        cfg.FrontendPort + frontendPortOffset,
+			MembershipPort:  cfg.FrontendPort + 100 + frontendPortOffset,
 			BindOnLocalHost: true,
 			BindOnIP:        "",
 		},
 	}
 
 	// Assign any open port when configured to use dynamic ports
-	if o.DynamicPorts {
+	if cfg.DynamicPorts {
 		if frontendPortOffset != 0 {
-			svc.RPC.GRPCPort = o.portProvider.mustGetFreePort()
+			svc.RPC.GRPCPort = cfg.portProvider.mustGetFreePort()
 		}
-		svc.RPC.MembershipPort = o.portProvider.mustGetFreePort()
+		svc.RPC.MembershipPort = cfg.portProvider.mustGetFreePort()
 	}
 
 	// Optionally bind frontend to IPv4 address
-	if frontendPortOffset == 0 && o.FrontendIP != "" {
+	if frontendPortOffset == 0 && cfg.FrontendIP != "" {
 		svc.RPC.BindOnLocalHost = false
-		svc.RPC.BindOnIP = o.FrontendIP
+		svc.RPC.BindOnIP = cfg.FrontendIP
 	}
 
 	return svc
