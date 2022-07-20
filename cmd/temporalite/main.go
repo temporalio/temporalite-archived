@@ -28,7 +28,7 @@ import (
 
 // Name of the ui-server module, used in tests to verify that it is included/excluded
 // as a dependency when building with the `headless` tag enabled.
-const uiServerModule = "github.com/temporalio/v2/ui-server"
+const uiServerModule = "github.com/temporalio/ui-server"
 
 var (
 	defaultCfg *liteconfig.Config
