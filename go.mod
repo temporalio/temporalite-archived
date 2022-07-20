@@ -6,7 +6,7 @@ require (
 	github.com/google/go-licenses v0.0.0-20210816172045-3099c18c36e1
 	github.com/google/licenseclassifier v0.0.0-20210722185704-3043a050f148
 	github.com/temporalio/ui-server v0.13.1
-	github.com/urfave/cli/v2 v2.11.0
+	github.com/urfave/cli/v2 v2.11.1
 	go.temporal.io/sdk v1.15.0
 	go.temporal.io/server v1.17.1
 	go.uber.org/zap v1.21.0
