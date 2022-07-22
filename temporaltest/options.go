@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"go.temporal.io/sdk/client"
+	"go.temporal.io/sdk/worker"
 
 	"github.com/DataDog/temporalite"
 )
@@ -30,6 +31,12 @@ func WithT(t *testing.T) TestServerOption {
 func WithBaseClientOptions(o client.Options) TestServerOption {
 	return newApplyFuncContainer(func(server *TestServer) {
 		server.defaultClientOptions = o
+	})
+}
+
+func WithBaseWorkerOptions(o worker.Options) TestServerOption {
+	return newApplyFuncContainer(func(server *TestServer) {
+		server.defaultWorkerOptions = o
 	})
 }
 
