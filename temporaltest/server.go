@@ -56,7 +56,9 @@ func (ts *TestServer) Worker(taskQueue string, registerFunc func(registry worker
 }
 
 // NewWorkerWithOptions returns a Temporal worker on the specified task queue.
-// WorkflowPanicPolicy is set to worker.FailWorkflow
+//
+// WorkflowPanicPolicy is always set to worker.FailWorkflow so that workflow executions
+// fail fast when workflow code panics or detects non-determinism.
 func (ts *TestServer) NewWorkerWithOptions(taskQueue string, registerFunc func(registry worker.Registry), opts worker.Options) worker.Worker {
 	opts.WorkflowPanicPolicy = worker.FailWorkflow
 
