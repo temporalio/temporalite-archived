@@ -32,10 +32,6 @@ jobs:
         - ""
         - -tags headless
         cgo: ["0", "1"]
-        exclude:
-        # cgo is currently required by the upstream SQLite driver.
-        # This exception should be removed if/when non-cgo builds are supported again.
-        - cgo: "0"
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v2

@@ -24,6 +24,7 @@ const (
 	broadcastAddress     = "127.0.0.1"
 	PersistenceStoreName = "sqlite-default"
 	DefaultFrontendPort  = 7233
+	DefaultMetricsPort   = 0
 )
 
 // UIServer abstracts the github.com/temporalio/ui-server project to
@@ -48,6 +49,7 @@ type Config struct {
 	Ephemeral        bool
 	DatabaseFilePath string
 	FrontendPort     int
+	MetricsPort      int
 	DynamicPorts     bool
 	Namespaces       []string
 	SQLitePragmas    map[string]string
@@ -56,6 +58,7 @@ type Config struct {
 	portProvider     *portProvider
 	FrontendIP       string
 	UIServer         UIServer
+	BaseConfig       *config.Config
 }
 
 var SupportedPragmas = map[string]struct{}{
@@ -82,6 +85,7 @@ func NewDefaultConfig() (*Config, error) {
 		Ephemeral:        false,
 		DatabaseFilePath: filepath.Join(userConfigDir, "temporalite/db/default.db"),
 		FrontendPort:     0,
+		MetricsPort:      0,
 		UIServer:         noopUIServer{},
 		DynamicPorts:     false,
 		Namespaces:       nil,
@@ -93,6 +97,7 @@ func NewDefaultConfig() (*Config, error) {
 		})),
 		portProvider: &portProvider{},
 		FrontendIP:   "",
+		BaseConfig:   &config.Config{},
 	}, nil
 }
 
@@ -120,115 +125,117 @@ func Convert(cfg *Config) *config.Config {
 		sqliteConfig.ConnectAttributes["_"+k] = v
 	}
 
-	var metricsPort, pprofPort int
+	var pprofPort int
 	if cfg.DynamicPorts {
 		if cfg.FrontendPort == 0 {
 			cfg.FrontendPort = cfg.portProvider.mustGetFreePort()
 		}
-		metricsPort = cfg.portProvider.mustGetFreePort()
+		if cfg.MetricsPort == 0 {
+			cfg.MetricsPort = cfg.portProvider.mustGetFreePort()
+		}
 		pprofPort = cfg.portProvider.mustGetFreePort()
 	} else {
 		if cfg.FrontendPort == 0 {
 			cfg.FrontendPort = DefaultFrontendPort
 		}
-		metricsPort = cfg.FrontendPort + 200
+		if cfg.MetricsPort == 0 {
+			cfg.MetricsPort = cfg.FrontendPort + 200
+		}
 		pprofPort = cfg.FrontendPort + 201
 	}
 
-	return &config.Config{
-		Global: config.Global{
-			Membership: config.Membership{
-				MaxJoinDuration:  30 * time.Second,
-				BroadcastAddress: broadcastAddress,
-			},
-			Metrics: &metrics.Config{
-				Prometheus: &metrics.PrometheusConfig{
-					ListenAddress: fmt.Sprintf("%s:%d", broadcastAddress, metricsPort),
-					HandlerPath:   "/metrics",
-				},
-			},
-			PProf: config.PProf{Port: pprofPort},
+	baseConfig := cfg.BaseConfig
+	baseConfig.Global.Membership = config.Membership{
+		MaxJoinDuration:  30 * time.Second,
+		BroadcastAddress: broadcastAddress,
+	}
+	baseConfig.Global.Metrics = &metrics.Config{
+		Prometheus: &metrics.PrometheusConfig{
+			ListenAddress: fmt.Sprintf("%s:%d", cfg.FrontendIP, cfg.MetricsPort),
+			HandlerPath:   "/metrics",
 		},
-		Persistence: config.Persistence{
-			DefaultStore:     PersistenceStoreName,
-			VisibilityStore:  PersistenceStoreName,
-			NumHistoryShards: 1,
-			DataStores: map[string]config.DataStore{
-				PersistenceStoreName: {SQL: &sqliteConfig},
-			},
+	}
+	baseConfig.Global.PProf = config.PProf{Port: pprofPort}
+	baseConfig.Persistence = config.Persistence{
+		DefaultStore:     PersistenceStoreName,
+		VisibilityStore:  PersistenceStoreName,
+		NumHistoryShards: 1,
+		DataStores: map[string]config.DataStore{
+			PersistenceStoreName: {SQL: &sqliteConfig},
 		},
-		ClusterMetadata: &cluster.Config{
-			EnableGlobalNamespace:    false,
-			FailoverVersionIncrement: 10,
-			MasterClusterName:        "active",
-			CurrentClusterName:       "active",
-			ClusterInformation: map[string]cluster.ClusterInformation{
-				"active": {
-					Enabled:                true,
-					InitialFailoverVersion: 1,
-					RPCAddress:             fmt.Sprintf("%s:%d", broadcastAddress, cfg.FrontendPort),
-				},
-			},
-		},
-		DCRedirectionPolicy: config.DCRedirectionPolicy{
-			Policy: "noop",
-		},
-		Services: map[string]config.Service{
-			"frontend": cfg.mustGetService(0),
-			"history":  cfg.mustGetService(1),
-			"matching": cfg.mustGetService(2),
-			"worker":   cfg.mustGetService(3),
-		},
-		Archival: config.Archival{
-			History: config.HistoryArchival{
-				State:      "disabled",
-				EnableRead: false,
-				Provider:   nil,
-			},
-			Visibility: config.VisibilityArchival{
-				State:      "disabled",
-				EnableRead: false,
-				Provider:   nil,
-			},
-		},
-		PublicClient: config.PublicClient{
-			HostPort: fmt.Sprintf("%s:%d", broadcastAddress, cfg.FrontendPort),
-		},
-		NamespaceDefaults: config.NamespaceDefaults{
-			Archival: config.ArchivalNamespaceDefaults{
-				History: config.HistoryArchivalNamespaceDefaults{
-					State: "disabled",
-				},
-				Visibility: config.VisibilityArchivalNamespaceDefaults{
-					State: "disabled",
-				},
+	}
+	baseConfig.ClusterMetadata = &cluster.Config{
+		EnableGlobalNamespace:    false,
+		FailoverVersionIncrement: 10,
+		MasterClusterName:        "active",
+		CurrentClusterName:       "active",
+		ClusterInformation: map[string]cluster.ClusterInformation{
+			"active": {
+				Enabled:                true,
+				InitialFailoverVersion: 1,
+				RPCAddress:             fmt.Sprintf("%s:%d", broadcastAddress, cfg.FrontendPort),
 			},
 		},
 	}
+	baseConfig.DCRedirectionPolicy = config.DCRedirectionPolicy{
+		Policy: "noop",
+	}
+	baseConfig.Services = map[string]config.Service{
+		"frontend": cfg.mustGetService(0),
+		"history":  cfg.mustGetService(1),
+		"matching": cfg.mustGetService(2),
+		"worker":   cfg.mustGetService(3),
+	}
+	baseConfig.Archival = config.Archival{
+		History: config.HistoryArchival{
+			State:      "disabled",
+			EnableRead: false,
+			Provider:   nil,
+		},
+		Visibility: config.VisibilityArchival{
+			State:      "disabled",
+			EnableRead: false,
+			Provider:   nil,
+		},
+	}
+	baseConfig.PublicClient = config.PublicClient{
+		HostPort: fmt.Sprintf("%s:%d", broadcastAddress, cfg.FrontendPort),
+	}
+	baseConfig.NamespaceDefaults = config.NamespaceDefaults{
+		Archival: config.ArchivalNamespaceDefaults{
+			History: config.HistoryArchivalNamespaceDefaults{
+				State: "disabled",
+			},
+			Visibility: config.VisibilityArchivalNamespaceDefaults{
+				State: "disabled",
+			},
+		},
+	}
+	return baseConfig
 }
 
-func (o *Config) mustGetService(frontendPortOffset int) config.Service {
+func (cfg *Config) mustGetService(frontendPortOffset int) config.Service {
 	svc := config.Service{
 		RPC: config.RPC{
-			GRPCPort:        o.FrontendPort + frontendPortOffset,
-			MembershipPort:  o.FrontendPort + 100 + frontendPortOffset,
+			GRPCPort:        cfg.FrontendPort + frontendPortOffset,
+			MembershipPort:  cfg.FrontendPort + 100 + frontendPortOffset,
 			BindOnLocalHost: true,
 			BindOnIP:        "",
 		},
 	}
 
 	// Assign any open port when configured to use dynamic ports
-	if o.DynamicPorts {
+	if cfg.DynamicPorts {
 		if frontendPortOffset != 0 {
-			svc.RPC.GRPCPort = o.portProvider.mustGetFreePort()
+			svc.RPC.GRPCPort = cfg.portProvider.mustGetFreePort()
 		}
-		svc.RPC.MembershipPort = o.portProvider.mustGetFreePort()
+		svc.RPC.MembershipPort = cfg.portProvider.mustGetFreePort()
 	}
 
 	// Optionally bind frontend to IPv4 address
-	if frontendPortOffset == 0 && o.FrontendIP != "" {
+	if frontendPortOffset == 0 && cfg.FrontendIP != "" {
 		svc.RPC.BindOnLocalHost = false
-		svc.RPC.BindOnIP = o.FrontendIP
+		svc.RPC.BindOnIP = cfg.FrontendIP
 	}
 
 	return svc

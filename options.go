@@ -5,6 +5,7 @@
 package temporalite
 
 import (
+	"go.temporal.io/server/common/config"
 	"go.temporal.io/server/common/log"
 	"go.temporal.io/server/temporal"
 
@@ -56,6 +57,15 @@ func WithFrontendPort(port int) ServerOption {
 	})
 }
 
+// WithMetricsPort sets the listening port for metrics.
+//
+// When unspecified, the port will be system-chosen.
+func WithMetricsPort(port int) ServerOption {
+	return newApplyFuncContainer(func(cfg *liteconfig.Config) {
+		cfg.MetricsPort = port
+	})
+}
+
 // WithFrontendIP binds the temporal-frontend GRPC service to a specific IP (eg. `0.0.0.0`)
 // Check net.ParseIP for supported syntax; only IPv4 is supported.
 //
@@ -96,6 +106,16 @@ func WithSQLitePragmas(pragmas map[string]string) ServerOption {
 func WithUpstreamOptions(options ...temporal.ServerOption) ServerOption {
 	return newApplyFuncContainer(func(cfg *liteconfig.Config) {
 		cfg.UpstreamOptions = append(cfg.UpstreamOptions, options...)
+	})
+}
+
+// WithBaseConfig sets the default Temporal server configuration.
+//
+// Storage and client configuration will always be overridden, however base config can be
+// used to enable settings like TLS or authentication.
+func WithBaseConfig(base *config.Config) ServerOption {
+	return newApplyFuncContainer(func(cfg *liteconfig.Config) {
+		cfg.BaseConfig = base
 	})
 }
 
