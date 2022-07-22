@@ -120,25 +120,21 @@ func TestNewWorkerWithOptions(t *testing.T) {
 
 }
 
-// Tests creating a worker with a custom client. Embeds an interceptor in the worker.
-func TestNewWorkerWithClient(t *testing.T) {
-	ts := temporaltest.NewServer(temporaltest.WithT(t))
-	var opts client.Options
-	opts.Interceptors = append(opts.Interceptors, helloworld.NewTestInterceptor())
-	c := ts.NewClientWithOptions(opts)
-
-	ts.NewWorkerWithClient(
-		c,
-		"hello_world",
-		func(registry worker.Registry) {
-			helloworld.RegisterWorkflowsAndActivities(registry)
-		},
-		worker.Options{
-			MaxConcurrentActivityExecutionSize:      1,
-			MaxConcurrentLocalActivityExecutionSize: 1,
-		},
+func TestDefaultWorkerOptions(t *testing.T) {
+	ts := temporaltest.NewServer(
+		temporaltest.WithT(t),
+		temporaltest.WithBaseWorkerOptions(
+			worker.Options{
+				MaxConcurrentActivityExecutionSize:      1,
+				MaxConcurrentLocalActivityExecutionSize: 1,
+			},
+		),
 	)
 
+	ts.Worker("hello_world", func(registry worker.Registry) {
+		helloworld.RegisterWorkflowsAndActivities(registry)
+	})
+	
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
@@ -162,21 +158,21 @@ func TestNewWorkerWithClient(t *testing.T) {
 	}
 }
 
-func TestDefaultWorkerOptions(t *testing.T) {
+func TestClientWithDefaultInterceptor(t *testing.T) {
+	var opts client.Options
+	opts.Interceptors = append(opts.Interceptors, helloworld.NewTestInterceptor())
 	ts := temporaltest.NewServer(
 		temporaltest.WithT(t),
-		temporaltest.WithBaseWorkerOptions(
-			worker.Options{
-				MaxConcurrentActivityExecutionSize:      1,
-				MaxConcurrentLocalActivityExecutionSize: 1,
-			},
-		),
+		temporaltest.WithBaseClientOptions(opts),
 	)
 
-	ts.Worker("hello_world", func(registry worker.Registry) {
-		helloworld.RegisterWorkflowsAndActivities(registry)
-	})
-	
+	ts.Worker(
+		"hello_world",
+		func(registry worker.Registry) {
+			helloworld.RegisterWorkflowsAndActivities(registry)
+		},
+	)
+
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
