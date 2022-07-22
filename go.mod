@@ -5,7 +5,7 @@ go 1.18
 require (
 	github.com/google/go-licenses v0.0.0-20210816172045-3099c18c36e1
 	github.com/google/licenseclassifier v0.0.0-20210722185704-3043a050f148
-	github.com/temporalio/ui-server/v2 v2.2.4-0.20220720131842-87935b585b7d
+	github.com/temporalio/ui-server/v2 v2.3.0
 	github.com/urfave/cli/v2 v2.11.0
 	go.temporal.io/sdk v1.15.0
 	go.temporal.io/server v1.17.1
