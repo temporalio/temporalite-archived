@@ -40,8 +40,23 @@ func (ts *TestServer) fatal(err error) {
 }
 
 // Worker registers and starts a Temporal worker on the specified task queue.
+// 
+// Deprecated: Use function NewWorker()
 func (ts *TestServer) Worker(taskQueue string, registerFunc func(registry worker.Registry)) worker.Worker {
-	w := worker.New(ts.Client(), taskQueue, ts.defaultWorkerOptions)
+	w := worker.New(ts.NewClient(), taskQueue, ts.defaultWorkerOptions)
+	registerFunc(w)
+	ts.workers = append(ts.workers, w)
+
+	if err := w.Start(); err != nil {
+		ts.fatal(err)
+	}
+
+	return w
+}
+
+// Worker registers and starts a Temporal worker on the specified task queue.
+func (ts *TestServer) NewWorker(taskQueue string, registerFunc func(registry worker.Registry)) worker.Worker {
+	w := worker.New(ts.NewClient(), taskQueue, ts.defaultWorkerOptions)
 	registerFunc(w)
 	ts.workers = append(ts.workers, w)
 
@@ -59,7 +74,7 @@ func (ts *TestServer) Worker(taskQueue string, registerFunc func(registry worker
 func (ts *TestServer) NewWorkerWithOptions(taskQueue string, registerFunc func(registry worker.Registry), opts worker.Options) worker.Worker {
 	opts.WorkflowPanicPolicy = worker.FailWorkflow
 
-	w := worker.New(ts.Client(), taskQueue, opts)
+	w := worker.New(ts.NewClient(), taskQueue, opts)
 	registerFunc(w)
 	ts.workers = append(ts.workers, w)
 
@@ -73,7 +88,19 @@ func (ts *TestServer) NewWorkerWithOptions(taskQueue string, registerFunc func(r
 // Client returns a Temporal client configured for making requests to the server.
 // It is configured to use a pre-registered test namespace and will
 // be closed on TestServer.Stop.
+//
+// Deprecated: Use function NewClient()
 func (ts *TestServer) Client() client.Client {
+	if ts.defaultClient == nil {
+		ts.defaultClient = ts.NewClientWithOptions(ts.defaultClientOptions)
+	}
+	return ts.defaultClient
+}
+
+// Client returns a Temporal client configured for making requests to the server.
+// It is configured to use a pre-registered test namespace and will
+// be closed on TestServer.Stop.
+func (ts *TestServer) NewClient() client.Client {
 	if ts.defaultClient == nil {
 		ts.defaultClient = ts.NewClientWithOptions(ts.defaultClientOptions)
 	}
