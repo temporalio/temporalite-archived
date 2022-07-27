@@ -41,8 +41,6 @@ func (ts *TestServer) fatal(err error) {
 
 // Worker registers and starts a Temporal worker on the specified task queue.
 func (ts *TestServer) Worker(taskQueue string, registerFunc func(registry worker.Registry)) worker.Worker {
-	ts.defaultWorkerOptions.WorkflowPanicPolicy = worker.FailWorkflow
-
 	w := worker.New(ts.Client(), taskQueue, ts.defaultWorkerOptions)
 	registerFunc(w)
 	ts.workers = append(ts.workers, w)
