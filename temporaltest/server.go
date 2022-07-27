@@ -28,6 +28,7 @@ type TestServer struct {
 	workers              []worker.Worker
 	t                    *testing.T
 	defaultClientOptions client.Options
+	defaultWorkerOptions worker.Options
 	serverOptions        []temporalite.ServerOption
 }
 
@@ -40,9 +41,25 @@ func (ts *TestServer) fatal(err error) {
 
 // Worker registers and starts a Temporal worker on the specified task queue.
 func (ts *TestServer) Worker(taskQueue string, registerFunc func(registry worker.Registry)) worker.Worker {
-	w := worker.New(ts.Client(), taskQueue, worker.Options{
-		WorkflowPanicPolicy: worker.FailWorkflow,
-	})
+	w := worker.New(ts.Client(), taskQueue, ts.defaultWorkerOptions)
+	registerFunc(w)
+	ts.workers = append(ts.workers, w)
+
+	if err := w.Start(); err != nil {
+		ts.fatal(err)
+	}
+
+	return w
+}
+
+// NewWorkerWithOptions returns a Temporal worker on the specified task queue.
+//
+// WorkflowPanicPolicy is always set to worker.FailWorkflow so that workflow executions
+// fail fast when workflow code panics or detects non-determinism.
+func (ts *TestServer) NewWorkerWithOptions(taskQueue string, registerFunc func(registry worker.Registry), opts worker.Options) worker.Worker {
+	opts.WorkflowPanicPolicy = worker.FailWorkflow
+
+	w := worker.New(ts.Client(), taskQueue, opts)
 	registerFunc(w)
 	ts.workers = append(ts.workers, w)
 

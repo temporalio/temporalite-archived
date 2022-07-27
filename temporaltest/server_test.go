@@ -82,6 +82,120 @@ func TestNewServer(t *testing.T) {
 	}
 }
 
+func TestNewWorkerWithOptions(t *testing.T) {
+	ts := temporaltest.NewServer(temporaltest.WithT(t))
+
+	ts.NewWorkerWithOptions(
+		"hello_world",
+		func(registry worker.Registry) {
+			helloworld.RegisterWorkflowsAndActivities(registry)
+		},
+		worker.Options{
+			MaxConcurrentActivityExecutionSize:      1,
+			MaxConcurrentLocalActivityExecutionSize: 1,
+		},
+	)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	wfr, err := ts.Client().ExecuteWorkflow(
+		ctx,
+		client.StartWorkflowOptions{TaskQueue: "hello_world"},
+		helloworld.Greet,
+		"world",
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	var result string
+	if err := wfr.Get(ctx, &result); err != nil {
+		t.Fatal(err)
+	}
+
+	if result != "Hello world" {
+		t.Fatalf("unexpected result: %q", result)
+	}
+
+}
+
+func TestDefaultWorkerOptions(t *testing.T) {
+	ts := temporaltest.NewServer(
+		temporaltest.WithT(t),
+		temporaltest.WithBaseWorkerOptions(
+			worker.Options{
+				MaxConcurrentActivityExecutionSize:      1,
+				MaxConcurrentLocalActivityExecutionSize: 1,
+			},
+		),
+	)
+
+	ts.Worker("hello_world", func(registry worker.Registry) {
+		helloworld.RegisterWorkflowsAndActivities(registry)
+	})
+	
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	wfr, err := ts.Client().ExecuteWorkflow(
+		ctx,
+		client.StartWorkflowOptions{TaskQueue: "hello_world"},
+		helloworld.Greet,
+		"world",
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	var result string
+	if err := wfr.Get(ctx, &result); err != nil {
+		t.Fatal(err)
+	}
+
+	if result != "Hello world" {
+		t.Fatalf("unexpected result: %q", result)
+	}
+}
+
+func TestClientWithDefaultInterceptor(t *testing.T) {
+	var opts client.Options
+	opts.Interceptors = append(opts.Interceptors, helloworld.NewTestInterceptor())
+	ts := temporaltest.NewServer(
+		temporaltest.WithT(t),
+		temporaltest.WithBaseClientOptions(opts),
+	)
+
+	ts.Worker(
+		"hello_world",
+		func(registry worker.Registry) {
+			helloworld.RegisterWorkflowsAndActivities(registry)
+		},
+	)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	wfr, err := ts.Client().ExecuteWorkflow(
+		ctx,
+		client.StartWorkflowOptions{TaskQueue: "hello_world"},
+		helloworld.Greet,
+		"world",
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	var result string
+	if err := wfr.Get(ctx, &result); err != nil {
+		t.Fatal(err)
+	}
+
+	if result != "Hello world" {
+		t.Fatalf("unexpected result: %q", result)
+	}
+}
+
 func BenchmarkRunWorkflow(b *testing.B) {
 	ts := temporaltest.NewServer()
 	defer ts.Stop()

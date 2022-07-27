@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"go.temporal.io/sdk/client"
+	"go.temporal.io/sdk/worker"
 
 	"github.com/DataDog/temporalite"
 )
@@ -30,6 +31,17 @@ func WithT(t *testing.T) TestServerOption {
 func WithBaseClientOptions(o client.Options) TestServerOption {
 	return newApplyFuncContainer(func(server *TestServer) {
 		server.defaultClientOptions = o
+	})
+}
+
+// With WithBaseWorkerOptions configures default options for workers connected to the test server.
+//
+// WorkflowPanicPolicy is always set to worker.FailWorkflow so that workflow executions
+// fail fast when workflow code panics or detects non-determinism.
+func WithBaseWorkerOptions(o worker.Options) TestServerOption {
+	o.WorkflowPanicPolicy = worker.FailWorkflow
+	return newApplyFuncContainer(func(server *TestServer) {
+		server.defaultWorkerOptions = o
 	})
 }
 
