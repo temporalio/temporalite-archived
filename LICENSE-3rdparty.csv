@@ -3,7 +3,7 @@ cloud.google.com/go/compute/metadata,,Apache-2.0,
 cloud.google.com/go/iam,,Apache-2.0,
 cloud.google.com/go/internal,,Apache-2.0,
 cloud.google.com/go/storage,,Apache-2.0,
-github.com/DataDog/temporalite,https://github.com/DataDog/temporalite,MIT,"Datadog, Inc."
+github.com/temporalio/temporalite,https://github.com/temporalio/temporalite,MIT,"Datadog, Inc."
 github.com/apache/thrift/lib/go/thrift,https://github.com/apache/thrift,Apache-2.0,
 github.com/aws/aws-sdk-go,https://github.com/aws/aws-sdk-go,Apache-2.0,
 github.com/aws/aws-sdk-go/internal/sync/singleflight,https://github.com/aws/aws-sdk-go,BSD-3-Clause,The Go Authors

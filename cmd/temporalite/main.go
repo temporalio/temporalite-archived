@@ -22,8 +22,8 @@ import (
 	// Load sqlite storage driver
 	_ "go.temporal.io/server/common/persistence/sql/sqlplugin/sqlite"
 
-	"github.com/DataDog/temporalite"
-	"github.com/DataDog/temporalite/internal/liteconfig"
+	"github.com/temporalio/temporalite"
+	"github.com/temporalio/temporalite/internal/liteconfig"
 )
 
 // Name of the ui-server module, used in tests to verify that it is included/excluded

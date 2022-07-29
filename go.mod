@@ -1,4 +1,4 @@
-module github.com/DataDog/temporalite
+module github.com/temporalio/temporalite
 
 go 1.18
 

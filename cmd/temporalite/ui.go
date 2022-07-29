@@ -9,7 +9,7 @@ import (
 	uiconfig "github.com/temporalio/ui-server/v2/server/config"
 	uiserveroptions "github.com/temporalio/ui-server/v2/server/server_options"
 
-	"github.com/DataDog/temporalite"
+	"github.com/temporalio/temporalite"
 )
 
 func newUIOption(frontendAddr string, uiIP string, uiPort int) temporalite.ServerOption {

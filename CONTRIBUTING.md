@@ -15,7 +15,7 @@ This doc is for contributors to Temporalite (hopefully that's you!)
 ## Check out the code
 Temporalite uses go modules, there is no dependency on `$GOPATH` variable. Clone the repo into the preferred location:
 ```bash
-git clone https://github.com/DataDog/temporalite.git
+git clone https://github.com/temporalio/temporalite.git
 ```
 
 ## Build

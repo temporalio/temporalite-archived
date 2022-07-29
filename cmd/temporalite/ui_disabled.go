@@ -2,7 +2,7 @@
 
 package main
 
-import "github.com/DataDog/temporalite"
+import "github.com/temporalio/temporalite"
 
 func newUIOption(frontendAddr string, uiIP string, uiPort int) temporalite.ServerOption {
 	return nil
