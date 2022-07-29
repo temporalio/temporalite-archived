@@ -10,7 +10,7 @@ import (
 	"go.temporal.io/sdk/client"
 	"go.temporal.io/sdk/worker"
 
-	"github.com/DataDog/temporalite"
+	"github.com/temporalio/temporalite"
 )
 
 type TestServerOption interface {

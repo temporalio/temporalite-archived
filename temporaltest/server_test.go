@@ -13,8 +13,8 @@ import (
 	"go.temporal.io/sdk/client"
 	"go.temporal.io/sdk/worker"
 
-	"github.com/DataDog/temporalite/internal/examples/helloworld"
-	"github.com/DataDog/temporalite/temporaltest"
+	"github.com/temporalio/temporalite/internal/examples/helloworld"
+	"github.com/temporalio/temporalite/temporaltest"
 )
 
 // to be used in example code

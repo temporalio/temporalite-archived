@@ -1,7 +1,7 @@
 # Temporalite
 
-[![Go Reference](https://pkg.go.dev/badge/github.com/DataDog/temporalite.svg)](https://pkg.go.dev/github.com/DataDog/temporalite)
-[![ci](https://github.com/DataDog/temporalite/actions/workflows/ci.yml/badge.svg)](https://github.com/DataDog/temporalite/actions/workflows/ci.yml)
+[![Go Reference](https://pkg.go.dev/badge/github.com/temporalio/temporalite.svg)](https://pkg.go.dev/github.com/temporalio/temporalite)
+[![ci](https://github.com/temporalio/temporalite/actions/workflows/ci.yml/badge.svg)](https://github.com/temporalio/temporalite/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/DataDog/temporalite/branch/main/graph/badge.svg)](https://codecov.io/gh/DataDog/temporalite)
 
 > ⚠️ This project is experimental and not suitable for production use. ⚠️
@@ -32,7 +32,7 @@ Build from source using [go install](https://golang.org/ref/mod#go-install):
 > Note: Go 1.18 or greater is currently required.
 
 ```bash
-go install github.com/DataDog/temporalite/cmd/temporalite@latest
+go install github.com/temporalio/temporalite/cmd/temporalite@latest
 ```
 
 Start Temporal server:
@@ -93,7 +93,7 @@ temporalite start --ephemeral
 The `temporalite` binary can be compiled to omit static assets for installations that will never use the UI:
 
 ```bash
-go install -tags headless github.com/DataDog/temporalite/cmd/temporalite@latest
+go install -tags headless github.com/temporalio/temporalite/cmd/temporalite@latest
 ```
 
 The UI can also be disabled via a runtime flag:
