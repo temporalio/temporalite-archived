@@ -32,6 +32,7 @@ import (
 	"flag"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -53,11 +54,7 @@ type (
 	}
 )
 
-var (
-	//go:embed header.txt
-	headerText     string
-	headerPrefixes = []string{"The MIT License", "Unless explicitly stated"}
-)
+var headerPrefixes = []string{"The MIT License", "Unless explicitly stated"}
 
 var (
 	// directories to be excluded
@@ -72,11 +69,15 @@ var (
 // go run ./internal/copyright
 func main() {
 	var cfg config
+	flag.StringVar(&cfg.licenseFile, "header-file", "./LICENSE", "file containing copyright header content")
 	flag.StringVar(&cfg.scanDir, "scan-dir", ".", "directory to scan")
 	flag.BoolVar(&cfg.verifyOnly, "verify-only", false, "don't automatically add headers, just verify all files")
 	flag.Parse()
 
-	task := newAddLicenseHeaderTask(&cfg)
+	task, err := newAddLicenseHeaderTask(&cfg)
+	if err != nil {
+		log.Fatal(err)
+	}
 	if err := task.run(); err != nil {
 		fmt.Println("ERROR:", err)
 		fmt.Println("To fix missing copyright headers, execute the following command:\n  go run ./internal/copyright")
@@ -84,14 +85,19 @@ func main() {
 	}
 }
 
-func newAddLicenseHeaderTask(cfg *config) *addLicenseHeaderTask {
-	return &addLicenseHeaderTask{
-		config: cfg,
+func newAddLicenseHeaderTask(cfg *config) (*addLicenseHeaderTask, error) {
+	b, err := os.ReadFile(cfg.licenseFile)
+	if err != nil {
+		return nil, err
 	}
+	return &addLicenseHeaderTask{
+		license: string(b),
+		config:  cfg,
+	}, nil
 }
 
 func (task *addLicenseHeaderTask) run() error {
-	license, err := commentOutLines(headerText)
+	license, err := commentOutLines(task.license)
 	if err != nil {
 		return fmt.Errorf("copyright header failed to comment out lines: %w", err)
 	}
