@@ -69,17 +69,18 @@ var (
 // command line utility that adds license header
 // to the source files. Usage as follows:
 //
-//  ./cmd/tools/copyright/licensegen.go
+// go run ./internal/copyright
 func main() {
 	var cfg config
-	flag.StringVar(&cfg.scanDir, "scanDir", ".", "directory to scan")
-	flag.BoolVar(&cfg.verifyOnly, "verifyOnly", false, "don't automatically add headers, just verify all files")
+	flag.StringVar(&cfg.scanDir, "scan-dir", ".", "directory to scan")
+	flag.BoolVar(&cfg.verifyOnly, "verify-only", false, "don't automatically add headers, just verify all files")
 	flag.Parse()
 
 	task := newAddLicenseHeaderTask(&cfg)
 	if err := task.run(); err != nil {
-		fmt.Println(err)
-		os.Exit(-1)
+		fmt.Println("ERROR:", err)
+		fmt.Println("To fix missing copyright headers, execute the following command:\n  go run ./internal/copyright")
+		os.Exit(1)
 	}
 }
 
@@ -92,12 +93,12 @@ func newAddLicenseHeaderTask(cfg *config) *addLicenseHeaderTask {
 func (task *addLicenseHeaderTask) run() error {
 	license, err := commentOutLines(headerText)
 	if err != nil {
-		return fmt.Errorf("copyright header failed to comment out lines, err=%v", err.Error())
+		return fmt.Errorf("copyright header failed to comment out lines: %w", err)
 	}
 	task.license = license
 
 	if err := filepath.Walk(task.config.scanDir, task.handleFile); err != nil {
-		return fmt.Errorf("copyright header check failed, err=%v", err.Error())
+		return fmt.Errorf("copyright header check failed: %w", err)
 	}
 	return nil
 }
