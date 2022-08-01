@@ -1,7 +1,0 @@
-{
-  "github.com/cactus/go-statsd-client/statsd": {
-    "license": "MIT",
-    "copyright": "Eli Janssen",
-    "origin": "https://github.com/cactus/go-statsd-client"
-  }
-}
