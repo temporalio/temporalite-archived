@@ -1,11 +1,11 @@
-module github.com/DataDog/temporalite
+module github.com/temporalio/temporalite
 
 go 1.18
 
 require (
 	github.com/google/go-licenses v0.0.0-20210816172045-3099c18c36e1
 	github.com/google/licenseclassifier v0.0.0-20210722185704-3043a050f148
-	github.com/temporalio/ui-server/v2 v2.3.0
+	github.com/temporalio/ui-server/v2 v2.4.0
 	github.com/urfave/cli/v2 v2.11.1
 	go.temporal.io/sdk v1.15.0
 	go.temporal.io/server v1.17.1
