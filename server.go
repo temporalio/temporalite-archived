@@ -57,7 +57,7 @@ func NewServer(opts ...ServerOption) (*Server, error) {
 		// Apply migrations if file does not already exist
 		if _, err := os.Stat(c.DatabaseFilePath); os.IsNotExist(err) {
 			// Check if any of the parent dirs are missing
-			dir, _ := filepath.Split(c.DatabaseFilePath)
+			dir := filepath.Dir(c.DatabaseFilePath)
 			if _, err := os.Stat(dir); err != nil {
 				return nil, fmt.Errorf("error setting up schema: %w", err)
 			}
