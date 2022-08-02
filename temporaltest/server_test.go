@@ -23,7 +23,7 @@ var t *testing.T
 func ExampleNewServer_testWorker() {
 	// Create test Temporal server and client
 	ts := temporaltest.NewServer(temporaltest.WithT(t))
-	c := ts.NewClient()
+	c := ts.DefaultClient()
 
 	// Register a new worker on the `hello_world` task queue
 	ts.NewWorker("hello_world", func(registry worker.Registry) {
@@ -62,7 +62,7 @@ func TestNewServer(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	wfr, err := ts.NewClient().ExecuteWorkflow(
+	wfr, err := ts.DefaultClient().ExecuteWorkflow(
 		ctx,
 		client.StartWorkflowOptions{TaskQueue: "hello_world"},
 		helloworld.Greet,
@@ -99,7 +99,7 @@ func TestNewWorkerWithOptions(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	wfr, err := ts.NewClient().ExecuteWorkflow(
+	wfr, err := ts.DefaultClient().ExecuteWorkflow(
 		ctx,
 		client.StartWorkflowOptions{TaskQueue: "hello_world"},
 		helloworld.Greet,
@@ -138,7 +138,7 @@ func TestDefaultWorkerOptions(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	wfr, err := ts.NewClient().ExecuteWorkflow(
+	wfr, err := ts.DefaultClient().ExecuteWorkflow(
 		ctx,
 		client.StartWorkflowOptions{TaskQueue: "hello_world"},
 		helloworld.Greet,
@@ -176,7 +176,7 @@ func TestClientWithDefaultInterceptor(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	wfr, err := ts.NewClient().ExecuteWorkflow(
+	wfr, err := ts.DefaultClient().ExecuteWorkflow(
 		ctx,
 		client.StartWorkflowOptions{TaskQueue: "hello_world"},
 		helloworld.Greet,
@@ -203,7 +203,7 @@ func BenchmarkRunWorkflow(b *testing.B) {
 	ts.NewWorker("hello_world", func(registry worker.Registry) {
 		helloworld.RegisterWorkflowsAndActivities(registry)
 	})
-	c := ts.NewClient()
+	c := ts.DefaultClient()
 
 	for i := 0; i < b.N; i++ {
 		func(b *testing.B) {
