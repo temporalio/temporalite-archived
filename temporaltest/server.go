@@ -39,9 +39,9 @@ func (ts *TestServer) fatal(err error) {
 	ts.t.Fatal(err)
 }
 
-// Worker registers and starts a Temporal worker on the specified task queue.
-func (ts *TestServer) Worker(taskQueue string, registerFunc func(registry worker.Registry)) worker.Worker {
-	w := worker.New(ts.Client(), taskQueue, ts.defaultWorkerOptions)
+// NewWorker registers and starts a Temporal worker on the specified task queue.
+func (ts *TestServer) NewWorker(taskQueue string, registerFunc func(registry worker.Registry)) worker.Worker {
+	w := worker.New(ts.DefaultClient(), taskQueue, ts.defaultWorkerOptions)
 	registerFunc(w)
 	ts.workers = append(ts.workers, w)
 
@@ -59,7 +59,7 @@ func (ts *TestServer) Worker(taskQueue string, registerFunc func(registry worker
 func (ts *TestServer) NewWorkerWithOptions(taskQueue string, registerFunc func(registry worker.Registry), opts worker.Options) worker.Worker {
 	opts.WorkflowPanicPolicy = worker.FailWorkflow
 
-	w := worker.New(ts.Client(), taskQueue, opts)
+	w := worker.New(ts.DefaultClient(), taskQueue, opts)
 	registerFunc(w)
 	ts.workers = append(ts.workers, w)
 
@@ -70,17 +70,17 @@ func (ts *TestServer) NewWorkerWithOptions(taskQueue string, registerFunc func(r
 	return w
 }
 
-// Client returns a Temporal client configured for making requests to the server.
+// DefaultClient returns the default Temporal client configured for making requests to the server.
 // It is configured to use a pre-registered test namespace and will
 // be closed on TestServer.Stop.
-func (ts *TestServer) Client() client.Client {
+func (ts *TestServer) DefaultClient() client.Client {
 	if ts.defaultClient == nil {
 		ts.defaultClient = ts.NewClientWithOptions(ts.defaultClientOptions)
 	}
 	return ts.defaultClient
 }
 
-// NewClientWithOptions returns a Temporal client configured for making requests to the server.
+// NewClientWithOptions returns a new Temporal client configured for making requests to the server.
 // If no namespace option is set it will use a pre-registered test namespace.
 // The returned client will be closed on TestServer.Stop.
 func (ts *TestServer) NewClientWithOptions(opts client.Options) client.Client {
@@ -161,3 +161,20 @@ func NewServer(opts ...TestServerOption) *TestServer {
 
 	return &ts
 }
+
+// Worker registers and starts a Temporal worker on the specified task queue.
+// 
+// Deprecated: Use function NewWorker()
+func (ts *TestServer) Worker(taskQueue string, registerFunc func(registry worker.Registry)) worker.Worker {
+	return ts.NewWorker(taskQueue, registerFunc)
+}
+
+// Client returns a Temporal client configured for making requests to the server.
+// It is configured to use a pre-registered test namespace and will
+// be closed on TestServer.Stop.
+//
+// Deprecated: Use function DefaultClient()
+func (ts *TestServer) Client() client.Client {
+	return ts.DefaultClient()
+}
+
