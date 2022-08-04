@@ -71,7 +71,6 @@ func (ts *TestServer) NewWorkerWithOptions(taskQueue string, registerFunc func(r
 }
 
 // DefaultClient returns the default Temporal client configured for making requests to the server.
-// If no default client is set, a new client will be created with TestServer.defaultClientOptions.
 // It is configured to use a pre-registered test namespace and will
 // be closed on TestServer.Stop.
 func (ts *TestServer) DefaultClient() client.Client {
