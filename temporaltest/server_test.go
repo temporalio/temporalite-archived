@@ -58,6 +58,7 @@ func TestNewServer(t *testing.T) {
 		temporaltest.WithT(t),
 		temporaltest.WithServerLogLevel(zapcore.WarnLevel),
 	)
+	defer ts.Stop()
 
 	ts.NewWorker("hello_world", func(registry worker.Registry) {
 		helloworld.RegisterWorkflowsAndActivities(registry)
@@ -84,12 +85,14 @@ func TestNewServer(t *testing.T) {
 	if result != "Hello world" {
 		t.Fatalf("unexpected result: %q", result)
 	}
-
-	t.Fail()
 }
 
 func TestNewWorkerWithOptions(t *testing.T) {
-	ts := temporaltest.NewServer(temporaltest.WithT(t))
+	ts := temporaltest.NewServer(
+		temporaltest.WithT(t),
+		temporaltest.WithServerLogLevel(zapcore.WarnLevel),
+	)
+	defer ts.Stop()
 
 	ts.NewWorkerWithOptions(
 		"hello_world",
@@ -123,7 +126,6 @@ func TestNewWorkerWithOptions(t *testing.T) {
 	if result != "Hello world" {
 		t.Fatalf("unexpected result: %q", result)
 	}
-
 }
 
 func TestDefaultWorkerOptions(t *testing.T) {
@@ -135,7 +137,9 @@ func TestDefaultWorkerOptions(t *testing.T) {
 				MaxConcurrentLocalActivityExecutionSize: 1,
 			},
 		),
+		temporaltest.WithServerLogLevel(zapcore.WarnLevel),
 	)
+	defer ts.Stop()
 
 	ts.NewWorker("hello_world", func(registry worker.Registry) {
 		helloworld.RegisterWorkflowsAndActivities(registry)
@@ -170,7 +174,9 @@ func TestClientWithDefaultInterceptor(t *testing.T) {
 	ts := temporaltest.NewServer(
 		temporaltest.WithT(t),
 		temporaltest.WithBaseClientOptions(opts),
+		temporaltest.WithServerLogLevel(zapcore.WarnLevel),
 	)
+	defer ts.Stop()
 
 	ts.NewWorker(
 		"hello_world",

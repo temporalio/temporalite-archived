@@ -16,6 +16,7 @@ func (tl *testLogger) logLevel(lvl, msg string, keyvals ...interface{}) {
 	if tl.t == nil {
 		return
 	}
+	tl.t.Helper()
 	args := []interface{}{lvl, msg}
 	args = append(args, keyvals...)
 	tl.t.Log(args...)
@@ -46,6 +47,13 @@ func (tsl *testServerLogger) Write(p []byte) (int, error) {
 	if tsl.t == nil {
 		return 0, nil
 	}
+	tsl.t.Helper()
+
+	// Test is completed already; don't log
+	if tsl.t.Failed() {
+		return 0, nil
+	}
+
 	tsl.t.Log(string(p))
 	return 0, nil
 }

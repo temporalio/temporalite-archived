@@ -50,7 +50,7 @@ func WithBaseWorkerOptions(o worker.Options) TestServerOption {
 // Server logs will only be printed when tests fail.
 //
 // Deprecated: This option may be modified or removed in the future; it is meant
-// primarily for internal testing and debugging.
+// primarily for Temporalite internal testing and debugging.
 func WithServerLogLevel(lvl zapcore.Level) TestServerOption {
 	return newApplyFuncContainer(func(server *TestServer) {
 		server.serverLogLevel = lvl

@@ -24,6 +24,7 @@ import (
 // local loopback interface, for use in end-to-end tests.
 type TestServer struct {
 	server               *temporalite.Server
+	stopped              bool
 	defaultTestNamespace string
 	defaultClient        client.Client
 	clients              []client.Client
@@ -33,6 +34,7 @@ type TestServer struct {
 	defaultWorkerOptions worker.Options
 	serverOptions        []temporalite.ServerOption
 	serverLogLevel       zapcore.Level
+	serverLogger         *zap.Logger
 }
 
 func (ts *TestServer) fatal(err error) {
@@ -109,6 +111,9 @@ func (ts *TestServer) NewClientWithOptions(opts client.Options) client.Client {
 
 // Stop closes test clients and shuts down the server.
 func (ts *TestServer) Stop() {
+	if ts.stopped {
+		return
+	}
 	for _, w := range ts.workers {
 		w.Stop()
 	}
@@ -116,6 +121,13 @@ func (ts *TestServer) Stop() {
 		c.Close()
 	}
 	ts.server.Stop()
+
+	// Flush any buffered logs
+	if ts.serverLogger != nil {
+		_ = ts.serverLogger.Core().Sync()
+	}
+
+	ts.stopped = true
 }
 
 // NewServer starts and returns a new TestServer.
@@ -150,18 +162,24 @@ func NewServer(opts ...TestServerOption) *TestServer {
 		temporalite.WithDynamicPorts(),
 	)
 
-	if ts.serverLogLevel >= zapcore.DebugLevel {
-		ts.serverOptions = append(ts.serverOptions, temporalite.WithLogger(
-			log.NewZapLogger(zap.New(
-				zapcore.NewCore(
-					zapcore.NewConsoleEncoder(zap.NewDevelopmentEncoderConfig()),
-					zapcore.AddSync(&testServerLogger{ts.t}),
-					ts.serverLogLevel,
-				),
-			).WithOptions(
-				zap.Fields(zap.String("component", "server")),
-			)),
-		))
+	// Configure server logging:
+	// - When no server log level has been specified, we skip logging anything.
+	// - Otherwise, server logs are included in the log output associated with the
+	//   current test. By default, Go test logs are only displayed when tests fail.
+	if ts.t != nil && ts.serverLogLevel >= zapcore.DebugLevel {
+		ts.serverLogger = zap.New(zapcore.NewCore(
+			zapcore.NewConsoleEncoder(zap.NewDevelopmentEncoderConfig()),
+			zapcore.AddSync(&testServerLogger{ts.t}),
+			ts.serverLogLevel,
+		)).WithOptions(
+			zap.Fields(zap.String("component", "server")),
+		)
+		ts.serverOptions = append(ts.serverOptions, temporalite.WithLogger(log.NewZapLogger(ts.serverLogger)))
+
+		ts.t.Cleanup(func() {
+			_ = ts.serverLogger.Sync()
+			ts.serverLogger.Core()
+		})
 	} else {
 		ts.serverOptions = append(ts.serverOptions, temporalite.WithLogger(log.NewNoopLogger()))
 	}
