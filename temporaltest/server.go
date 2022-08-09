@@ -33,7 +33,7 @@ type TestServer struct {
 	defaultClientOptions client.Options
 	defaultWorkerOptions worker.Options
 	serverOptions        []temporalite.ServerOption
-	debug                bool
+	serverLogLevel       zapcore.Level
 	deferredServerLogs   *bytes.Buffer
 }
 
@@ -138,13 +138,13 @@ func NewServer(opts ...TestServerOption) *TestServer {
 
 	ts := TestServer{
 		defaultTestNamespace: testNamespace,
+		serverLogLevel:       zapcore.DebugLevel - 1,
 	}
 
 	// Apply options
 	for _, opt := range opts {
 		opt.apply(&ts)
 	}
-	ts.debug = false
 
 	if ts.t != nil {
 		ts.t.Cleanup(func() {
@@ -160,16 +160,17 @@ func NewServer(opts ...TestServerOption) *TestServer {
 		temporalite.WithDynamicPorts(),
 	)
 
-	if ts.debug {
+	if ts.serverLogLevel >= zapcore.DebugLevel {
 		ts.deferredServerLogs = new(bytes.Buffer)
 		ts.serverOptions = append(ts.serverOptions, temporalite.WithLogger(
 			log.NewZapLogger(zap.New(
 				zapcore.NewCore(
 					zapcore.NewConsoleEncoder(zap.NewDevelopmentEncoderConfig()),
 					zapcore.AddSync(ts.deferredServerLogs),
-					zap.LevelEnablerFunc(func(lvl zapcore.Level) bool {
-						return true
-					}),
+					// zap.LevelEnablerFunc(func(lvl zapcore.Level) bool {
+					// 	return lvl.Enabled(ts.serverLogLevel)
+					// }),
+					ts.serverLogLevel,
 				),
 			)),
 		))

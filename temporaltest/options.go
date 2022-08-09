@@ -9,6 +9,7 @@ import (
 
 	"go.temporal.io/sdk/client"
 	"go.temporal.io/sdk/worker"
+	"go.uber.org/zap/zapcore"
 
 	"github.com/temporalio/temporalite"
 )
@@ -42,6 +43,17 @@ func WithBaseWorkerOptions(o worker.Options) TestServerOption {
 	o.WorkflowPanicPolicy = worker.FailWorkflow
 	return newApplyFuncContainer(func(server *TestServer) {
 		server.defaultWorkerOptions = o
+	})
+}
+
+// WithServerLogLevel allows enabling Temporal server log output in tests.
+// Server logs will only be printed when tests fail.
+//
+// Note that this option may be modified or removed in the future; it is meant
+// primarily for internal testing and debugging.
+func WithServerLogLevel(lvl zapcore.Level) TestServerOption {
+	return newApplyFuncContainer(func(server *TestServer) {
+		server.serverLogLevel = lvl
 	})
 }
 

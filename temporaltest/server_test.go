@@ -12,6 +12,7 @@ import (
 
 	"go.temporal.io/sdk/client"
 	"go.temporal.io/sdk/worker"
+	"go.uber.org/zap/zapcore"
 
 	"github.com/temporalio/temporalite/internal/examples/helloworld"
 	"github.com/temporalio/temporalite/temporaltest"
@@ -53,7 +54,10 @@ func ExampleNewServer_testWorker() {
 }
 
 func TestNewServer(t *testing.T) {
-	ts := temporaltest.NewServer(temporaltest.WithT(t))
+	ts := temporaltest.NewServer(
+		temporaltest.WithT(t),
+		temporaltest.WithServerLogLevel(zapcore.WarnLevel),
+	)
 
 	ts.NewWorker("hello_world", func(registry worker.Registry) {
 		helloworld.RegisterWorkflowsAndActivities(registry)
@@ -80,6 +84,8 @@ func TestNewServer(t *testing.T) {
 	if result != "Hello world" {
 		t.Fatalf("unexpected result: %q", result)
 	}
+
+	t.Fail()
 }
 
 func TestNewWorkerWithOptions(t *testing.T) {
@@ -134,7 +140,7 @@ func TestDefaultWorkerOptions(t *testing.T) {
 	ts.NewWorker("hello_world", func(registry worker.Registry) {
 		helloworld.RegisterWorkflowsAndActivities(registry)
 	})
-	
+
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
