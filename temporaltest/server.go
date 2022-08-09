@@ -167,11 +167,10 @@ func NewServer(opts ...TestServerOption) *TestServer {
 				zapcore.NewCore(
 					zapcore.NewConsoleEncoder(zap.NewDevelopmentEncoderConfig()),
 					zapcore.AddSync(ts.deferredServerLogs),
-					// zap.LevelEnablerFunc(func(lvl zapcore.Level) bool {
-					// 	return lvl.Enabled(ts.serverLogLevel)
-					// }),
 					ts.serverLogLevel,
 				),
+			).WithOptions(
+				zap.Fields(zap.String("component", "server")),
 			)),
 		))
 	} else {
