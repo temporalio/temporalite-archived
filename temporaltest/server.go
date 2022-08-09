@@ -5,6 +5,7 @@
 package temporaltest
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"math/rand"
@@ -14,6 +15,8 @@ import (
 	"go.temporal.io/sdk/client"
 	"go.temporal.io/sdk/worker"
 	"go.temporal.io/server/common/log"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 
 	"github.com/temporalio/temporalite"
 )
@@ -30,6 +33,8 @@ type TestServer struct {
 	defaultClientOptions client.Options
 	defaultWorkerOptions worker.Options
 	serverOptions        []temporalite.ServerOption
+	debug                bool
+	deferredServerLogs   *bytes.Buffer
 }
 
 func (ts *TestServer) fatal(err error) {
@@ -113,6 +118,14 @@ func (ts *TestServer) Stop() {
 		c.Close()
 	}
 	ts.server.Stop()
+
+	if ts.deferredServerLogs != nil {
+		if ts.t != nil && ts.t.Failed() {
+			ts.t.Log(ts.deferredServerLogs.String())
+		} else {
+			_, _ = fmt.Print(ts.deferredServerLogs.String())
+		}
+	}
 }
 
 // NewServer starts and returns a new TestServer.
@@ -131,6 +144,7 @@ func NewServer(opts ...TestServerOption) *TestServer {
 	for _, opt := range opts {
 		opt.apply(&ts)
 	}
+	ts.debug = false
 
 	if ts.t != nil {
 		ts.t.Cleanup(func() {
@@ -144,8 +158,24 @@ func NewServer(opts ...TestServerOption) *TestServer {
 		temporalite.WithNamespaces(ts.defaultTestNamespace),
 		temporalite.WithPersistenceDisabled(),
 		temporalite.WithDynamicPorts(),
-		temporalite.WithLogger(log.NewNoopLogger()),
 	)
+
+	if ts.debug {
+		ts.deferredServerLogs = new(bytes.Buffer)
+		ts.serverOptions = append(ts.serverOptions, temporalite.WithLogger(
+			log.NewZapLogger(zap.New(
+				zapcore.NewCore(
+					zapcore.NewConsoleEncoder(zap.NewDevelopmentEncoderConfig()),
+					zapcore.AddSync(ts.deferredServerLogs),
+					zap.LevelEnablerFunc(func(lvl zapcore.Level) bool {
+						return true
+					}),
+				),
+			)),
+		))
+	} else {
+		ts.serverOptions = append(ts.serverOptions, temporalite.WithLogger(log.NewNoopLogger()))
+	}
 
 	s, err := temporalite.NewServer(ts.serverOptions...)
 	if err != nil {
@@ -163,7 +193,7 @@ func NewServer(opts ...TestServerOption) *TestServer {
 }
 
 // Worker registers and starts a Temporal worker on the specified task queue.
-// 
+//
 // Deprecated: Use function NewWorker()
 func (ts *TestServer) Worker(taskQueue string, registerFunc func(registry worker.Registry)) worker.Worker {
 	return ts.NewWorker(taskQueue, registerFunc)
@@ -177,4 +207,3 @@ func (ts *TestServer) Worker(taskQueue string, registerFunc func(registry worker
 func (ts *TestServer) Client() client.Client {
 	return ts.DefaultClient()
 }
-
