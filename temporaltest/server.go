@@ -5,7 +5,6 @@
 package temporaltest
 
 import (
-	"bytes"
 	"context"
 	"fmt"
 	"math/rand"
@@ -34,7 +33,6 @@ type TestServer struct {
 	defaultWorkerOptions worker.Options
 	serverOptions        []temporalite.ServerOption
 	serverLogLevel       zapcore.Level
-	deferredServerLogs   *bytes.Buffer
 }
 
 func (ts *TestServer) fatal(err error) {
@@ -118,14 +116,6 @@ func (ts *TestServer) Stop() {
 		c.Close()
 	}
 	ts.server.Stop()
-
-	if ts.deferredServerLogs != nil {
-		if ts.t != nil && ts.t.Failed() {
-			ts.t.Log(ts.deferredServerLogs.String())
-		} else {
-			_, _ = fmt.Print(ts.deferredServerLogs.String())
-		}
-	}
 }
 
 // NewServer starts and returns a new TestServer.
@@ -161,12 +151,11 @@ func NewServer(opts ...TestServerOption) *TestServer {
 	)
 
 	if ts.serverLogLevel >= zapcore.DebugLevel {
-		ts.deferredServerLogs = new(bytes.Buffer)
 		ts.serverOptions = append(ts.serverOptions, temporalite.WithLogger(
 			log.NewZapLogger(zap.New(
 				zapcore.NewCore(
 					zapcore.NewConsoleEncoder(zap.NewDevelopmentEncoderConfig()),
-					zapcore.AddSync(ts.deferredServerLogs),
+					zapcore.AddSync(&testServerLogger{ts.t}),
 					ts.serverLogLevel,
 				),
 			).WithOptions(

@@ -36,3 +36,16 @@ func (tl *testLogger) Warn(msg string, keyvals ...interface{}) {
 func (tl *testLogger) Error(msg string, keyvals ...interface{}) {
 	tl.logLevel("ERROR", msg, keyvals)
 }
+
+type testServerLogger struct {
+	t *testing.T
+}
+
+// Implement io.Writer for use with zap
+func (tsl *testServerLogger) Write(p []byte) (int, error) {
+	if tsl.t == nil {
+		return 0, nil
+	}
+	tsl.t.Log(string(p))
+	return 0, nil
+}
