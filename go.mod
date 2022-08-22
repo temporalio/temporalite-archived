@@ -3,7 +3,7 @@ module github.com/temporalio/temporalite
 go 1.18
 
 require (
-	github.com/temporalio/ui-server/v2 v2.5.0
+	github.com/temporalio/ui-server/v2 v2.5.1
 	github.com/urfave/cli/v2 v2.11.2
 	go.temporal.io/sdk v1.15.0
 	go.temporal.io/server v1.17.4
