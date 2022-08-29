@@ -17,6 +17,7 @@ _Check out this video for a brief introduction and demo:_ [youtu.be/Hz7ZZzafBoE]
 The primary goal of Temporalite is to make it simple and fast to run Temporal locally or in testing environments.
 
 Features that align with this goal:
+
 - Easy setup and teardown
 - Fast startup time
 - Minimal resource overhead: no dependencies on a container runtime or database server
@@ -41,11 +42,11 @@ Start Temporal server:
 temporalite start --namespace default
 ```
 
-At this point you should have a server running on `localhost:7233` and a web interface at http://localhost:8233.
+At this point you should have a server running on `localhost:7233` and a web interface at <http://localhost:8233>.
 
 ### Use CLI
 
-Use [Temporal's command line tool](https://docs.temporal.io/docs/system-tools/tctl) `tctl` to interact with the local Temporalite server.
+Use [Temporal's command line tool](https://docs.temporal.io/tctl) `tctl` to interact with the local Temporalite server.
 
 ```bash
 tctl namespace list

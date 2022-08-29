@@ -1,0 +1,19 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "--ephemeral",
+      "type": "go",
+      "request": "launch",
+      "mode": "debug",
+      "program": "${workspaceFolder}/cmd/temporalite",
+      "cwd": "${workspaceFolder}",
+      "args": [
+        "start",
+        "--namespace",
+        "default",
+        "--ephemeral",
+      ]
+    },
+  ],
+}
