@@ -102,3 +102,7 @@ The UI can also be disabled via a runtime flag:
 ```bash
 temporalite start --headless
 ```
+
+### Known Issues
+
+- When consuming temporalite as a library in go mod, you may want to replace grpc-gateway with a fork to address URL escaping issue in UI. See <https://github.com/temporalio/temporalite/pull/118>
