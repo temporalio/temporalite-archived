@@ -3,7 +3,7 @@ module github.com/temporalio/temporalite
 go 1.18
 
 require (
-	github.com/temporalio/ui-server/v2 v2.5.1
+	github.com/temporalio/ui-server/v2 v2.6.0
 	github.com/urfave/cli/v2 v2.16.3
 	go.temporal.io/sdk v1.15.0
 	go.temporal.io/server v1.17.5
@@ -122,9 +122,9 @@ require (
 	go.uber.org/multierr v1.8.0 // indirect
 	golang.org/x/crypto v0.0.0-20220622213112-05595931fe9d // indirect
 	golang.org/x/mod v0.6.0-dev.0.20220419223038-86c51ed26bb4 // indirect
-	golang.org/x/net v0.0.0-20220708220712-1185a9018129 // indirect
+	golang.org/x/net v0.0.0-20220909164309-bea034e7d591 // indirect
 	golang.org/x/oauth2 v0.0.0-20220622183110-fd043fe589d2 // indirect
-	golang.org/x/sys v0.0.0-20220712014510-0a85c31ab51e // indirect
+	golang.org/x/sys v0.0.0-20220728004956-3c1f35247d10 // indirect
 	golang.org/x/text v0.3.7 // indirect
 	golang.org/x/time v0.0.0-20220609170525-579cf78fd858 // indirect
 	golang.org/x/tools v0.1.11 // indirect
