@@ -445,8 +445,8 @@ github.com/temporalio/grpc-gateway v1.17.0 h1:OTX4OP39TfV4/FSo9OkeF7g8KkirDlhu8d
 github.com/temporalio/grpc-gateway v1.17.0/go.mod h1:ahEN4bs7da8rI4DJqn1xL0d83Djiau/rnZUztjeGdOI=
 github.com/temporalio/ringpop-go v0.0.0-20211012191444-6f91b5915e95 h1:8G34e73qtrkG9sDFcSC8uot0np3e6BLoMZxleTcpUiA=
 github.com/temporalio/ringpop-go v0.0.0-20211012191444-6f91b5915e95/go.mod h1:Ek9J8CAfI1IwVSqHpTOgj7FjzRSJ5SM/ud52eCmkhsw=
-github.com/temporalio/ui-server/v2 v2.6.0 h1:hbShk1jOWwYgU8+ZNOLmSYJm+/xalx/h/sUGoUK2C2k=
-github.com/temporalio/ui-server/v2 v2.6.0/go.mod h1:9bgAdqKQtX6ZagshMkfEK0uopIYGlmM7iVDiKRbCpVI=
+github.com/temporalio/ui-server/v2 v2.6.1 h1:ZIee1qkgBSgqutLmy7n/u9Qm0lw93BI9RuExmdLzRnA=
+github.com/temporalio/ui-server/v2 v2.6.1/go.mod h1:9bgAdqKQtX6ZagshMkfEK0uopIYGlmM7iVDiKRbCpVI=
 github.com/twmb/murmur3 v1.1.5/go.mod h1:Qq/R7NUyOfr65zD+6Q5IHKsJLwP7exErjN6lyyq3OSQ=
 github.com/twmb/murmur3 v1.1.6 h1:mqrRot1BRxm+Yct+vavLMou2/iJt0tNVTTC0QoIjaZg=
 github.com/twmb/murmur3 v1.1.6/go.mod h1:Qq/R7NUyOfr65zD+6Q5IHKsJLwP7exErjN6lyyq3OSQ=
