@@ -10,21 +10,23 @@ jobs:
   copyright:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Set up Go
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@v3
         with:
-          go-version: 1.19.1
+          go-version-file: 'go.mod'
+          check-latest: true
       - name: Verify File Headers
         run: go run ./internal/copyright --verify-only
   coverage:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Set up Go
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@v3
         with:
-          go-version: 1.19.1
+          go-version-file: 'go.mod'
+          check-latest: true
       - name: Race
         run: go test -v -race ./...
         continue-on-error: true
@@ -44,11 +46,12 @@ jobs:
         cgo: ["0", "1"]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Set up Go
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@v3
         with:
-          go-version: 1.19.1
+          go-version-file: 'go.mod'
+          check-latest: true
       - name: Test
         env:
           CGO_ENABLED: ${{ matrix.cgo }}
