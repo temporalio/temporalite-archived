@@ -1,6 +1,6 @@
 module github.com/temporalio/temporalite
 
-go 1.18
+go 1.19
 
 require (
 	github.com/temporalio/ui-server/v2 v2.6.2
