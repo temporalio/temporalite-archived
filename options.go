@@ -6,6 +6,7 @@ package temporalite
 
 import (
 	"go.temporal.io/server/common/config"
+	"go.temporal.io/server/common/dynamicconfig"
 	"go.temporal.io/server/common/log"
 	"go.temporal.io/server/temporal"
 
@@ -117,6 +118,26 @@ func WithBaseConfig(base *config.Config) ServerOption {
 	return newApplyFuncContainer(func(cfg *liteconfig.Config) {
 		cfg.BaseConfig = base
 	})
+}
+
+// WithDynamicConfigValue sets the given dynamic config key with the given set
+// of values. This will overwrite the key if already set.
+func WithDynamicConfigValue(key dynamicconfig.Key, value []dynamicconfig.ConstrainedValue) ServerOption {
+	return newApplyFuncContainer(func(cfg *liteconfig.Config) {
+		if cfg.DynamicConfig == nil {
+			cfg.DynamicConfig = dynamicconfig.StaticClient{}
+		}
+		cfg.DynamicConfig[key] = value
+	})
+}
+
+// WithSearchAttributeCacheDisabled disables search attribute caching. This
+// delegates to WithDynamicConfigValue.
+func WithSearchAttributeCacheDisabled() ServerOption {
+	return WithDynamicConfigValue(
+		dynamicconfig.ForceSearchAttributesCacheRefreshOnRead,
+		[]dynamicconfig.ConstrainedValue{{Value: true}},
+	)
 }
 
 type applyFuncContainer struct {

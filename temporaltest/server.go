@@ -146,6 +146,7 @@ func NewServer(opts ...TestServerOption) *TestServer {
 		temporalite.WithPersistenceDisabled(),
 		temporalite.WithDynamicPorts(),
 		temporalite.WithLogger(log.NewNoopLogger()),
+		temporalite.WithSearchAttributeCacheDisabled(),
 	)
 
 	s, err := temporalite.NewServer(ts.serverOptions...)
