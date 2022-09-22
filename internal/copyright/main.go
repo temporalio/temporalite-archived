@@ -54,7 +54,7 @@ type (
 	}
 )
 
-var headerPrefixes = []string{"The MIT License", "Unless explicitly stated"}
+var headerPrefixes = []string{"MIT License", "Unless explicitly stated"}
 
 var (
 	// directories to be excluded
