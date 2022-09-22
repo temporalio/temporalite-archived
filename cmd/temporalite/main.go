@@ -37,20 +37,19 @@ var (
 )
 
 const (
-	ephemeralFlag            = "ephemeral"
-	dbPathFlag               = "filename"
-	portFlag                 = "port"
-	metricsPortFlag          = "metrics-port"
-	uiPortFlag               = "ui-port"
-	headlessFlag             = "headless"
-	ipFlag                   = "ip"
-	logFormatFlag            = "log-format"
-	logLevelFlag             = "log-level"
-	namespaceFlag            = "namespace"
-	pragmaFlag               = "sqlite-pragma"
-	configFlag               = "config"
-	dynamicConfigValueFlag   = "dynamic-config-value"
-	searchAttributeCacheFlag = "search-attribute-cache"
+	ephemeralFlag          = "ephemeral"
+	dbPathFlag             = "filename"
+	portFlag               = "port"
+	metricsPortFlag        = "metrics-port"
+	uiPortFlag             = "ui-port"
+	headlessFlag           = "headless"
+	ipFlag                 = "ip"
+	logFormatFlag          = "log-format"
+	logLevelFlag           = "log-level"
+	namespaceFlag          = "namespace"
+	pragmaFlag             = "sqlite-pragma"
+	configFlag             = "config"
+	dynamicConfigValueFlag = "dynamic-config-value"
 )
 
 func init() {
@@ -153,10 +152,6 @@ func buildCLI() *cli.App {
 				&cli.StringSliceFlag{
 					Name:  dynamicConfigValueFlag,
 					Usage: `dynamic config value, as KEY=JSON_VALUE (meaning strings need quotes)`,
-				},
-				&cli.BoolFlag{
-					Name:  searchAttributeCacheFlag,
-					Usage: `enable search attribute cache`,
 				},
 			},
 			Before: func(c *cli.Context) error {
@@ -278,14 +273,15 @@ func buildCLI() *cli.App {
 				if err != nil {
 					return err
 				}
+				// If there is no config value for search attribute cache disabling,
+				// default it to true
+				if len(configVals[dynamicconfig.ForceSearchAttributesCacheRefreshOnRead]) == 0 {
+					configVals[dynamicconfig.ForceSearchAttributesCacheRefreshOnRead] = []dynamicconfig.ConstrainedValue{
+						{Value: true},
+					}
+				}
 				for k, v := range configVals {
 					opts = append(opts, temporalite.WithDynamicConfigValue(k, v))
-				}
-
-				// We put the search attribute cache flag after dynamic config since it
-				// is essentially just a dynamic config setting internally
-				if !c.Bool(searchAttributeCacheFlag) {
-					opts = append(opts, temporalite.WithSearchAttributeCacheDisabled())
 				}
 
 				s, err := temporalite.NewServer(opts...)
