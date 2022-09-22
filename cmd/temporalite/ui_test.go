@@ -27,8 +27,12 @@ func TestHasUIServerDependency(t *testing.T) {
 }
 
 func TestNewUIConfig(t *testing.T) {
-	cfg := newUIConfig("localhost:7233", "localhost", 8233)
-	if err := cfg.Validate(); err != nil {
+	cfg, err := newUIConfig("localhost:7233", "localhost", 8233, "")
+	if err != nil {
+		t.Errorf("cannot create config: %s", err)
+		return
+	}
+	if err = cfg.Validate(); err != nil {
 		t.Errorf("config not valid: %s", err)
 	}
 }

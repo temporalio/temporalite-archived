@@ -14,21 +14,32 @@ import (
 	uiserveroptions "github.com/temporalio/ui-server/v2/server/server_options"
 
 	"github.com/temporalio/temporalite"
+	"go.temporal.io/server/common/config"
 )
 
-func newUIOption(frontendAddr string, uiIP string, uiPort int) temporalite.ServerOption {
-	return temporalite.WithUI(uiserver.NewServer(uiserveroptions.WithConfigProvider(newUIConfig(
+func newUIOption(frontendAddr string, uiIP string, uiPort int, configDir string) (temporalite.ServerOption, error) {
+	cfg, err := newUIConfig(
 		frontendAddr,
 		uiIP,
 		uiPort,
-	))))
+		configDir,
+	)
+	if err != nil {
+		return nil, err
+	}
+	return temporalite.WithUI(uiserver.NewServer(uiserveroptions.WithConfigProvider(cfg))), nil
 }
 
-func newUIConfig(frontendAddr string, uiIP string, uiPort int) *uiconfig.Config {
-	return &uiconfig.Config{
-		TemporalGRPCAddress: frontendAddr,
-		Host:                uiIP,
-		Port:                uiPort,
-		EnableUI:            true,
+func newUIConfig(frontendAddr string, uiIP string, uiPort int, configDir string) (*uiconfig.Config, error) {
+	cfg := &uiconfig.Config{}
+	if configDir != "" {
+		if err := config.Load("temporalite-ui", configDir, "", cfg); err != nil {
+			return nil, err
+		}
 	}
+	cfg.TemporalGRPCAddress = frontendAddr
+	cfg.Host = uiIP
+	cfg.Port = uiPort
+	cfg.EnableUI = true
+	return cfg, nil
 }
