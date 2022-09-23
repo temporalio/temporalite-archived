@@ -207,8 +207,13 @@ func buildCLI() *cli.App {
 
 				baseConfig := &config.Config{}
 				if c.IsSet(configFlag) {
-					baseConfig, err = config.LoadConfig("temporalite", c.String(configFlag), "")
-					if err != nil {
+					// Temporal server requires a couple of persistence config values to
+					// be explicitly set or the config loading fails. While these are the
+					// same values used internally, they are overridden later anyways,
+					// they are just here to pass validation.
+					baseConfig.Persistence.DefaultStore = liteconfig.PersistenceStoreName
+					baseConfig.Persistence.NumHistoryShards = 1
+					if err := config.Load("temporalite", c.String(configFlag), "", &baseConfig); err != nil {
 						return err
 					}
 				}
