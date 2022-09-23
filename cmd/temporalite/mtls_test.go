@@ -22,21 +22,19 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-package main_test
+package main
 
 import (
+	"bytes"
 	"context"
 	"crypto/tls"
 	"crypto/x509"
-	"fmt"
-	"log"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"runtime"
 	"strconv"
-	"syscall"
 	"testing"
+	"text/template"
 	"time"
 
 	"go.temporal.io/api/enums/v1"
@@ -47,32 +45,42 @@ import (
 func TestMTLSConfig(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
-
-	// Run ephemerally in the mtls example folder using the config there. This
-	// does expect port 7233 to be free.
 	_, thisFile, _, _ := runtime.Caller(0)
+	mtlsDir := filepath.Join(thisFile, "../../../internal/examples/mtls")
+
+	// Create temp config dir
+	confDir, err := os.MkdirTemp("", "temporalite-conf-")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer os.RemoveAll(confDir)
+
+	// Run templated config and put in temp dir
+	var buf bytes.Buffer
+	tmpl, err := template.New("temporalite.yaml.template").
+		Funcs(template.FuncMap{"qualified": func(s string) string { return strconv.Quote(filepath.Join(mtlsDir, s)) }}).
+		ParseFiles(filepath.Join(mtlsDir, "temporalite.yaml.template"))
+	if err != nil {
+		t.Fatal(err)
+	} else if err = tmpl.Execute(&buf, nil); err != nil {
+		t.Fatal(err)
+	} else if err = os.WriteFile(filepath.Join(confDir, "temporalite.yaml"), buf.Bytes(), 0644); err != nil {
+		t.Fatal(err)
+	}
+
+	// Run ephemerally using temp config
 	args := []string{
-		"run", filepath.Dir(thisFile),
+		"temporalite",
 		"start",
 		"--ephemeral",
-		"--config", ".",
+		"--config", confDir,
 		"--namespace", "default",
 		"--log-format", "pretty",
+		"--port", "10233",
 	}
-	if !testing.Verbose() {
-		args = append(args, "--log-level", "warn")
-	}
-	cmd := exec.CommandContext(ctx, "go", args...)
-	mtlsDir := filepath.Join(thisFile, "../../../internal/examples/mtls")
-	cmd.Dir = mtlsDir
-	cmd.Stdout, cmd.Stderr = os.Stdout, os.Stderr
-	t.Logf("Running go with args %v in %v", args, cmd.Dir)
-	if err := cmd.Start(); err != nil {
-		log.Fatal(err)
-	}
-	defer func() {
-		if err := kill(cmd); err != nil {
-			t.Logf("Process kill failed: %v", err)
+	go func() {
+		if err := buildCLI().RunContext(ctx, args); err != nil {
+			t.Logf("CLI failed: %v", err)
 		}
 	}()
 
@@ -82,31 +90,35 @@ func TestMTLSConfig(t *testing.T) {
 		filepath.Join(mtlsDir, "client-key.pem"),
 	)
 	if err != nil {
-		log.Fatal(err)
+		t.Fatal(err)
 	}
 	// Load server cert for CA check
 	serverCAPEM, err := os.ReadFile(filepath.Join(mtlsDir, "server-ca-cert.pem"))
 	if err != nil {
-		log.Fatal(err)
+		t.Fatal(err)
 	}
 	serverCAPool := x509.NewCertPool()
 	serverCAPool.AppendCertsFromPEM(serverCAPEM)
 
-	// Build client options and try to connect client every 200ms for 10s
-	var options client.Options
-	options.ConnectionOptions.TLS = &tls.Config{
-		Certificates: []tls.Certificate{clientCert},
-		RootCAs:      serverCAPool,
+	// Build client options and try to connect client every 100ms for 5s
+	options := client.Options{
+		HostPort: "localhost:10233",
+		ConnectionOptions: client.ConnectionOptions{
+			TLS: &tls.Config{
+				Certificates: []tls.Certificate{clientCert},
+				RootCAs:      serverCAPool,
+			},
+		},
 	}
 	var c client.Client
 	for i := 0; i < 50; i++ {
 		if c, err = client.Dial(options); err == nil {
 			break
 		}
-		time.Sleep(200 * time.Millisecond)
+		time.Sleep(100 * time.Millisecond)
 	}
 	if err != nil {
-		log.Fatal(err)
+		t.Fatal(err)
 	}
 
 	// Make a call
@@ -114,25 +126,8 @@ func TestMTLSConfig(t *testing.T) {
 		Namespace: "default",
 	})
 	if err != nil {
-		log.Fatal(err)
+		t.Fatal(err)
 	} else if resp.NamespaceInfo.State != enums.NAMESPACE_STATE_REGISTERED {
-		log.Fatalf("Bad state: %v", resp.NamespaceInfo.State)
+		t.Fatalf("Bad state: %v", resp.NamespaceInfo.State)
 	}
-}
-
-func kill(cmd *exec.Cmd) error {
-	// Have to use taskkill on Windows to avoid custom ctrl+c code
-	if runtime.GOOS == "windows" {
-		k := exec.Command("TASKKILL", "/T", "/F", "/PID", strconv.Itoa(cmd.Process.Pid))
-		k.Stdout, k.Stderr = os.Stdout, os.Stderr
-		if err := k.Run(); err != nil {
-			return fmt.Errorf("taskkill failed: %w", err)
-		}
-	} else if err := cmd.Process.Signal(syscall.SIGTERM); err != nil {
-		return fmt.Errorf("kill failed: %w", err)
-	}
-	if _, err := cmd.Process.Wait(); err != nil {
-		return fmt.Errorf("wait failed: %w", err)
-	}
-	return nil
 }

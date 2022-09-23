@@ -1,0 +1,12 @@
+global:
+  tls:
+    frontend:
+      server:
+        certFile: {{"server-cert.pem" | qualified}}
+        keyFile: {{"server-key.pem" | qualified}}
+        clientCaFiles: [{{"client-ca-cert.pem" | qualified}}]
+        # Do not require client-auth so that frontend can connect to itself
+        # without us having to give it client keys
+        requireClientAuth: false
+      client:
+        rootCaFiles: [{{"server-ca-cert.pem" | qualified}}]
