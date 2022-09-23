@@ -1,0 +1,4 @@
+tls:
+  caFile: {{"server-ca-cert.pem" | qualified}}
+  certFile: {{"client-cert.pem" | qualified}}
+  keyFile: {{"client-key.pem" | qualified}}
