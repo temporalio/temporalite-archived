@@ -1,0 +1,5 @@
+tls:
+  caFile: dist/rootCA.pem
+  certFile: dist/client.pem
+  keyFile: dist/client-key.pem
+  serverName: local.dev

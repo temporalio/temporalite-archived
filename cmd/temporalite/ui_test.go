@@ -36,3 +36,28 @@ func TestNewUIConfig(t *testing.T) {
 		t.Errorf("config not valid: %s", err)
 	}
 }
+
+func TestNewUIConfigWithMissingConfigFile(t *testing.T) {
+	cfg, err := newUIConfig("localhost:7233", "localhost", 8233, "wibble")
+	if err != nil {
+		t.Errorf("cannot create config: %s", err)
+		return
+	}
+	if err = cfg.Validate(); err != nil {
+		t.Errorf("config not valid: %s", err)
+	}
+}
+
+func TestNewUIConfigWithPresentConfigFile(t *testing.T) {
+	cfg, err := newUIConfig("localhost:7233", "localhost", 8233, "testdata")
+	if err != nil {
+		t.Errorf("cannot create config: %s", err)
+		return
+	}
+	if err = cfg.Validate(); err != nil {
+		t.Errorf("config not valid: %s", err)
+	}
+	if cfg.TLS.ServerName != "local.dev" {
+		t.Errorf("did not load expected config file")
+	}
+}
