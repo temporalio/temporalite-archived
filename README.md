@@ -113,6 +113,20 @@ For example, to disable search attribute cache to make created search attributes
 temporalite start --dynamic-config-value system.forceSearchAttributesCacheRefreshOnRead=true
 ```
 
+## Development
+
+To compile the source run:
+
+```bash
+go build -o dist/temporalite ./cmd/temporalite 
+```
+
+To run all tests:
+
+```bash
+go test ./...
+```
+
 ## Known Issues
 
 - When consuming Temporalite as a library in go mod, you may want to replace grpc-gateway with a fork to address URL escaping issue in UI. See <https://github.com/temporalio/temporalite/pull/118>
