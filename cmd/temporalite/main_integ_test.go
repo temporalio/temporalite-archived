@@ -35,6 +35,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"strconv"
+	"syscall"
 	"testing"
 	"time"
 
@@ -127,7 +128,7 @@ func kill(cmd *exec.Cmd) error {
 		if err := k.Run(); err != nil {
 			return fmt.Errorf("taskkill failed: %w", err)
 		}
-	} else if err := cmd.Process.Kill(); err != nil {
+	} else if err := cmd.Process.Signal(syscall.SIGTERM); err != nil {
 		return fmt.Errorf("kill failed: %w", err)
 	}
 	if _, err := cmd.Process.Wait(); err != nil {
