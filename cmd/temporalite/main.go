@@ -273,13 +273,6 @@ func buildCLI() *cli.App {
 				if err != nil {
 					return err
 				}
-				// If there is no config value for search attribute cache disabling,
-				// default it to true
-				if len(configVals[dynamicconfig.ForceSearchAttributesCacheRefreshOnRead]) == 0 {
-					configVals[dynamicconfig.ForceSearchAttributesCacheRefreshOnRead] = []dynamicconfig.ConstrainedValue{
-						{Value: true},
-					}
-				}
 				for k, v := range configVals {
 					opts = append(opts, temporalite.WithDynamicConfigValue(k, v))
 				}
