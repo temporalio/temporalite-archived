@@ -14,6 +14,7 @@ import (
 
 	"go.temporal.io/server/common/cluster"
 	"go.temporal.io/server/common/config"
+	"go.temporal.io/server/common/dynamicconfig"
 	"go.temporal.io/server/common/log"
 	"go.temporal.io/server/common/metrics"
 	"go.temporal.io/server/common/persistence/sql/sqlplugin/sqlite"
@@ -59,6 +60,7 @@ type Config struct {
 	FrontendIP       string
 	UIServer         UIServer
 	BaseConfig       *config.Config
+	DynamicConfig    dynamicconfig.StaticClient
 }
 
 var SupportedPragmas = map[string]struct{}{

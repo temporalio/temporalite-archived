@@ -103,6 +103,16 @@ The UI can also be disabled via a runtime flag:
 temporalite start --headless
 ```
 
+### Dynamic Config
+
+Some advanced uses require Temporal dynamic configuration values which are usually set via a dynamic configuration file inside the Temporal configuration file. Alternatively, dynamic configuration values can be set via `--dynamic-config-value KEY=JSON_VALUE`.
+
+For example, to disable search attribute cache to make created search attributes available for use right away:
+
+```bash
+temporalite start --dynamic-config-value system.forceSearchAttributesCacheRefreshOnRead=true
+```
+
 ## Known Issues
 
 - When consuming Temporalite as a library in go mod, you may want to replace grpc-gateway with a fork to address URL escaping issue in UI. See <https://github.com/temporalio/temporalite/pull/118>

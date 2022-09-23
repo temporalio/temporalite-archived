@@ -15,7 +15,6 @@ import (
 	"go.temporal.io/sdk/client"
 	"go.temporal.io/server/common/authorization"
 	"go.temporal.io/server/common/config"
-	"go.temporal.io/server/common/dynamicconfig"
 	"go.temporal.io/server/schema/sqlite"
 	"go.temporal.io/server/temporal"
 
@@ -94,7 +93,15 @@ func NewServer(opts ...ServerOption) (*Server, error) {
 		temporal.WithClaimMapper(func(cfg *config.Config) authorization.ClaimMapper {
 			return claimMapper
 		}),
-		temporal.WithDynamicConfigClient(dynamicconfig.NewNoopClient()),
+	}
+
+	if len(c.DynamicConfig) > 0 {
+		// To prevent having to code fall-through semantics right now, we currently
+		// eagerly fail if dynamic config is being configured in two ways
+		if cfg.DynamicConfigClient != nil {
+			return nil, fmt.Errorf("unable to have file-based dynamic config and individual dynamic config values")
+		}
+		serverOpts = append(serverOpts, temporal.WithDynamicConfigClient(c.DynamicConfig))
 	}
 
 	if len(c.UpstreamOptions) > 0 {

@@ -5,6 +5,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	goLog "log"
 	"net"
@@ -13,6 +14,7 @@ import (
 
 	"github.com/urfave/cli/v2"
 	"go.temporal.io/server/common/config"
+	"go.temporal.io/server/common/dynamicconfig"
 	"go.temporal.io/server/common/headers"
 	"go.temporal.io/server/common/log"
 	"go.temporal.io/server/temporal"
@@ -35,18 +37,19 @@ var (
 )
 
 const (
-	ephemeralFlag   = "ephemeral"
-	dbPathFlag      = "filename"
-	portFlag        = "port"
-	metricsPortFlag = "metrics-port"
-	uiPortFlag      = "ui-port"
-	headlessFlag    = "headless"
-	ipFlag          = "ip"
-	logFormatFlag   = "log-format"
-	logLevelFlag    = "log-level"
-	namespaceFlag   = "namespace"
-	pragmaFlag      = "sqlite-pragma"
-	configFlag      = "config"
+	ephemeralFlag          = "ephemeral"
+	dbPathFlag             = "filename"
+	portFlag               = "port"
+	metricsPortFlag        = "metrics-port"
+	uiPortFlag             = "ui-port"
+	headlessFlag           = "headless"
+	ipFlag                 = "ip"
+	logFormatFlag          = "log-format"
+	logLevelFlag           = "log-level"
+	namespaceFlag          = "namespace"
+	pragmaFlag             = "sqlite-pragma"
+	configFlag             = "config"
+	dynamicConfigValueFlag = "dynamic-config-value"
 )
 
 func init() {
@@ -145,6 +148,10 @@ func buildCLI() *cli.App {
 					Usage:   `config dir path`,
 					EnvVars: []string{config.EnvKeyConfigDir},
 					Value:   "",
+				},
+				&cli.StringSliceFlag{
+					Name:  dynamicConfigValueFlag,
+					Usage: `dynamic config value, as KEY=JSON_VALUE (meaning strings need quotes)`,
 				},
 			},
 			Before: func(c *cli.Context) error {
@@ -262,6 +269,14 @@ func buildCLI() *cli.App {
 				}
 				opts = append(opts, temporalite.WithLogger(logger))
 
+				configVals, err := getDynamicConfigValues(c.StringSlice(dynamicConfigValueFlag))
+				if err != nil {
+					return err
+				}
+				for k, v := range configVals {
+					opts = append(opts, temporalite.WithDynamicConfigValue(k, v))
+				}
+
 				s, err := temporalite.NewServer(opts...)
 				if err != nil {
 					return err
@@ -288,4 +303,22 @@ func getPragmaMap(input []string) (map[string]string, error) {
 		result[vals[0]] = vals[1]
 	}
 	return result, nil
+}
+
+func getDynamicConfigValues(input []string) (map[dynamicconfig.Key][]dynamicconfig.ConstrainedValue, error) {
+	ret := make(map[dynamicconfig.Key][]dynamicconfig.ConstrainedValue, len(input))
+	for _, keyValStr := range input {
+		keyVal := strings.SplitN(keyValStr, "=", 2)
+		if len(keyVal) != 2 {
+			return nil, fmt.Errorf("dynamic config value not in KEY=JSON_VAL format")
+		}
+		key := dynamicconfig.Key(keyVal[0])
+		// We don't support constraints currently
+		var val dynamicconfig.ConstrainedValue
+		if err := json.Unmarshal([]byte(keyVal[1]), &val.Value); err != nil {
+			return nil, fmt.Errorf("invalid JSON value for key %q: %w", key, err)
+		}
+		ret[key] = append(ret[key], val)
+	}
+	return ret, nil
 }
