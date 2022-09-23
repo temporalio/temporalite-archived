@@ -10,6 +10,8 @@ import (
 	"testing"
 	"time"
 
+	"go.temporal.io/api/enums/v1"
+	"go.temporal.io/api/operatorservice/v1"
 	"go.temporal.io/sdk/client"
 	"go.temporal.io/sdk/worker"
 
@@ -134,7 +136,6 @@ func TestDefaultWorkerOptions(t *testing.T) {
 	ts.NewWorker("hello_world", func(registry worker.Registry) {
 		helloworld.RegisterWorkflowsAndActivities(registry)
 	})
-	
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
@@ -193,6 +194,31 @@ func TestClientWithDefaultInterceptor(t *testing.T) {
 
 	if result != "Hello world" {
 		t.Fatalf("unexpected result: %q", result)
+	}
+}
+
+func TestSearchAttributeCacheDisabled(t *testing.T) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	ts := temporaltest.NewServer(temporaltest.WithT(t))
+
+	// Create a search attribute
+	_, err := ts.DefaultClient().OperatorService().AddSearchAttributes(ctx, &operatorservice.AddSearchAttributesRequest{
+		SearchAttributes: map[string]enums.IndexedValueType{
+			"my-search-attr": enums.INDEXED_VALUE_TYPE_TEXT,
+		},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Confirm it exists immediately
+	resp, err := ts.DefaultClient().GetSearchAttributes(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if resp.Keys["my-search-attr"] != enums.INDEXED_VALUE_TYPE_TEXT {
+		t.Fatal("search attribute not found")
 	}
 }
 
