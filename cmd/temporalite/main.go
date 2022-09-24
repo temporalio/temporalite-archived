@@ -10,6 +10,7 @@ import (
 	goLog "log"
 	"net"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/urfave/cli/v2"
@@ -166,6 +167,13 @@ func buildCLI() *cli.App {
 				}
 				if c.IsSet(ephemeralFlag) && c.IsSet(dbPathFlag) {
 					return cli.Exit(fmt.Sprintf("ERROR: only one of %q or %q flags may be passed at a time", ephemeralFlag, dbPathFlag), 1)
+				}
+
+				// Make sure the default db path exists (user does not specify path explicitly)
+				if !c.IsSet(dbPathFlag) {
+					if err := os.MkdirAll(filepath.Dir(c.String(dbPathFlag)), os.ModePerm); err != nil {
+						return cli.Exit(err.Error(), 1)
+					}
 				}
 
 				switch c.String(logFormatFlag) {
