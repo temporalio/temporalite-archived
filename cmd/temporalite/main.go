@@ -44,6 +44,7 @@ const (
 	uiPortFlag             = "ui-port"
 	headlessFlag           = "headless"
 	ipFlag                 = "ip"
+	uiIPFlag               = "ui-ip"
 	logFormatFlag          = "log-format"
 	logLevelFlag           = "log-level"
 	namespaceFlag          = "namespace"
@@ -124,6 +125,11 @@ func buildCLI() *cli.App {
 					Value:   "127.0.0.1",
 				},
 				&cli.StringFlag{
+					Name:        uiIPFlag,
+					Usage:       `IPv4 address to bind the web UI to instead of localhost`,
+					DefaultText: "same as --ip (eg. 127.0.0.1)",
+				},
+				&cli.StringFlag{
 					Name:    logFormatFlag,
 					Usage:   `customize the log formatting (allowed: ["json" "pretty"])`,
 					EnvVars: nil,
@@ -194,10 +200,15 @@ func buildCLI() *cli.App {
 					serverPort  = c.Int(portFlag)
 					metricsPort = c.Int(metricsPortFlag)
 					uiPort      = serverPort + 1000
+					uiIP        = ip
 				)
 
 				if c.IsSet(uiPortFlag) {
 					uiPort = c.Int(uiPortFlag)
+				}
+
+				if c.IsSet(uiIPFlag) {
+					uiIP = c.String(uiIPFlag)
 				}
 
 				pragmas, err := getPragmaMap(c.StringSlice(pragmaFlag))
@@ -232,7 +243,11 @@ func buildCLI() *cli.App {
 					temporalite.WithBaseConfig(baseConfig),
 				}
 				if !c.Bool(headlessFlag) {
-					opt := newUIOption(fmt.Sprintf(":%d", c.Int(portFlag)), ip, uiPort)
+					frontendAddr := fmt.Sprintf("%s:%d", ip, serverPort)
+					opt, err := newUIOption(frontendAddr, uiIP, uiPort, c.String(configFlag))
+					if err != nil {
+						return err
+					}
 					if opt != nil {
 						opts = append(opts, opt)
 					}

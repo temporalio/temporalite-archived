@@ -6,9 +6,12 @@
 
 package main
 
+// This file should be the only one to import ui-server packages.
+// This is to avoid embedding the UI's static assets in the binary when the `headless` build tag is enabled.
 import (
-	// This file should be the only one to import ui-server packages.
-	// This is to avoid embedding the UI's static assets in the binary when the `headless` build tag is enabled.
+	"strings"
+
+	provider "github.com/temporalio/ui-server/v2/plugins/fs_config_provider"
 	uiserver "github.com/temporalio/ui-server/v2/server"
 	uiconfig "github.com/temporalio/ui-server/v2/server/config"
 	uiserveroptions "github.com/temporalio/ui-server/v2/server/server_options"
@@ -16,19 +19,32 @@ import (
 	"github.com/temporalio/temporalite"
 )
 
-func newUIOption(frontendAddr string, uiIP string, uiPort int) temporalite.ServerOption {
-	return temporalite.WithUI(uiserver.NewServer(uiserveroptions.WithConfigProvider(newUIConfig(
+func newUIOption(frontendAddr string, uiIP string, uiPort int, configDir string) (temporalite.ServerOption, error) {
+	cfg, err := newUIConfig(
 		frontendAddr,
 		uiIP,
 		uiPort,
-	))))
+		configDir,
+	)
+	if err != nil {
+		return nil, err
+	}
+	return temporalite.WithUI(uiserver.NewServer(uiserveroptions.WithConfigProvider(cfg))), nil
 }
 
-func newUIConfig(frontendAddr string, uiIP string, uiPort int) *uiconfig.Config {
-	return &uiconfig.Config{
-		TemporalGRPCAddress: frontendAddr,
-		Host:                uiIP,
-		Port:                uiPort,
-		EnableUI:            true,
+func newUIConfig(frontendAddr string, uiIP string, uiPort int, configDir string) (*uiconfig.Config, error) {
+	cfg := &uiconfig.Config{
+		Host: uiIP,
+		Port: uiPort,
 	}
+	if configDir != "" {
+		if err := provider.Load(configDir, cfg, "temporalite-ui"); err != nil {
+			if !strings.HasPrefix(err.Error(), "no config files found") {
+				return nil, err
+			}
+		}
+	}
+	cfg.TemporalGRPCAddress = frontendAddr
+	cfg.EnableUI = true
+	return cfg, nil
 }

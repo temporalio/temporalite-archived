@@ -29,9 +29,12 @@ import (
 	"context"
 	"crypto/tls"
 	"crypto/x509"
+	"io"
+	"net/http"
 	"os"
 	"path/filepath"
 	"runtime"
+	"runtime/debug"
 	"strconv"
 	"testing"
 	"text/template"
@@ -65,6 +68,17 @@ func TestMTLSConfig(t *testing.T) {
 	} else if err = tmpl.Execute(&buf, nil); err != nil {
 		t.Fatal(err)
 	} else if err = os.WriteFile(filepath.Join(confDir, "temporalite.yaml"), buf.Bytes(), 0644); err != nil {
+		t.Fatal(err)
+	}
+	buf.Reset()
+	tmpl, err = template.New("temporalite-ui.yaml.template").
+		Funcs(template.FuncMap{"qualified": func(s string) string { return strconv.Quote(filepath.Join(mtlsDir, s)) }}).
+		ParseFiles(filepath.Join(mtlsDir, "temporalite-ui.yaml.template"))
+	if err != nil {
+		t.Fatal(err)
+	} else if err = tmpl.Execute(&buf, nil); err != nil {
+		t.Fatal(err)
+	} else if err = os.WriteFile(filepath.Join(confDir, "temporalite-ui.yaml"), buf.Bytes(), 0644); err != nil {
 		t.Fatal(err)
 	}
 
@@ -130,4 +144,33 @@ func TestMTLSConfig(t *testing.T) {
 	} else if resp.NamespaceInfo.State != enums.NAMESPACE_STATE_REGISTERED {
 		t.Fatalf("Bad state: %v", resp.NamespaceInfo.State)
 	}
+
+	if !isUIPresent() {
+		t.Log("headless build detected, not testing temporal-ui mTLS")
+		return
+	}
+
+	// Pretend to be a browser to invoke the UI API
+	res, err := http.Get("http://localhost:11233/api/v1/namespaces?")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer res.Body.Close()
+	body, err := io.ReadAll(res.Body)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if res.StatusCode != http.StatusOK {
+		t.Fatalf("Unexpected response %s, with body %s", res.Status, string(body))
+	}
+}
+
+func isUIPresent() bool {
+	info, _ := debug.ReadBuildInfo()
+	for _, dep := range info.Deps {
+		if dep.Path == uiServerModule {
+			return true
+		}
+	}
+	return false
 }
