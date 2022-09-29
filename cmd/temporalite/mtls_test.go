@@ -82,7 +82,10 @@ func TestMTLSConfig(t *testing.T) {
 	}
 
 	portProvider := liteconfig.NewPortProvider()
-	port := portProvider.MustGetFreePort()
+	var (
+		frontendPort = portProvider.MustGetFreePort()
+		webUIPort    = portProvider.MustGetFreePort()
+	)
 	portProvider.Close()
 
 	// Run ephemerally using temp config
@@ -94,7 +97,8 @@ func TestMTLSConfig(t *testing.T) {
 		"--namespace", "default",
 		"--log-format", "pretty",
 		"--log-level", "error",
-		"--port", strconv.Itoa(port),
+		"--port", strconv.Itoa(frontendPort),
+		"--ui-port", strconv.Itoa(webUIPort),
 	}
 	go func() {
 		if err := buildCLI().RunContext(ctx, args); err != nil {
@@ -120,7 +124,7 @@ func TestMTLSConfig(t *testing.T) {
 
 	// Build client options and try to connect client every 100ms for 5s
 	options := client.Options{
-		HostPort: fmt.Sprintf("localhost:%d", port),
+		HostPort: fmt.Sprintf("localhost:%d", frontendPort),
 		ConnectionOptions: client.ConnectionOptions{
 			TLS: &tls.Config{
 				Certificates: []tls.Certificate{clientCert},
@@ -155,7 +159,7 @@ func TestMTLSConfig(t *testing.T) {
 	}
 
 	// Pretend to be a browser to invoke the UI API
-	res, err := http.Get(fmt.Sprintf("http://localhost:%d/api/v1/namespaces?", port+1000))
+	res, err := http.Get(fmt.Sprintf("http://localhost:%d/api/v1/namespaces?", webUIPort))
 	if err != nil {
 		t.Fatal(err)
 	}
