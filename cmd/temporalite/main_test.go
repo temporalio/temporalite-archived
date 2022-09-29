@@ -37,6 +37,7 @@ import (
 	"time"
 
 	"github.com/urfave/cli/v2"
+	"go.temporal.io/api/enums/v1"
 	"go.temporal.io/sdk/client"
 
 	"github.com/temporalio/temporalite/internal/liteconfig"
@@ -89,7 +90,7 @@ func newServerAndClientOpts(port int, customArgs ...string) ([]string, client.Op
 
 	return append(args, customArgs...), client.Options{
 		HostPort:  fmt.Sprintf("localhost:%d", port),
-		Namespace: "default",
+		Namespace: "temporal-system",
 	}
 }
 
@@ -110,6 +111,22 @@ func assertServerHealth(t *testing.T, ctx context.Context, opts client.Options) 
 
 	if _, err := c.CheckHealth(ctx, nil); err != nil {
 		t.Error(err)
+	}
+
+	// Check for pollers on a system task queue to ensure that the worker service is running.
+	for {
+		if ctx.Err() != nil {
+			t.Error(ctx.Err())
+			break
+		}
+		resp, err := c.DescribeTaskQueue(ctx, "temporal-sys-tq-scanner-taskqueue-0", enums.TASK_QUEUE_TYPE_WORKFLOW)
+		if err != nil {
+			t.Error(err)
+		}
+		if len(resp.GetPollers()) > 0 {
+			break
+		}
+		time.Sleep(time.Millisecond * 100)
 	}
 }
 
