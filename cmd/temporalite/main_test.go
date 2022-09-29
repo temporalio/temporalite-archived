@@ -133,14 +133,14 @@ func assertServerHealth(t *testing.T, ctx context.Context, opts client.Options) 
 
 func TestCreateDataDirectory(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-	defer func() {
-		cancel()
-		// Give Temporal servers a little time to shut down before temp test
-		// directory is cleaned up.
-		time.Sleep(1000 * time.Millisecond)
-	}()
+	defer cancel()
 
-	testUserHome := t.TempDir()
+	testUserHome := filepath.Join(os.TempDir(), "temporalite_test", t.Name())
+	t.Cleanup(func() {
+		if err := os.RemoveAll(testUserHome); err != nil {
+			fmt.Println("error cleaning up temp dir:", err)
+		}
+	})
 	// Set user home for all supported operating systems
 	t.Setenv("AppData", testUserHome)         // Windows
 	t.Setenv("HOME", testUserHome)            // macOS
