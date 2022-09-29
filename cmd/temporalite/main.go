@@ -231,6 +231,17 @@ func buildCLI() *cli.App {
 					}
 				}
 
+				interruptChan := make(chan interface{}, 1)
+				go func() {
+					if doneChan := c.Done(); doneChan != nil {
+						s := <-doneChan
+						interruptChan <- s
+					} else {
+						s := <-temporal.InterruptCh()
+						interruptChan <- s
+					}
+				}()
+
 				opts := []temporalite.ServerOption{
 					temporalite.WithDynamicPorts(),
 					temporalite.WithFrontendPort(serverPort),
@@ -240,7 +251,7 @@ func buildCLI() *cli.App {
 					temporalite.WithNamespaces(c.StringSlice(namespaceFlag)...),
 					temporalite.WithSQLitePragmas(pragmas),
 					temporalite.WithUpstreamOptions(
-						temporal.InterruptOn(temporal.InterruptCh()),
+						temporal.InterruptOn(interruptChan),
 					),
 					temporalite.WithBaseConfig(baseConfig),
 				}

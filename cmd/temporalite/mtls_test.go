@@ -41,6 +41,7 @@ import (
 	"text/template"
 	"time"
 
+	"github.com/urfave/cli/v2"
 	"go.temporal.io/api/enums/v1"
 	"go.temporal.io/api/workflowservice/v1"
 	"go.temporal.io/sdk/client"
@@ -101,8 +102,12 @@ func TestMTLSConfig(t *testing.T) {
 		"--ui-port", strconv.Itoa(webUIPort),
 	}
 	go func() {
-		if err := buildCLI().RunContext(ctx, args); err != nil {
-			t.Logf("CLI failed: %v", err)
+		temporaliteCLI := buildCLI()
+		// Don't call os.Exit
+		temporaliteCLI.ExitErrHandler = func(_ *cli.Context, _ error) {}
+
+		if err := temporaliteCLI.RunContext(ctx, args); err != nil {
+			fmt.Printf("CLI failed: %s\n", err)
 		}
 	}()
 

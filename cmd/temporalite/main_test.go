@@ -36,6 +36,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/urfave/cli/v2"
 	"go.temporal.io/sdk/client"
 
 	"github.com/temporalio/temporalite/internal/liteconfig"
@@ -117,7 +118,6 @@ func TestCreateDataDirectory(t *testing.T) {
 	defer cancel()
 
 	testUserHome := t.TempDir()
-
 	// Set user home for all supported operating systems
 	t.Setenv("AppData", testUserHome)         // Windows
 	t.Setenv("HOME", testUserHome)            // macOS
@@ -125,8 +125,12 @@ func TestCreateDataDirectory(t *testing.T) {
 	// Verify that worked
 	configDir, _ := os.UserConfigDir()
 	if !strings.HasPrefix(configDir, testUserHome) {
-		t.Errorf("expected config dir %q to be inside user home directory %q", configDir, testUserHome)
+		t.Fatalf("expected config dir %q to be inside user home directory %q", configDir, testUserHome)
 	}
+
+	temporaliteCLI := buildCLI()
+	// Don't call os.Exit
+	temporaliteCLI.ExitErrHandler = func(_ *cli.Context, _ error) {}
 
 	portProvider := liteconfig.NewPortProvider()
 	var (
@@ -143,8 +147,8 @@ func TestCreateDataDirectory(t *testing.T) {
 		args, clientOpts := newServerAndClientOpts(port1)
 
 		go func() {
-			if err := buildCLI().RunContext(ctx, args); err != nil {
-				t.Log(err)
+			if err := temporaliteCLI.RunContext(ctx, args); err != nil {
+				fmt.Println("Server closed with error:", err)
 			}
 		}()
 
@@ -163,7 +167,7 @@ func TestCreateDataDirectory(t *testing.T) {
 		args, _ := newServerAndClientOpts(
 			port2, "-f", customDBPath,
 		)
-		if err := buildCLI().RunContext(ctx, args); err != nil {
+		if err := temporaliteCLI.RunContext(ctx, args); err != nil {
 			if !errors.Is(err, os.ErrNotExist) {
 				t.Errorf("expected error %q, got %q", os.ErrNotExist, err)
 			}
@@ -184,8 +188,8 @@ func TestCreateDataDirectory(t *testing.T) {
 		)
 
 		go func() {
-			if err := buildCLI().RunContext(ctx, args); err != nil {
-				t.Log(err)
+			if err := temporaliteCLI.RunContext(ctx, args); err != nil {
+				fmt.Println("Server closed with error:", err)
 			}
 		}()
 
