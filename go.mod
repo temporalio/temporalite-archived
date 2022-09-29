@@ -4,7 +4,8 @@ go 1.19
 
 require (
 	github.com/temporalio/ui-server/v2 v2.6.2
-	github.com/urfave/cli/v2 v2.16.3
+	github.com/urfave/cli/v2 v2.17.1
+	go.temporal.io/api v1.12.0
 	go.temporal.io/sdk v1.17.0
 	go.temporal.io/server v1.18.0
 	go.uber.org/zap v1.23.0
@@ -27,7 +28,6 @@ require (
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.7.0 // indirect
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc v1.7.0 // indirect
 	go.opentelemetry.io/proto/otlp v0.18.0 // indirect
-	go.temporal.io/api v1.12.0 // indirect
 	golang.org/x/exp v0.0.0-20220613132600-b0d781184e0d // indirect
 	lukechampine.com/uint128 v1.2.0 // indirect
 	modernc.org/cc/v3 v3.36.0 // indirect
