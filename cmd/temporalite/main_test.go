@@ -82,7 +82,7 @@ func newServerAndClientOpts(port int, customArgs ...string) ([]string, client.Op
 		"temporalite",
 		"start",
 		"--namespace", "default",
-		"--log-level", "error",
+		"--log-format", "noop",
 		"--headless",
 		"--port", strconv.Itoa(port),
 	}

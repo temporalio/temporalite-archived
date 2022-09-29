@@ -96,8 +96,7 @@ func TestMTLSConfig(t *testing.T) {
 		"--ephemeral",
 		"--config", confDir,
 		"--namespace", "default",
-		"--log-format", "pretty",
-		"--log-level", "error",
+		"--log-format", "noop",
 		"--port", strconv.Itoa(frontendPort),
 		"--ui-port", strconv.Itoa(webUIPort),
 	}
