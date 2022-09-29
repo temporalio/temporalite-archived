@@ -83,6 +83,7 @@ func newServerAndClientOpts(port int, customArgs ...string) ([]string, client.Op
 		"temporalite",
 		"start",
 		"--namespace", "default",
+		// Use noop logger to avoid fatal logs failing tests on shutdown signal.
 		"--log-format", "noop",
 		"--headless",
 		"--port", strconv.Itoa(port),
@@ -132,7 +133,12 @@ func assertServerHealth(t *testing.T, ctx context.Context, opts client.Options) 
 
 func TestCreateDataDirectory(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-	defer cancel()
+	defer func() {
+		cancel()
+		// Give Temporal servers a little time to shut down before temp test
+		// directory is cleaned up.
+		time.Sleep(1000 * time.Millisecond)
+	}()
 
 	testUserHome := t.TempDir()
 	// Set user home for all supported operating systems
