@@ -26,6 +26,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -35,7 +36,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stretchr/testify/assert"
 	"go.temporal.io/sdk/client"
 
 	"github.com/temporalio/temporalite/internal/liteconfig"
@@ -159,11 +159,17 @@ func TestCreateDataDirectory(t *testing.T) {
 	})
 
 	t.Run("custom db path -- missing directory", func(t *testing.T) {
+		customDBPath := filepath.Join(testUserHome, "foo", "bar", "baz.db")
 		args, _ := newServerAndClientOpts(
-			port2, "-f", filepath.Join(testUserHome, "foo", "bar", "baz.db"),
+			port2, "-f", customDBPath,
 		)
 		if err := buildCLI().RunContext(ctx, args); err != nil {
-			assert.ErrorContains(t, err, "foo/bar: no such file or directory")
+			if !errors.Is(err, os.ErrNotExist) {
+				t.Errorf("expected error %q, got %q", os.ErrNotExist, err)
+			}
+			if !strings.Contains(err.Error(), filepath.Dir(customDBPath)) {
+				t.Errorf("expected error %q to contain string %q", err, filepath.Dir(customDBPath))
+			}
 		} else {
 			t.Error("no error when directory missing")
 		}
