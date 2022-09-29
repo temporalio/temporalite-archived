@@ -55,11 +55,7 @@ func TestMTLSConfig(t *testing.T) {
 	mtlsDir := filepath.Join(thisFile, "../../../internal/examples/mtls")
 
 	// Create temp config dir
-	confDir, err := os.MkdirTemp("", "temporalite-conf-")
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer os.RemoveAll(confDir)
+	confDir := t.TempDir()
 
 	// Run templated config and put in temp dir
 	var buf bytes.Buffer
