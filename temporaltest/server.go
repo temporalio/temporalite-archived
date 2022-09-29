@@ -92,7 +92,7 @@ func (ts *TestServer) NewClientWithOptions(opts client.Options) client.Client {
 		opts.Logger = &testLogger{ts.t}
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
 	c, err := ts.server.NewClientWithOptions(ctx, opts)
