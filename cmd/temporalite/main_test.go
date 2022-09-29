@@ -76,14 +76,13 @@ func TestGetDynamicConfigValues(t *testing.T) {
 	)
 }
 
-func newServerAndClientOpts(p *liteconfig.PortProvider, customArgs ...string) ([]string, client.Options) {
-	defer p.Close()
-	port := p.MustGetFreePort()
+func newServerAndClientOpts(port int, customArgs ...string) ([]string, client.Options) {
 	args := []string{
 		"temporalite",
 		"start",
 		"--namespace", "default",
 		"--log-level", "error",
+		"--headless",
 		"--port", strconv.Itoa(port),
 	}
 
@@ -130,12 +129,18 @@ func TestCreateDataDirectory(t *testing.T) {
 	}
 
 	portProvider := liteconfig.NewPortProvider()
+	var (
+		port1 = portProvider.MustGetFreePort()
+		port2 = portProvider.MustGetFreePort()
+		port3 = portProvider.MustGetFreePort()
+	)
+	portProvider.Close()
 
 	t.Run("default db path", func(t *testing.T) {
 		ctx, cancel := context.WithCancel(ctx)
 		defer cancel()
 
-		args, clientOpts := newServerAndClientOpts(portProvider)
+		args, clientOpts := newServerAndClientOpts(port1)
 
 		go func() {
 			if err := buildCLI().RunContext(ctx, args); err != nil {
@@ -154,8 +159,8 @@ func TestCreateDataDirectory(t *testing.T) {
 	})
 
 	t.Run("custom db path -- missing directory", func(t *testing.T) {
-		args, _ := newServerAndClientOpts(portProvider,
-			"-f", filepath.Join(testUserHome, "foo", "bar", "baz.db"),
+		args, _ := newServerAndClientOpts(
+			port2, "-f", filepath.Join(testUserHome, "foo", "bar", "baz.db"),
 		)
 		if err := buildCLI().RunContext(ctx, args); err != nil {
 			assert.ErrorContains(t, err, "foo/bar: no such file or directory")
@@ -168,8 +173,8 @@ func TestCreateDataDirectory(t *testing.T) {
 		ctx, cancel := context.WithCancel(ctx)
 		defer cancel()
 
-		args, clientOpts := newServerAndClientOpts(portProvider,
-			"-f", filepath.Join(testUserHome, "foo.db"),
+		args, clientOpts := newServerAndClientOpts(
+			port3, "-f", filepath.Join(testUserHome, "foo.db"),
 		)
 
 		go func() {
