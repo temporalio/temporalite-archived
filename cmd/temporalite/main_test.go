@@ -144,7 +144,7 @@ func TestCreateDataDirectory(t *testing.T) {
 
 		go func() {
 			if err := buildCLI().RunContext(ctx, args); err != nil {
-				t.Error(err)
+				t.Log(err)
 			}
 		}()
 
@@ -185,7 +185,7 @@ func TestCreateDataDirectory(t *testing.T) {
 
 		go func() {
 			if err := buildCLI().RunContext(ctx, args); err != nil {
-				t.Error(err)
+				t.Log(err)
 			}
 		}()
 
