@@ -33,10 +33,6 @@ import (
 // as a dependency when building with the `headless` tag enabled.
 const uiServerModule = "github.com/temporalio/ui-server/v2"
 
-var (
-	defaultCfg *liteconfig.Config
-)
-
 const (
 	ephemeralFlag          = "ephemeral"
 	dbPathFlag             = "filename"
@@ -54,10 +50,6 @@ const (
 	dynamicConfigValueFlag = "dynamic-config-value"
 )
 
-func init() {
-	defaultCfg, _ = liteconfig.NewDefaultConfig()
-}
-
 func main() {
 	if err := buildCLI().Run(os.Args); err != nil {
 		goLog.Fatal(err)
@@ -68,6 +60,8 @@ func main() {
 var version string
 
 func buildCLI() *cli.App {
+	defaultCfg, _ := liteconfig.NewDefaultConfig()
+
 	if version == "" {
 		version = "(devel)"
 	}
@@ -177,7 +171,7 @@ func buildCLI() *cli.App {
 				}
 
 				switch c.String(logFormatFlag) {
-				case "json", "pretty":
+				case "json", "pretty", "noop":
 				default:
 					return cli.Exit(fmt.Sprintf("bad value %q passed for flag %q", c.String(logFormatFlag), logFormatFlag), 1)
 				}
@@ -237,6 +231,17 @@ func buildCLI() *cli.App {
 					}
 				}
 
+				interruptChan := make(chan interface{}, 1)
+				go func() {
+					if doneChan := c.Done(); doneChan != nil {
+						s := <-doneChan
+						interruptChan <- s
+					} else {
+						s := <-temporal.InterruptCh()
+						interruptChan <- s
+					}
+				}()
+
 				opts := []temporalite.ServerOption{
 					temporalite.WithDynamicPorts(),
 					temporalite.WithFrontendPort(serverPort),
@@ -246,7 +251,7 @@ func buildCLI() *cli.App {
 					temporalite.WithNamespaces(c.StringSlice(namespaceFlag)...),
 					temporalite.WithSQLitePragmas(pragmas),
 					temporalite.WithUpstreamOptions(
-						temporal.InterruptOn(temporal.InterruptCh()),
+						temporal.InterruptOn(interruptChan),
 					),
 					temporalite.WithBaseConfig(baseConfig),
 				}
@@ -265,7 +270,8 @@ func buildCLI() *cli.App {
 				}
 
 				var logger log.Logger
-				if c.String(logFormatFlag) == "pretty" {
+				switch c.String(logFormatFlag) {
+				case "pretty":
 					lcfg := zap.NewDevelopmentConfig()
 					switch c.String(logLevelFlag) {
 					case "debug":
@@ -288,7 +294,9 @@ func buildCLI() *cli.App {
 						return err
 					}
 					logger = log.NewZapLogger(l)
-				} else {
+				case "noop":
+					logger = log.NewNoopLogger()
+				default:
 					logger = log.NewZapLogger(log.BuildZapLogger(log.Config{
 						Stdout:     true,
 						Level:      c.String(logLevelFlag),

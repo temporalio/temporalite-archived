@@ -29,6 +29,7 @@ import (
 	"context"
 	"crypto/tls"
 	"crypto/x509"
+	"fmt"
 	"io"
 	"net/http"
 	"os"
@@ -40,9 +41,12 @@ import (
 	"text/template"
 	"time"
 
+	"github.com/urfave/cli/v2"
 	"go.temporal.io/api/enums/v1"
 	"go.temporal.io/api/workflowservice/v1"
 	"go.temporal.io/sdk/client"
+
+	"github.com/temporalio/temporalite/internal/liteconfig"
 )
 
 func TestMTLSConfig(t *testing.T) {
@@ -52,11 +56,7 @@ func TestMTLSConfig(t *testing.T) {
 	mtlsDir := filepath.Join(thisFile, "../../../internal/examples/mtls")
 
 	// Create temp config dir
-	confDir, err := os.MkdirTemp("", "temporalite-conf-")
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer os.RemoveAll(confDir)
+	confDir := t.TempDir()
 
 	// Run templated config and put in temp dir
 	var buf bytes.Buffer
@@ -82,6 +82,13 @@ func TestMTLSConfig(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	portProvider := liteconfig.NewPortProvider()
+	var (
+		frontendPort = portProvider.MustGetFreePort()
+		webUIPort    = portProvider.MustGetFreePort()
+	)
+	portProvider.Close()
+
 	// Run ephemerally using temp config
 	args := []string{
 		"temporalite",
@@ -89,12 +96,17 @@ func TestMTLSConfig(t *testing.T) {
 		"--ephemeral",
 		"--config", confDir,
 		"--namespace", "default",
-		"--log-format", "pretty",
-		"--port", "10233",
+		"--log-format", "noop",
+		"--port", strconv.Itoa(frontendPort),
+		"--ui-port", strconv.Itoa(webUIPort),
 	}
 	go func() {
-		if err := buildCLI().RunContext(ctx, args); err != nil {
-			t.Logf("CLI failed: %v", err)
+		temporaliteCLI := buildCLI()
+		// Don't call os.Exit
+		temporaliteCLI.ExitErrHandler = func(_ *cli.Context, _ error) {}
+
+		if err := temporaliteCLI.RunContext(ctx, args); err != nil {
+			fmt.Printf("CLI failed: %s\n", err)
 		}
 	}()
 
@@ -116,7 +128,7 @@ func TestMTLSConfig(t *testing.T) {
 
 	// Build client options and try to connect client every 100ms for 5s
 	options := client.Options{
-		HostPort: "localhost:10233",
+		HostPort: fmt.Sprintf("localhost:%d", frontendPort),
 		ConnectionOptions: client.ConnectionOptions{
 			TLS: &tls.Config{
 				Certificates: []tls.Certificate{clientCert},
@@ -151,7 +163,7 @@ func TestMTLSConfig(t *testing.T) {
 	}
 
 	// Pretend to be a browser to invoke the UI API
-	res, err := http.Get("http://localhost:11233/api/v1/namespaces?")
+	res, err := http.Get(fmt.Sprintf("http://localhost:%d/api/v1/namespaces?", webUIPort))
 	if err != nil {
 		t.Fatal(err)
 	}

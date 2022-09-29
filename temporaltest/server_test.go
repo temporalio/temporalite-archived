@@ -61,7 +61,7 @@ func TestNewServer(t *testing.T) {
 		helloworld.RegisterWorkflowsAndActivities(registry)
 	})
 
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
 	wfr, err := ts.DefaultClient().ExecuteWorkflow(
@@ -98,7 +98,7 @@ func TestNewWorkerWithOptions(t *testing.T) {
 		},
 	)
 
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
 	wfr, err := ts.DefaultClient().ExecuteWorkflow(
@@ -136,7 +136,7 @@ func TestDefaultWorkerOptions(t *testing.T) {
 	ts.NewWorker("hello_world", func(registry worker.Registry) {
 		helloworld.RegisterWorkflowsAndActivities(registry)
 	})
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
 	wfr, err := ts.DefaultClient().ExecuteWorkflow(
@@ -174,7 +174,7 @@ func TestClientWithDefaultInterceptor(t *testing.T) {
 		},
 	)
 
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
 	wfr, err := ts.DefaultClient().ExecuteWorkflow(
@@ -198,7 +198,7 @@ func TestClientWithDefaultInterceptor(t *testing.T) {
 }
 
 func TestSearchAttributeCacheDisabled(t *testing.T) {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 	ts := temporaltest.NewServer(temporaltest.WithT(t))
 
@@ -233,7 +233,7 @@ func BenchmarkRunWorkflow(b *testing.B) {
 
 	for i := 0; i < b.N; i++ {
 		func(b *testing.B) {
-			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+			ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 			defer cancel()
 
 			wfr, err := c.ExecuteWorkflow(
