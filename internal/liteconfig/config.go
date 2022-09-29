@@ -56,7 +56,7 @@ type Config struct {
 	SQLitePragmas    map[string]string
 	Logger           log.Logger
 	UpstreamOptions  []temporal.ServerOption
-	portProvider     *portProvider
+	portProvider     *PortProvider
 	FrontendIP       string
 	UIServer         UIServer
 	BaseConfig       *config.Config
@@ -85,7 +85,7 @@ func NewDefaultConfig() (*Config, error) {
 
 	return &Config{
 		Ephemeral:        false,
-		DatabaseFilePath: filepath.Join(userConfigDir, "temporalite/db/default.db"),
+		DatabaseFilePath: filepath.Join(userConfigDir, "temporalite", "db", "default.db"),
 		FrontendPort:     0,
 		MetricsPort:      0,
 		UIServer:         noopUIServer{},
@@ -97,7 +97,7 @@ func NewDefaultConfig() (*Config, error) {
 			Level:      "info",
 			OutputFile: "",
 		})),
-		portProvider: &portProvider{},
+		portProvider: NewPortProvider(),
 		FrontendIP:   "",
 		BaseConfig:   &config.Config{},
 	}, nil
@@ -105,7 +105,7 @@ func NewDefaultConfig() (*Config, error) {
 
 func Convert(cfg *Config) *config.Config {
 	defer func() {
-		if err := cfg.portProvider.close(); err != nil {
+		if err := cfg.portProvider.Close(); err != nil {
 			panic(err)
 		}
 	}()
@@ -130,12 +130,12 @@ func Convert(cfg *Config) *config.Config {
 	var pprofPort int
 	if cfg.DynamicPorts {
 		if cfg.FrontendPort == 0 {
-			cfg.FrontendPort = cfg.portProvider.mustGetFreePort()
+			cfg.FrontendPort = cfg.portProvider.MustGetFreePort()
 		}
 		if cfg.MetricsPort == 0 {
-			cfg.MetricsPort = cfg.portProvider.mustGetFreePort()
+			cfg.MetricsPort = cfg.portProvider.MustGetFreePort()
 		}
-		pprofPort = cfg.portProvider.mustGetFreePort()
+		pprofPort = cfg.portProvider.MustGetFreePort()
 	} else {
 		if cfg.FrontendPort == 0 {
 			cfg.FrontendPort = DefaultFrontendPort
@@ -229,9 +229,9 @@ func (cfg *Config) mustGetService(frontendPortOffset int) config.Service {
 	// Assign any open port when configured to use dynamic ports
 	if cfg.DynamicPorts {
 		if frontendPortOffset != 0 {
-			svc.RPC.GRPCPort = cfg.portProvider.mustGetFreePort()
+			svc.RPC.GRPCPort = cfg.portProvider.MustGetFreePort()
 		}
-		svc.RPC.MembershipPort = cfg.portProvider.mustGetFreePort()
+		svc.RPC.MembershipPort = cfg.portProvider.MustGetFreePort()
 	}
 
 	// Optionally bind frontend to IPv4 address

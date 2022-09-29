@@ -25,8 +25,20 @@
 package main
 
 import (
+	"context"
+	"fmt"
+	"os"
+	"path/filepath"
 	"reflect"
+	"strconv"
+	"strings"
 	"testing"
+	"time"
+
+	"github.com/stretchr/testify/assert"
+	"go.temporal.io/sdk/client"
+
+	"github.com/temporalio/temporalite/internal/liteconfig"
 )
 
 func TestGetDynamicConfigValues(t *testing.T) {
@@ -62,4 +74,110 @@ func TestGetDynamicConfigValues(t *testing.T) {
 		v{"foo": {123.0, []interface{}{"123", false}}, "bar": {"baz"}, "qux": {true}},
 		"foo=123", `bar="baz"`, "qux=true", `foo=["123", false]`,
 	)
+}
+
+func newServerAndClientOpts(p *liteconfig.PortProvider, customArgs ...string) ([]string, client.Options) {
+	defer p.Close()
+	port := p.MustGetFreePort()
+	args := []string{
+		"temporalite",
+		"start",
+		"--namespace", "default",
+		"--log-level", "error",
+		"--port", strconv.Itoa(port),
+	}
+
+	return append(args, customArgs...), client.Options{
+		HostPort:  fmt.Sprintf("localhost:%d", port),
+		Namespace: "default",
+	}
+}
+
+func assertServerHealth(t *testing.T, ctx context.Context, opts client.Options) {
+	var (
+		c         client.Client
+		clientErr error
+	)
+	for i := 0; i < 50; i++ {
+		if c, clientErr = client.Dial(opts); clientErr == nil {
+			break
+		}
+		time.Sleep(100 * time.Millisecond)
+	}
+	if clientErr != nil {
+		t.Error(clientErr)
+	}
+
+	if _, err := c.CheckHealth(ctx, nil); err != nil {
+		t.Error(err)
+	}
+}
+
+func TestCreateDataDirectory(t *testing.T) {
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	testUserHome := t.TempDir()
+
+	// Set user home for all supported operating systems
+	t.Setenv("AppData", testUserHome)         // Windows
+	t.Setenv("HOME", testUserHome)            // macOS
+	t.Setenv("XDG_CONFIG_HOME", testUserHome) // linux
+	// Verify that worked
+	configDir, _ := os.UserConfigDir()
+	if !strings.HasPrefix(configDir, testUserHome) {
+		t.Errorf("expected config dir %q to be inside user home directory %q", configDir, testUserHome)
+	}
+
+	portProvider := liteconfig.NewPortProvider()
+
+	t.Run("default db path", func(t *testing.T) {
+		ctx, cancel := context.WithCancel(ctx)
+		defer cancel()
+
+		args, clientOpts := newServerAndClientOpts(portProvider)
+
+		go func() {
+			if err := buildCLI().RunContext(ctx, args); err != nil {
+				t.Error(err)
+			}
+		}()
+
+		assertServerHealth(t, ctx, clientOpts)
+
+		// If the rest of this test case passes but this assertion fails,
+		// there may have been a breaking change in the liteconfig package
+		// related to how the default db file path is calculated.
+		if _, err := os.Stat(filepath.Join(configDir, "temporalite", "db", "default.db")); err != nil {
+			t.Errorf("error checking for default db file: %s", err)
+		}
+	})
+
+	t.Run("custom db path -- missing directory", func(t *testing.T) {
+		args, _ := newServerAndClientOpts(portProvider,
+			"-f", filepath.Join(testUserHome, "foo", "bar", "baz.db"),
+		)
+		if err := buildCLI().RunContext(ctx, args); err != nil {
+			assert.ErrorContains(t, err, "foo/bar: no such file or directory")
+		} else {
+			t.Error("no error when directory missing")
+		}
+	})
+
+	t.Run("custom db path -- existing directory", func(t *testing.T) {
+		ctx, cancel := context.WithCancel(ctx)
+		defer cancel()
+
+		args, clientOpts := newServerAndClientOpts(portProvider,
+			"-f", filepath.Join(testUserHome, "foo.db"),
+		)
+
+		go func() {
+			if err := buildCLI().RunContext(ctx, args); err != nil {
+				t.Error(err)
+			}
+		}()
+
+		assertServerHealth(t, ctx, clientOpts)
+	})
 }

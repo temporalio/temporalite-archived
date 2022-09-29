@@ -90,6 +90,7 @@ func TestMTLSConfig(t *testing.T) {
 		"--config", confDir,
 		"--namespace", "default",
 		"--log-format", "pretty",
+		"--log-level", "error",
 		"--port", "10233",
 	}
 	go func() {

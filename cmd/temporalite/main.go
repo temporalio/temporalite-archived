@@ -33,10 +33,6 @@ import (
 // as a dependency when building with the `headless` tag enabled.
 const uiServerModule = "github.com/temporalio/ui-server/v2"
 
-var (
-	defaultCfg *liteconfig.Config
-)
-
 const (
 	ephemeralFlag          = "ephemeral"
 	dbPathFlag             = "filename"
@@ -54,10 +50,6 @@ const (
 	dynamicConfigValueFlag = "dynamic-config-value"
 )
 
-func init() {
-	defaultCfg, _ = liteconfig.NewDefaultConfig()
-}
-
 func main() {
 	if err := buildCLI().Run(os.Args); err != nil {
 		goLog.Fatal(err)
@@ -68,6 +60,8 @@ func main() {
 var version string
 
 func buildCLI() *cli.App {
+	defaultCfg, _ := liteconfig.NewDefaultConfig()
+
 	if version == "" {
 		version = "(devel)"
 	}
