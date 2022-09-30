@@ -28,13 +28,7 @@ Features that align with this goal:
 
 ### Download and Start Temporal Server Locally
 
-Build from source using [go install](https://golang.org/ref/mod#go-install):
-
-> Note: Go 1.18 or greater is currently required.
-
-```bash
-go install github.com/temporalio/temporalite/cmd/temporalite@latest
-```
+Download and extract the [latest release](https://github.com/temporalio/temporalite/releases/latest) from [GitHub releases](https://github.com/temporalio/temporalite/releases).
 
 Start Temporal server:
 
@@ -91,17 +85,13 @@ temporalite start --ephemeral
 
 ### Web UI
 
-The `temporalite` binary can be compiled to omit static assets for installations that will never use the UI:
-
-```bash
-go install -tags headless github.com/temporalio/temporalite/cmd/temporalite@latest
-```
-
-The UI can also be disabled via a runtime flag:
+By default the web UI is started with Temporalite. The UI can be disabled via a runtime flag:
 
 ```bash
 temporalite start --headless
 ```
+
+To build without static UI assets, use the `headless` build tag when running `go build`.
 
 ### Dynamic Config
 
