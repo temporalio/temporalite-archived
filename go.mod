@@ -3,7 +3,7 @@ module github.com/temporalio/temporalite
 go 1.19
 
 require (
-	github.com/temporalio/ui-server/v2 v2.6.2
+	github.com/temporalio/ui-server/v2 v2.7.0
 	github.com/urfave/cli/v2 v2.19.2
 	go.temporal.io/api v1.12.0
 	go.temporal.io/sdk v1.17.0
@@ -73,9 +73,7 @@ require (
 	github.com/google/go-cmp v0.5.8 // indirect
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/googleapis/gax-go/v2 v2.4.0 // indirect
-	github.com/gorilla/context v1.1.1 // indirect
 	github.com/gorilla/securecookie v1.1.1 // indirect
-	github.com/gorilla/sessions v1.2.1 // indirect
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0 // indirect
 	github.com/grpc-ecosystem/grpc-gateway v1.16.0 // indirect
 	github.com/hailocab/go-hostpool v0.0.0-20160125115350-e80d13ce29ed // indirect
@@ -84,7 +82,6 @@ require (
 	github.com/jmoiron/sqlx v1.3.4 // indirect
 	github.com/jonboulle/clockwork v0.3.0 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
-	github.com/labstack/echo-contrib v0.12.0 // indirect
 	github.com/labstack/echo/v4 v4.6.3 // indirect
 	github.com/labstack/gommon v0.3.1 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
