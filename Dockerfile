@@ -6,7 +6,7 @@ COPY . .
 RUN go mod download
 RUN go get -d -v ./...
 
-RUN go build -o ${GOPATH:-/go}/bin/ ${GOPATH:-/go}/src/temporalite/cmd/temporalite
+RUN go build -buildvcs=false -o ${GOPATH:-/go}/bin/ ${GOPATH:-/go}/src/temporalite/cmd/temporalite
 
 FROM gcr.io/distroless/base-debian11
 
