@@ -3,7 +3,7 @@ module github.com/temporalio/temporalite
 go 1.19
 
 require (
-	github.com/temporalio/ui-server/v2 v2.7.1
+	github.com/temporalio/ui-server/v2 v2.8.0
 	github.com/urfave/cli/v2 v2.20.2
 	go.temporal.io/api v1.12.0
 	go.temporal.io/sdk v1.17.0
@@ -82,8 +82,8 @@ require (
 	github.com/jmoiron/sqlx v1.3.4 // indirect
 	github.com/jonboulle/clockwork v0.3.0 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
-	github.com/labstack/echo/v4 v4.6.3 // indirect
-	github.com/labstack/gommon v0.3.1 // indirect
+	github.com/labstack/echo/v4 v4.9.1 // indirect
+	github.com/labstack/gommon v0.4.0 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/mattn/go-colorable v0.1.12 // indirect
 	github.com/mattn/go-isatty v0.0.14 // indirect
