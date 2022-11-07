@@ -7,7 +7,7 @@ require (
 	github.com/urfave/cli/v2 v2.23.4
 	go.temporal.io/api v1.12.0
 	go.temporal.io/sdk v1.17.0
-	go.temporal.io/server v1.18.1
+	go.temporal.io/server v1.18.4
 	go.uber.org/zap v1.23.0
 )
 
@@ -59,7 +59,7 @@ require (
 	github.com/facebookgo/clock v0.0.0-20150410010913-600d898af40a // indirect
 	github.com/go-logr/logr v1.2.3 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
-	github.com/gocql/gocql v1.2.0 // indirect
+	github.com/gocql/gocql v1.2.1 // indirect
 	github.com/gogo/gateway v1.1.0 // indirect
 	github.com/gogo/googleapis v1.4.1 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
