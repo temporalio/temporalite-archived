@@ -42,6 +42,7 @@ const (
 	headlessFlag           = "headless"
 	ipFlag                 = "ip"
 	uiIPFlag               = "ui-ip"
+	uiCodecEndpointFlag    = "ui-codec-endpoint"
 	logFormatFlag          = "log-format"
 	logLevelFlag           = "log-level"
 	namespaceFlag          = "namespace"
@@ -125,6 +126,11 @@ func buildCLI() *cli.App {
 					DefaultText: "same as --ip (eg. 127.0.0.1)",
 				},
 				&cli.StringFlag{
+					Name:    uiCodecEndpointFlag,
+					Usage:   `UI Remote data converter HTTP endpoint`,
+					EnvVars: nil,
+				},
+				&cli.StringFlag{
 					Name:    logFormatFlag,
 					Usage:   `customize the log formatting (allowed: ["json" "pretty"])`,
 					EnvVars: nil,
@@ -198,11 +204,12 @@ func buildCLI() *cli.App {
 			},
 			Action: func(c *cli.Context) error {
 				var (
-					ip          = c.String(ipFlag)
-					serverPort  = c.Int(portFlag)
-					metricsPort = c.Int(metricsPortFlag)
-					uiPort      = serverPort + 1000
-					uiIP        = ip
+					ip            = c.String(ipFlag)
+					serverPort    = c.Int(portFlag)
+					metricsPort   = c.Int(metricsPortFlag)
+					uiPort        = serverPort + 1000
+					uiIP          = ip
+					codecEndpoint = ""
 				)
 
 				if c.IsSet(uiPortFlag) {
@@ -211,6 +218,10 @@ func buildCLI() *cli.App {
 
 				if c.IsSet(uiIPFlag) {
 					uiIP = c.String(uiIPFlag)
+				}
+
+				if c.IsSet(uiCodecEndpointFlag) {
+					codecEndpoint = c.String(uiCodecEndpointFlag)
 				}
 
 				pragmas, err := getPragmaMap(c.StringSlice(pragmaFlag))
@@ -257,7 +268,7 @@ func buildCLI() *cli.App {
 				}
 				if !c.Bool(headlessFlag) {
 					frontendAddr := fmt.Sprintf("%s:%d", ip, serverPort)
-					opt, err := newUIOption(frontendAddr, uiIP, uiPort, c.String(configFlag))
+					opt, err := newUIOption(frontendAddr, uiIP, uiPort, codecEndpoint, c.String(configFlag))
 					if err != nil {
 						return err
 					}

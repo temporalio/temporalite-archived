@@ -19,11 +19,12 @@ import (
 	"github.com/temporalio/temporalite"
 )
 
-func newUIOption(frontendAddr string, uiIP string, uiPort int, configDir string) (temporalite.ServerOption, error) {
+func newUIOption(frontendAddr string, uiIP string, uiPort int, codecEndpoint string, configDir string) (temporalite.ServerOption, error) {
 	cfg, err := newUIConfig(
 		frontendAddr,
 		uiIP,
 		uiPort,
+		codecEndpoint,
 		configDir,
 	)
 	if err != nil {
@@ -32,10 +33,13 @@ func newUIOption(frontendAddr string, uiIP string, uiPort int, configDir string)
 	return temporalite.WithUI(uiserver.NewServer(uiserveroptions.WithConfigProvider(cfg))), nil
 }
 
-func newUIConfig(frontendAddr string, uiIP string, uiPort int, configDir string) (*uiconfig.Config, error) {
+func newUIConfig(frontendAddr string, uiIP string, uiPort int, codecEndpoint string, configDir string) (*uiconfig.Config, error) {
 	cfg := &uiconfig.Config{
 		Host: uiIP,
 		Port: uiPort,
+		Codec: uiconfig.Codec{
+			Endpoint: codecEndpoint,
+		},
 	}
 	if configDir != "" {
 		if err := provider.Load(configDir, cfg, "temporalite-ui"); err != nil {
