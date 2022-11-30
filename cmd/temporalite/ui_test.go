@@ -9,6 +9,8 @@ package main
 import (
 	"runtime/debug"
 	"testing"
+
+	uiconfig "github.com/temporalio/ui-server/v2/server/config"
 )
 
 // This test ensures that ui-server is a dependency of Temporalite built in non-headless mode.
@@ -27,7 +29,13 @@ func TestHasUIServerDependency(t *testing.T) {
 }
 
 func TestNewUIConfig(t *testing.T) {
-	cfg, err := newUIConfig("localhost:7233", "localhost", 8233, "", "")
+	c := &uiconfig.Config{
+		Host:                "localhost",
+		Port:                8233,
+		TemporalGRPCAddress: "localhost:7233",
+		EnableUI:            true,
+	}
+	cfg, err := newUIConfig(c, "")
 	if err != nil {
 		t.Errorf("cannot create config: %s", err)
 		return
@@ -38,7 +46,13 @@ func TestNewUIConfig(t *testing.T) {
 }
 
 func TestNewUIConfigWithMissingConfigFile(t *testing.T) {
-	cfg, err := newUIConfig("localhost:7233", "localhost", 8233, "", "wibble")
+	c := &uiconfig.Config{
+		Host:                "localhost",
+		Port:                8233,
+		TemporalGRPCAddress: "localhost:7233",
+		EnableUI:            true,
+	}
+	cfg, err := newUIConfig(c, "wibble")
 	if err != nil {
 		t.Errorf("cannot create config: %s", err)
 		return
@@ -49,7 +63,13 @@ func TestNewUIConfigWithMissingConfigFile(t *testing.T) {
 }
 
 func TestNewUIConfigWithPresentConfigFile(t *testing.T) {
-	cfg, err := newUIConfig("localhost:7233", "localhost", 8233, "", "testdata")
+	c := &uiconfig.Config{
+		Host:                "localhost",
+		Port:                8233,
+		TemporalGRPCAddress: "localhost:7233",
+		EnableUI:            true,
+	}
+	cfg, err := newUIConfig(c, "testdata")
 	if err != nil {
 		t.Errorf("cannot create config: %s", err)
 		return
