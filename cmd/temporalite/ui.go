@@ -31,6 +31,9 @@ func newUIOption(c *uiconfig.Config, configDir string) (temporalite.ServerOption
 }
 
 func newUIConfig(cfg *uiconfig.Config, configDir string) (*uiconfig.Config, error) {
+	frontendAddr := cfg.TemporalGRPCAddress
+	enabledUi := cfg.EnableUI
+
 	if configDir != "" {
 		if err := provider.Load(configDir, cfg, "temporalite-ui"); err != nil {
 			if !strings.HasPrefix(err.Error(), "no config files found") {
@@ -38,5 +41,11 @@ func newUIConfig(cfg *uiconfig.Config, configDir string) (*uiconfig.Config, erro
 			}
 		}
 	}
+
+	// See https://github.com/temporalio/temporalite/pull/174/files#r1035958308
+	// for context about those overrides.
+	cfg.TemporalGRPCAddress = frontendAddr
+	cfg.EnableUI = enabledUi
+
 	return cfg, nil
 }
