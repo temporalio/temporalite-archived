@@ -9,8 +9,6 @@ package main
 import (
 	"runtime/debug"
 	"testing"
-
-	uiconfig "github.com/temporalio/ui-server/v2/server/config"
 )
 
 // This test ensures that ui-server is a dependency of Temporalite built in non-headless mode.
@@ -29,7 +27,7 @@ func TestHasUIServerDependency(t *testing.T) {
 }
 
 func TestNewUIConfig(t *testing.T) {
-	c := &uiconfig.Config{
+	c := &uiConfig{
 		Host:                "localhost",
 		Port:                8233,
 		TemporalGRPCAddress: "localhost:7233",
@@ -46,7 +44,7 @@ func TestNewUIConfig(t *testing.T) {
 }
 
 func TestNewUIConfigWithMissingConfigFile(t *testing.T) {
-	c := &uiconfig.Config{
+	c := &uiConfig{
 		Host:                "localhost",
 		Port:                8233,
 		TemporalGRPCAddress: "localhost:7233",
@@ -63,7 +61,7 @@ func TestNewUIConfigWithMissingConfigFile(t *testing.T) {
 }
 
 func TestNewUIConfigWithPresentConfigFile(t *testing.T) {
-	c := &uiconfig.Config{
+	c := &uiConfig{
 		Host:                "localhost",
 		Port:                8233,
 		TemporalGRPCAddress: "localhost:7233",

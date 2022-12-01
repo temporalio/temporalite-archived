@@ -19,7 +19,7 @@ import (
 	"github.com/temporalio/temporalite"
 )
 
-func newUIOption(c *uiconfig.Config, configDir string) (temporalite.ServerOption, error) {
+func newUIOption(c *uiConfig, configDir string) (temporalite.ServerOption, error) {
 	cfg, err := newUIConfig(
 		c,
 		configDir,
@@ -30,9 +30,16 @@ func newUIOption(c *uiconfig.Config, configDir string) (temporalite.ServerOption
 	return temporalite.WithUI(uiserver.NewServer(uiserveroptions.WithConfigProvider(cfg))), nil
 }
 
-func newUIConfig(cfg *uiconfig.Config, configDir string) (*uiconfig.Config, error) {
-	frontendAddr := cfg.TemporalGRPCAddress
-	enabledUi := cfg.EnableUI
+func newUIConfig(c *uiConfig, configDir string) (*uiconfig.Config, error) {
+	cfg := &uiconfig.Config{
+		Host:                c.Host,
+		Port:                c.Port,
+		TemporalGRPCAddress: c.TemporalGRPCAddress,
+		EnableUI:            c.EnableUI,
+		Codec: uiconfig.Codec{
+			Endpoint: c.CodecEndpoint,
+		},
+	}
 
 	if configDir != "" {
 		if err := provider.Load(configDir, cfg, "temporalite-ui"); err != nil {
@@ -44,8 +51,8 @@ func newUIConfig(cfg *uiconfig.Config, configDir string) (*uiconfig.Config, erro
 
 	// See https://github.com/temporalio/temporalite/pull/174/files#r1035958308
 	// for context about those overrides.
-	cfg.TemporalGRPCAddress = frontendAddr
-	cfg.EnableUI = enabledUi
+	cfg.TemporalGRPCAddress = c.TemporalGRPCAddress
+	cfg.EnableUI = c.EnableUI
 
 	return cfg, nil
 }

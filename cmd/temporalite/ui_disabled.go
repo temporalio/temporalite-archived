@@ -6,12 +6,8 @@
 
 package main
 
-import (
-	uiconfig "github.com/temporalio/ui-server/v2/server/config"
+import "github.com/temporalio/temporalite"
 
-	"github.com/temporalio/temporalite"
-)
-
-func newUIOption(c *uiconfig.Config, configDir string) (temporalite.ServerOption, error) {
+func newUIOption(c *uiConfig, configDir string) (temporalite.ServerOption, error) {
 	return nil, nil
 }

@@ -13,7 +13,6 @@ import (
 	"path/filepath"
 	"strings"
 
-	uiconfig "github.com/temporalio/ui-server/v2/server/config"
 	"github.com/urfave/cli/v2"
 	"go.temporal.io/server/common/config"
 	"go.temporal.io/server/common/dynamicconfig"
@@ -51,6 +50,14 @@ const (
 	configFlag             = "config"
 	dynamicConfigValueFlag = "dynamic-config-value"
 )
+
+type uiConfig struct {
+	Host                string
+	Port                int
+	TemporalGRPCAddress string
+	EnableUI            bool
+	CodecEndpoint       string
+}
 
 func main() {
 	if err := buildCLI().Run(os.Args); err != nil {
@@ -269,14 +276,12 @@ func buildCLI() *cli.App {
 				}
 				if !c.Bool(headlessFlag) {
 					frontendAddr := fmt.Sprintf("%s:%d", ip, serverPort)
-					cfg := &uiconfig.Config{
+					cfg := &uiConfig{
 						Host:                uiIP,
 						Port:                uiPort,
 						TemporalGRPCAddress: frontendAddr,
 						EnableUI:            true,
-						Codec: uiconfig.Codec{
-							Endpoint: uiCodecEndpoint,
-						},
+						CodecEndpoint:       uiCodecEndpoint,
 					}
 
 					opt, err := newUIOption(cfg, c.String(configFlag))
