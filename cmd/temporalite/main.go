@@ -42,6 +42,7 @@ const (
 	headlessFlag           = "headless"
 	ipFlag                 = "ip"
 	uiIPFlag               = "ui-ip"
+	uiCodecEndpointFlag    = "ui-codec-endpoint"
 	logFormatFlag          = "log-format"
 	logLevelFlag           = "log-level"
 	namespaceFlag          = "namespace"
@@ -49,6 +50,14 @@ const (
 	configFlag             = "config"
 	dynamicConfigValueFlag = "dynamic-config-value"
 )
+
+type uiConfig struct {
+	Host                string
+	Port                int
+	TemporalGRPCAddress string
+	EnableUI            bool
+	CodecEndpoint       string
+}
 
 func main() {
 	if err := buildCLI().Run(os.Args); err != nil {
@@ -125,6 +134,11 @@ func buildCLI() *cli.App {
 					DefaultText: "same as --ip (eg. 127.0.0.1)",
 				},
 				&cli.StringFlag{
+					Name:    uiCodecEndpointFlag,
+					Usage:   `UI Remote data converter HTTP endpoint`,
+					EnvVars: nil,
+				},
+				&cli.StringFlag{
 					Name:    logFormatFlag,
 					Usage:   `customize the log formatting (allowed: ["json" "pretty"])`,
 					EnvVars: nil,
@@ -198,11 +212,12 @@ func buildCLI() *cli.App {
 			},
 			Action: func(c *cli.Context) error {
 				var (
-					ip          = c.String(ipFlag)
-					serverPort  = c.Int(portFlag)
-					metricsPort = c.Int(metricsPortFlag)
-					uiPort      = serverPort + 1000
-					uiIP        = ip
+					ip              = c.String(ipFlag)
+					serverPort      = c.Int(portFlag)
+					metricsPort     = c.Int(metricsPortFlag)
+					uiPort          = serverPort + 1000
+					uiIP            = ip
+					uiCodecEndpoint = ""
 				)
 
 				if c.IsSet(uiPortFlag) {
@@ -211,6 +226,10 @@ func buildCLI() *cli.App {
 
 				if c.IsSet(uiIPFlag) {
 					uiIP = c.String(uiIPFlag)
+				}
+
+				if c.IsSet(uiCodecEndpointFlag) {
+					uiCodecEndpoint = c.String(uiCodecEndpointFlag)
 				}
 
 				pragmas, err := getPragmaMap(c.StringSlice(pragmaFlag))
@@ -257,7 +276,15 @@ func buildCLI() *cli.App {
 				}
 				if !c.Bool(headlessFlag) {
 					frontendAddr := fmt.Sprintf("%s:%d", ip, serverPort)
-					opt, err := newUIOption(frontendAddr, uiIP, uiPort, c.String(configFlag))
+					cfg := &uiConfig{
+						Host:                uiIP,
+						Port:                uiPort,
+						TemporalGRPCAddress: frontendAddr,
+						EnableUI:            true,
+						CodecEndpoint:       uiCodecEndpoint,
+					}
+
+					opt, err := newUIOption(cfg, c.String(configFlag))
 					if err != nil {
 						return err
 					}

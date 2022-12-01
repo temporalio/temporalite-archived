@@ -27,7 +27,13 @@ func TestHasUIServerDependency(t *testing.T) {
 }
 
 func TestNewUIConfig(t *testing.T) {
-	cfg, err := newUIConfig("localhost:7233", "localhost", 8233, "")
+	c := &uiConfig{
+		Host:                "localhost",
+		Port:                8233,
+		TemporalGRPCAddress: "localhost:7233",
+		EnableUI:            true,
+	}
+	cfg, err := newUIConfig(c, "")
 	if err != nil {
 		t.Errorf("cannot create config: %s", err)
 		return
@@ -38,7 +44,13 @@ func TestNewUIConfig(t *testing.T) {
 }
 
 func TestNewUIConfigWithMissingConfigFile(t *testing.T) {
-	cfg, err := newUIConfig("localhost:7233", "localhost", 8233, "wibble")
+	c := &uiConfig{
+		Host:                "localhost",
+		Port:                8233,
+		TemporalGRPCAddress: "localhost:7233",
+		EnableUI:            true,
+	}
+	cfg, err := newUIConfig(c, "wibble")
 	if err != nil {
 		t.Errorf("cannot create config: %s", err)
 		return
@@ -49,7 +61,13 @@ func TestNewUIConfigWithMissingConfigFile(t *testing.T) {
 }
 
 func TestNewUIConfigWithPresentConfigFile(t *testing.T) {
-	cfg, err := newUIConfig("localhost:7233", "localhost", 8233, "testdata")
+	c := &uiConfig{
+		Host:                "localhost",
+		Port:                8233,
+		TemporalGRPCAddress: "localhost:7233",
+		EnableUI:            true,
+	}
+	cfg, err := newUIConfig(c, "testdata")
 	if err != nil {
 		t.Errorf("cannot create config: %s", err)
 		return
