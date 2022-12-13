@@ -108,8 +108,13 @@ func NewServer(opts ...ServerOption) (*Server, error) {
 		serverOpts = append(serverOpts, c.UpstreamOptions...)
 	}
 
+	srv, err := temporal.NewServer(serverOpts...)
+	if err != nil {
+		return nil, fmt.Errorf("unable to instantiate server: %w", err)
+	}
+
 	s := &Server{
-		internal:         temporal.NewServer(serverOpts...),
+		internal:         srv,
 		ui:               c.UIServer,
 		frontendHostPort: cfg.PublicClient.HostPort,
 		config:           c,
