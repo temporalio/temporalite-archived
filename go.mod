@@ -4,7 +4,7 @@ go 1.19
 
 require (
 	github.com/temporalio/ui-server/v2 v2.8.3
-	github.com/urfave/cli/v2 v2.23.7
+	github.com/urfave/cli/v2 v2.24.3
 	go.temporal.io/api v1.13.1-0.20221110200459-6a3cb21a3415
 	go.temporal.io/sdk v1.19.0
 	go.temporal.io/server v1.19.1
