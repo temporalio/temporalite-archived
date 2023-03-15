@@ -34,7 +34,7 @@ func WithBaseClientOptions(o client.Options) TestServerOption {
 	})
 }
 
-// With WithBaseWorkerOptions configures default options for workers connected to the test server.
+// WithBaseWorkerOptions configures default options for workers connected to the test server.
 //
 // WorkflowPanicPolicy is always set to worker.FailWorkflow so that workflow executions
 // fail fast when workflow code panics or detects non-determinism.
