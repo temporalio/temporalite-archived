@@ -2,7 +2,7 @@
 
 [![Go Reference](https://pkg.go.dev/badge/github.com/temporalio/temporalite.svg)](https://pkg.go.dev/github.com/temporalio/temporalite)
 [![ci](https://github.com/temporalio/temporalite/actions/workflows/ci.yml/badge.svg)](https://github.com/temporalio/temporalite/actions/workflows/ci.yml)
-[![codecov](https://codecov.io/gh/DataDog/temporalite/branch/main/graph/badge.svg)](https://codecov.io/gh/DataDog/temporalite)
+[![codecov](https://codecov.io/gh/temporalio/temporalite/branch/main/graph/badge.svg)](https://codecov.io/gh/temporalio/temporalite)
 
 > ⚠️ This project is experimental and not suitable for production use. ⚠️
 
