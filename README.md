@@ -4,7 +4,7 @@
 [![ci](https://github.com/temporalio/temporalite/actions/workflows/ci.yml/badge.svg)](https://github.com/temporalio/temporalite/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/DataDog/temporalite/branch/main/graph/badge.svg)](https://codecov.io/gh/DataDog/temporalite)
 
-> ⚠️ This project is experimental and not suitable for production use. ⚠️
+> ⚠️ This project is deprecated and no longer maintained, we recommend using the [Temporal CLI](https://github.com/temporalio/cli/) dev server instead. ⚠️
 
 Temporalite is a distribution of [Temporal](https://github.com/temporalio/temporal) that runs as a single process with zero runtime dependencies.
 
